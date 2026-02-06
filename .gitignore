@@ -23,6 +23,14 @@
 # misc
 .DS_Store
 *.pem
+Thumbs.db
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
 # debug
 npm-debug.log*
@@ -35,6 +43,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# claude code
+.claude/
 
 # typescript
 *.tsbuildinfo

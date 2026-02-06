@@ -1,0 +1,157 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans-jp), var(--font-sans-en), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* ============================================
+   Pattern 2: Lavender Dream（ラベンダードリーム）
+
+   幻想的なラベンダー/パープル
+   ピーチピンクのアクセント
+   夢見心地、クリエイティブな印象
+   ============================================ */
+
+:root {
+  --radius: 1.25rem;
+
+  /* 淡いラベンダー背景 */
+  --background: oklch(0.97 0.02 290);
+  --foreground: oklch(0.28 0.04 290);
+
+  /* すりガラス風カード */
+  --card: oklch(1 0 0 / 0.85);
+  --card-foreground: oklch(0.28 0.04 290);
+
+  --popover: oklch(0.99 0.01 290);
+  --popover-foreground: oklch(0.28 0.04 290);
+
+  /* メイン: ラベンダーパープル */
+  --primary: oklch(0.65 0.18 300);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.93 0.04 290);
+  --secondary-foreground: oklch(0.32 0.04 290);
+
+  --muted: oklch(0.95 0.025 290);
+  --muted-foreground: oklch(0.50 0.03 290);
+
+  /* アクセント: ピーチピンク */
+  --accent: oklch(0.82 0.12 30);
+  --accent-foreground: oklch(0.28 0.05 30);
+
+  --destructive: oklch(0.62 0.20 20);
+
+  --border: oklch(0.90 0.04 290);
+  --input: oklch(0.96 0.02 290);
+  --ring: oklch(0.65 0.18 300);
+
+  --chart-1: oklch(0.65 0.18 300);
+  --chart-2: oklch(0.72 0.15 320);
+  --chart-3: oklch(0.82 0.12 30);
+  --chart-4: oklch(0.70 0.12 270);
+  --chart-5: oklch(0.78 0.10 350);
+
+  --sidebar: oklch(0.98 0.015 290);
+  --sidebar-foreground: oklch(0.28 0.04 290);
+  --sidebar-primary: oklch(0.65 0.18 300);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.04 290);
+  --sidebar-accent-foreground: oklch(0.32 0.04 290);
+  --sidebar-border: oklch(0.92 0.03 290);
+  --sidebar-ring: oklch(0.65 0.18 300);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    /* グラデーション背景 */
+    background: linear-gradient(
+      135deg,
+      oklch(0.97 0.025 290) 0%,
+      oklch(0.96 0.03 310) 50%,
+      oklch(0.98 0.02 270) 100%
+    );
+    background-attachment: fixed;
+    @apply text-foreground;
+  }
+}
+
+/* ドリーミーなカード - グロー効果 */
+@layer components {
+  .card {
+    background: oklch(1 0 0 / 0.8);
+    backdrop-filter: blur(12px);
+    box-shadow:
+      0 0 40px oklch(0.65 0.18 300 / 0.1),
+      0 8px 32px oklch(0 0 0 / 0.06);
+    border: 1px solid oklch(0.92 0.04 290);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow:
+      0 0 60px oklch(0.65 0.18 300 / 0.15),
+      0 12px 40px oklch(0 0 0 / 0.08);
+    border-color: oklch(0.82 0.12 30 / 0.5);
+    transform: translateY(-4px);
+  }
+}
+
+/* スクロールバー */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(0.95 0.02 290);
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, oklch(0.65 0.18 300), oklch(0.82 0.12 30));
+    border-radius: 8px;
+  }
+}

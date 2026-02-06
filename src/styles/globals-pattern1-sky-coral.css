@@ -1,0 +1,333 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans-jp), var(--font-sans-en), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* ============================================
+   Pattern 1: Sky & Coral（スカイ＆コーラル）
+
+   ブルーアーカイブ風カラースキーム
+   スカイブルー → ソフトピンクのグラデーション
+   爽やかで可愛らしい印象
+   ============================================ */
+
+:root {
+  --radius: 0.5rem;
+
+  /* ============================================
+     グラデーションアクセント用カラー
+     ブルーアーカイブ風：スカイブルー → ソフトピンク
+     ============================================ */
+  --gradient-from: oklch(0.72 0.14 220);      /* スカイブルー */
+  --gradient-to: oklch(0.78 0.14 350);        /* ブルアカ風ピンク */
+  --gradient-via: oklch(0.75 0.12 280);       /* 中間：薄紫 */
+
+  /* 各要素用グラデーション（カスタマイズ用） */
+  --header-accent-gradient: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+  --footer-accent-gradient: linear-gradient(135deg, var(--gradient-to), var(--gradient-from));
+  --card-accent-gradient: linear-gradient(90deg, var(--gradient-from), var(--gradient-to));
+  --section-accent-gradient: linear-gradient(90deg, var(--gradient-from), var(--gradient-via), var(--gradient-to));
+  --sidebar-accent-gradient: linear-gradient(180deg, var(--gradient-from), var(--gradient-to));
+  --button-accent-gradient: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+
+  /* スカイブルーの背景 */
+  --background: oklch(0.97 0.015 220);
+  --foreground: oklch(0.25 0.03 230);
+
+  /* 白いカード */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.03 230);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.03 230);
+
+  /* メイン: スカイブルー */
+  --primary: oklch(0.65 0.15 230);
+  --primary-foreground: oklch(1 0 0);
+
+  /* セカンダリ: 薄いブルー */
+  --secondary: oklch(0.92 0.03 220);
+  --secondary-foreground: oklch(0.30 0.04 230);
+
+  --muted: oklch(0.94 0.02 220);
+  --muted-foreground: oklch(0.45 0.02 230);
+
+  /* アクセント: コーラルピンク（大胆に！） */
+  --accent: oklch(0.30 0.04 230);
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.30 0.04 230);
+
+  --border: oklch(0.88 0.03 220);
+  --input: oklch(0.95 0.02 220);
+  --ring: oklch(0.65 0.15 230);
+
+  /* チャート: ブルー〜コーラルのグラデーション */
+  --chart-1: oklch(0.65 0.15 230);
+  --chart-2: oklch(0.70 0.12 200);
+  --chart-3: oklch(0.75 0.18 25);
+  --chart-4: oklch(0.80 0.14 15);
+  --chart-5: oklch(0.60 0.10 260);
+
+  --sidebar: oklch(0.98 0.01 220);
+  --sidebar-foreground: oklch(0.25 0.03 230);
+  --sidebar-primary: oklch(0.70 0.20 350);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.92 0.04 220);
+  --sidebar-accent-foreground: oklch(0.30 0.04 230);
+  --sidebar-border: oklch(0.90 0.03 220);
+  --sidebar-ring: oklch(0.65 0.15 230);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply text-foreground bg-background;
+  }
+}
+
+/* ============================================
+   エリア別背景スタイル
+   ============================================ */
+@layer components {
+  /* ヒーローエリア：空のグラデーション */
+  .bg-sky {
+    background:
+      linear-gradient(180deg,
+        oklch(0.96 0.08 210) 0%,
+        oklch(0.95 0.02 220) 50%,
+        oklch(0.96 0.08 350) 100%
+      );
+  }
+
+  /* 宇宙エリア：深い宇宙のグラデーション */
+  .bg-universe {
+    background:
+      radial-gradient(ellipse at 20% 20%, oklch(0.25 0.08 280) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 60%, oklch(0.20 0.06 250) 0%, transparent 40%),
+      radial-gradient(ellipse at 40% 80%, oklch(0.22 0.05 320) 0%, transparent 45%),
+      linear-gradient(180deg,
+        oklch(0.15 0.04 260) 0%,
+        oklch(0.12 0.03 270) 50%,
+        oklch(0.10 0.02 280) 100%
+      );
+  }
+
+  /* 雲のようなセクション（宇宙の上に浮く） */
+  .cloud-section {
+    background: oklch(1 0 0 / 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: 1.5rem;
+    box-shadow:
+      0 8px 32px oklch(0 0 0 / 0.15),
+      0 0 0 1px oklch(1 0 0 / 0.1);
+    margin: 0 1rem;
+  }
+}
+
+/* 爽やかなカード - 右と下にグラデーションライン */
+@layer components {
+  .card {
+    background: oklch(1 0 0);
+    box-shadow:
+      0 4px 20px oklch(0.65 0.15 230 / 0.1),
+      0 1px 4px oklch(0 0 0 / 0.05);
+    border: 1px solid oklch(0.90 0.03 220);
+    position: relative;
+    overflow: visible;
+  }
+
+  /* 右側のグラデーションライン */
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -2px;
+    bottom: 0;
+    width: 2px;
+    background: var(--sidebar-accent-gradient);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  /* 下側のグラデーションライン */
+  .card::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background: var(--card-accent-gradient);
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .card:hover {
+    box-shadow:
+      0 8px 30px oklch(0.65 0.15 230 / 0.15),
+      0 2px 8px oklch(0 0 0 / 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+
+
+/* スクロールバー */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(0.94 0.02 220);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--sidebar-accent-gradient);
+    border-radius: 4px;
+  }
+}
+
+/* ============================================
+   グラデーションアクセント用ユーティリティ
+   HTML側で使用するクラス
+   ============================================ */
+@layer components {
+  /* アクセントバー（上部） */
+  .accent-bar-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--card-accent-gradient);
+  }
+
+  /* アクセントバー（下部） */
+  .accent-bar-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--card-accent-gradient);
+  }
+
+  /* アクセントバー（左） */
+  .accent-bar-left {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--sidebar-accent-gradient);
+  }
+
+  /* アクセントバー（右） */
+  .accent-bar-right {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 4px;
+    background: var(--sidebar-accent-gradient);
+  }
+
+  /* グラデーションボタン */
+  .btn-gradient {
+    background: var(--button-accent-gradient);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, oklch(1 0 0 / 0.2), oklch(1 0 0 / 0));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .btn-gradient:hover::before {
+    opacity: 1;
+  }
+
+  .btn-gradient:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px oklch(0.72 0.14 220 / 0.3);
+  }
+
+  /* グラデーションテキスト */
+  .text-gradient {
+    background: var(--section-accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* グラデーションボーダー */
+  .border-gradient {
+    position: relative;
+    background: var(--card);
+  }
+
+  .border-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: var(--card-accent-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+}
