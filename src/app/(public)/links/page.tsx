@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 
 const socialLinks = [
+
   {
     name: "GitHub",
     description: "ソースコードやOSS活動",
@@ -76,7 +77,6 @@ export default function LinksPage() {
           </p>
         </div>
 
-        {/* Social Links */}
         <div className="mb-12">
           <h2 className="text-xl font-semibold mb-6">SNS</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -110,7 +110,6 @@ export default function LinksPage() {
           </div>
         </div>
 
-        {/* Other Links */}
         <div>
           <h2 className="text-xl font-semibold mb-6">その他</h2>
           <div className="space-y-3">
@@ -141,7 +140,6 @@ export default function LinksPage() {
           </div>
         </div>
 
-        {/* Contact Card */}
         <Card className="mt-12 bg-gradient-to-br from-primary/10 to-accent/10">
           <CardHeader className="text-center">
             <CardTitle>お仕事のご相談</CardTitle>

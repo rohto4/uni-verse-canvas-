@@ -1,29 +1,13 @@
 "use client"
-
 import { useState } from "react"
 import { Download, Upload, Database, FileJson, FileText, AlertCircle, CheckCircle2, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 
-// Mock data
 const backupHistory = [
   {
     id: "1",
@@ -72,7 +56,6 @@ export default function BackupPage() {
         <p className="text-muted-foreground">データのエクスポートとインポート</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
         <Card>
           <CardContent className="pt-6">
@@ -113,7 +96,6 @@ export default function BackupPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Export */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -187,7 +169,6 @@ export default function BackupPage() {
           </CardContent>
         </Card>
 
-        {/* Import */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -259,7 +240,6 @@ export default function BackupPage() {
         </Card>
       </div>
 
-      {/* Backup History */}
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

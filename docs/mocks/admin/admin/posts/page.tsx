@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Copy, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
@@ -14,16 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Mock data
 type Post = {
   id: string
   title: string
@@ -36,56 +29,11 @@ type Post = {
 }
 
 const posts: Post[] = [
-  {
-    id: "1",
-    title: "Next.js 15の新機能を試してみた",
-    slug: "nextjs-15-features",
-    status: "published",
-    tags: ["Next.js", "React"],
-    publishedAt: "2024-01-15",
-    viewCount: 1234,
-    updatedAt: "2024-01-16",
-  },
-  {
-    id: "2",
-    title: "TypeScriptの型パズルを解いてみる",
-    slug: "typescript-type-puzzle",
-    status: "published",
-    tags: ["TypeScript"],
-    publishedAt: "2024-01-12",
-    viewCount: 856,
-    updatedAt: "2024-01-12",
-  },
-  {
-    id: "3",
-    title: "Supabaseで認証機能を実装する",
-    slug: "supabase-auth-guide",
-    status: "draft",
-    tags: ["Supabase", "認証"],
-    publishedAt: null,
-    viewCount: 0,
-    updatedAt: "2024-01-18",
-  },
-  {
-    id: "4",
-    title: "来週公開予定の記事",
-    slug: "scheduled-post",
-    status: "scheduled",
-    tags: ["Next.js"],
-    publishedAt: "2024-01-22",
-    viewCount: 0,
-    updatedAt: "2024-01-17",
-  },
-  {
-    id: "5",
-    title: "Tiptapでリッチテキストエディタを作る",
-    slug: "tiptap-rich-editor",
-    status: "draft",
-    tags: ["Tiptap", "React"],
-    publishedAt: null,
-    viewCount: 0,
-    updatedAt: "2024-01-15",
-  },
+  { id: "1", title: "Next.js 15の新機能を試してみた", slug: "nextjs-15-features", status: "published", tags: ["Next.js", "React"], publishedAt: "2024-01-15", viewCount: 1234, updatedAt: "2024-01-16" },
+  { id: "2", title: "TypeScriptの型パズルを解いてみる", slug: "typescript-type-puzzle", status: "published", tags: ["TypeScript"], publishedAt: "2024-01-12", viewCount: 856, updatedAt: "2024-01-12" },
+  { id: "3", title: "Supabaseで認証機能を実装する", slug: "supabase-auth-guide", status: "draft", tags: ["Supabase", "認証"], publishedAt: null, viewCount: 0, updatedAt: "2024-01-18" },
+  { id: "4", title: "来週公開予定の記事", slug: "scheduled-post", status: "scheduled", tags: ["Next.js"], publishedAt: "2024-01-22", viewCount: 0, updatedAt: "2024-01-17" },
+  { id: "5", title: "Tiptapでリッチテキストエディタを作る", slug: "tiptap-rich-editor", status: "draft", tags: ["Tiptap", "React"], publishedAt: null, viewCount: 0, updatedAt: "2024-01-15" },
 ]
 
 const statusConfig = {
@@ -123,7 +71,6 @@ export default function PostsListPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -152,33 +99,12 @@ export default function PostsListPage() {
         </CardContent>
       </Card>
 
-      {/* Tabs */}
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="all">
-            すべて
-            <Badge variant="secondary" className="ml-2">
-              {posts.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="draft">
-            下書き
-            <Badge variant="secondary" className="ml-2">
-              {draftCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="scheduled">
-            予約
-            <Badge variant="secondary" className="ml-2">
-              {scheduledCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="published">
-            公開
-            <Badge variant="secondary" className="ml-2">
-              {publishedCount}
-            </Badge>
-          </TabsTrigger>
+          <TabsTrigger value="all">すべて<Badge variant="secondary" className="ml-2">{posts.length}</Badge></TabsTrigger>
+          <TabsTrigger value="draft">下書き<Badge variant="secondary" className="ml-2">{draftCount}</Badge></TabsTrigger>
+          <TabsTrigger value="scheduled">予約<Badge variant="secondary" className="ml-2">{scheduledCount}</Badge></TabsTrigger>
+          <TabsTrigger value="published">公開<Badge variant="secondary" className="ml-2">{publishedCount}</Badge></TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-0">
@@ -214,20 +140,14 @@ function PostList({ posts }: { posts: Post[] }) {
       <CardContent className="p-0">
         <div className="divide-y">
           {posts.map((post) => (
-            <div
-              key={post.id}
-              className="flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors"
-            >
+            <div key={post.id} className="flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors">
               <div className="flex-1 min-w-0 pr-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Link
-                    href={`/admin/posts/${post.id}`}
-                    className="font-medium hover:text-primary truncate"
-                  >
+                  <Link href={`/admin/posts/${post.id}`} className="font-medium hover:text-primary truncate">
                     {post.title}
                   </Link>
-                  <Badge className={statusConfig[post.status as keyof typeof statusConfig].className}>
-                    {statusConfig[post.status as keyof typeof statusConfig].label}
+                  <Badge className={statusConfig[post.status].className}>
+                    {statusConfig[post.status].label}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -242,9 +162,7 @@ function PostList({ posts }: { posts: Post[] }) {
                 </div>
                 <div className="flex gap-1 mt-2">
                   {post.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
+                    <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
               </div>

@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
-// Mock data
 const post = {
   id: "1",
   title: "Next.js 15の新機能を試してみた",
@@ -68,8 +67,7 @@ export const metadata = {
 export default function PostDetailPage() {
   return (
     <div className="min-h-screen bg-universe py-8">
-      <div className="cloud-section max-w-6xl mx-auto py-8 px-4">
-        {/* Back Link */}
+      <div className="cloud-section container mx-auto py-8 px-6 md:px-12 lg:px-16">
         <Button asChild variant="ghost" className="mb-6 -ml-2">
           <Link href="/posts" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -78,9 +76,7 @@ export default function PostDetailPage() {
         </Button>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content */}
-        <article className="flex-1 max-w-3xl">
-          {/* Header */}
+        <article className="flex-1">
           <header className="mb-8">
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags.map((tag) => (
@@ -106,37 +102,17 @@ export default function PostDetailPage() {
             </div>
           </header>
 
-          {/* Cover Image Placeholder */}
           <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg mb-8 flex items-center justify-center">
             <span className="text-muted-foreground">カバー画像</span>
           </div>
 
-          {/* Content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
-            <h2 id="introduction">はじめに</h2>
-            <p>Next.js 15がリリースされました。今回のアップデートでは、パフォーマンスの大幅な改善と、開発者体験の向上に焦点が当てられています。</p>
-
-            <h2 id="main-features">主な新機能</h2>
-
-            <h3 id="ppr">1. Partial Prerendering (PPR)</h3>
-            <p>PPRは、静的コンテンツと動的コンテンツを1つのページ内でシームレスに組み合わせることができる新機能です。</p>
-            <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
-              <code>export const experimental_ppr = true;</code>
-            </pre>
-
-            <h3 id="server-actions">2. Server Actionsの改善</h3>
-            <p>Server Actionsがより安定し、エラーハンドリングが改善されました。これにより、フォーム処理やデータ更新がより簡単になりました。</p>
-
-            <h3 id="turbopack">3. Turbopackの安定化</h3>
-            <p>開発サーバーでTurbopackがデフォルトで使用されるようになり、ビルド速度が大幅に向上しました。特に大規模プロジェクトでの効果が顕著です。</p>
-
-            <h2 id="conclusion">まとめ</h2>
-            <p>Next.js 15は、これまでのバージョンと比較して大きな進化を遂げています。特にPPRは、これからのWebアプリケーション開発のスタンダードになる可能性を秘めています。</p>
-          </div>
+          <div
+            className="tiptap prose prose-lg dark:prose-invert max-w-none mb-8"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
 
           <Separator className="my-8" />
 
-          {/* Share */}
           <div className="flex items-center gap-4 mb-8">
             <span className="text-sm font-medium flex items-center gap-2">
               <Share2 className="h-4 w-4" />
@@ -153,7 +129,6 @@ export default function PostDetailPage() {
             </Button>
           </div>
 
-          {/* Related Posts */}
           <Card>
             <CardHeader>
               <CardTitle>関連記事</CardTitle>
@@ -179,7 +154,6 @@ export default function PostDetailPage() {
           </Card>
         </article>
 
-        {/* Sidebar - Table of Contents */}
         <aside className="hidden lg:block lg:w-64">
           <div className="sticky top-24">
             <Card>

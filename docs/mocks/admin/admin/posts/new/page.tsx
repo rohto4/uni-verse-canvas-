@@ -2,19 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Save, Eye, Clock, Download, Settings } from "lucide-react"
+import { ArrowLeft, Save, Eye, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 
 const availableTags = [
@@ -35,7 +29,6 @@ export default function NewPostPage() {
 
   const handleTitleChange = (value: string) => {
     setTitle(value)
-    // Auto-generate slug from title (simplified)
     const generatedSlug = value
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -46,15 +39,12 @@ export default function NewPostPage() {
 
   const toggleTag = (tagId: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId]
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
     )
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
@@ -86,10 +76,8 @@ export default function NewPostPage() {
       </header>
 
       <div className="flex-1 flex">
-        {/* Main Editor Area */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="max-w-3xl mx-auto space-y-6">
-            {/* Title */}
             <div>
               <Input
                 type="text"
@@ -98,12 +86,9 @@ export default function NewPostPage() {
                 onChange={(e) => handleTitleChange(e.target.value)}
                 className="text-2xl font-bold border-none shadow-none focus-visible:ring-0 px-0 placeholder:text-muted-foreground/50"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                {title.length}/200文字
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{title.length}/200文字</p>
             </div>
 
-            {/* Editor Placeholder */}
             <Card className="min-h-[500px]">
               <CardHeader className="border-b">
                 <div className="flex items-center gap-2 text-sm">
@@ -124,12 +109,8 @@ export default function NewPostPage() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-muted-foreground">
-                    ここにTiptapエディタが表示されます...
-                  </p>
-                  <p className="text-muted-foreground">
-                    本文を入力してください。マークダウン記法やショートカットキーが使えます。
-                  </p>
+                  <p className="text-muted-foreground">ここにTiptapエディタが表示されます...</p>
+                  <p className="text-muted-foreground">本文を入力してください。マークダウン記法やショートカットキーが使えます。</p>
                   <ul className="text-muted-foreground">
                     <li>**太字** → <strong>太字</strong></li>
                     <li>*斜体* → <em>斜体</em></li>
@@ -143,22 +124,15 @@ export default function NewPostPage() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <aside className="w-80 border-l bg-muted/30 p-4 overflow-auto hidden lg:block">
           <div className="space-y-6">
-            {/* Status */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  公開設定
-                </CardTitle>
+                <CardTitle className="text-sm">公開設定</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                    ステータス
-                  </label>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">ステータス</label>
                   <Select value={status} onValueChange={setStatus}>
                     <SelectTrigger>
                       <SelectValue />
@@ -170,19 +144,15 @@ export default function NewPostPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {status === "scheduled" && (
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                      公開日時
-                    </label>
+                    <label className="text-xs font-medium text-muted-foreground mb-2 block">公開日時</label>
                     <Input type="datetime-local" />
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Slug */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">URL スラッグ</CardTitle>
@@ -194,13 +164,10 @@ export default function NewPostPage() {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  /posts/{slug || "..."}
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">/posts/{slug || "..."}</p>
               </CardContent>
             </Card>
 
-            {/* Excerpt */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">抜粋</CardTitle>
@@ -212,13 +179,10 @@ export default function NewPostPage() {
                   onChange={(e) => setExcerpt(e.target.value)}
                   rows={3}
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  {excerpt.length}/300文字（OGP用）
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">{excerpt.length}/300文字（OGP用）</p>
               </CardContent>
             </Card>
 
-            {/* Tags */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">タグ</CardTitle>
@@ -239,7 +203,6 @@ export default function NewPostPage() {
               </CardContent>
             </Card>
 
-            {/* Cover Image */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">カバー画像</CardTitle>
@@ -247,12 +210,8 @@ export default function NewPostPage() {
               <CardContent>
                 <div className="aspect-video bg-muted rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer hover:bg-muted/80 transition-colors">
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
-                      クリックしてアップロード
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      PNG, JPG, WebP (最大5MB)
-                    </p>
+                    <p className="text-sm text-muted-foreground">クリックしてアップロード</p>
+                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP (最大5MB)</p>
                   </div>
                 </div>
               </CardContent>

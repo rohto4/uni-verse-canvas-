@@ -3,16 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
-// Mock data
 type ChangeType = "increase" | "decrease" | "neutral"
-
-const stats: {
-  title: string
-  value: number | string
-  change: string
-  changeType: ChangeType
-  icon: typeof FileText
-}[] = [
+const stats: { title: string; value: number | string; change: string; changeType: ChangeType; icon: typeof FileText }[] = [
   {
     title: "総記事数",
     value: 42,
@@ -87,11 +79,7 @@ const scheduledPosts = [
   },
 ]
 
-const statusConfig = {
-  draft: { label: "下書き", className: "bg-muted text-muted-foreground" },
-  scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  published: { label: "公開", className: "bg-accent text-accent-foreground" },
-}
+const statusConfig = { draft: { label: "下書き", className: "bg-muted text-muted-foreground" }, scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, published: { label: "公開", className: "bg-accent text-accent-foreground" } }
 
 export default function DashboardPage() {
   return (
@@ -101,7 +89,6 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">サイトの概要と最近の活動</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon
@@ -142,7 +129,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Posts */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -189,7 +175,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Scheduled Posts */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -229,7 +214,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle>クイックアクション</CardTitle>
@@ -270,7 +254,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Activity */}
         <Card>
           <CardHeader>
             <CardTitle>最近のアクティビティ</CardTitle>

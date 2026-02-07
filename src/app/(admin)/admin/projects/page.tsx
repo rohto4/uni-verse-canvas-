@@ -1,30 +1,14 @@
 "use client"
-
 import { useState } from "react"
 import { Plus, Search, MoreHorizontal, Edit, Trash2, ExternalLink, Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 
-// Mock data
 const projects = [
   {
     id: "1",
@@ -152,7 +136,6 @@ export default function ProjectsPage() {
         </Dialog>
       </div>
 
-      {/* Search */}
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="relative">
@@ -168,7 +151,6 @@ export default function ProjectsPage() {
         </CardContent>
       </Card>
 
-      {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredProjects.map((project) => (
           <Card key={project.id} className="flex flex-col">

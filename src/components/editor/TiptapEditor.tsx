@@ -1,20 +1,18 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import React, { useState, useRef, useCallback, useEffect } from "react"
 import { useEditor, EditorContent, Editor } from "@tiptap/react"
 import { GripVertical, Maximize2, Minimize2 } from "lucide-react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import CharacterCount from "@tiptap/extension-character-count"
 import Link from "@tiptap/extension-link"
-import Image from "@tiptap/extension-image"
 import Youtube from "@tiptap/extension-youtube"
 import Underline from "@tiptap/extension-underline"
 import TextAlign from "@tiptap/extension-text-align"
 import Highlight from "@tiptap/extension-highlight"
 import TaskList from "@tiptap/extension-task-list"
 import TaskItem from "@tiptap/extension-task-item"
-import { Table } from "@tiptap/extension-table"
 import { TableRow } from "@tiptap/extension-table-row"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
@@ -24,10 +22,13 @@ import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { Color } from "@tiptap/extension-color"
+import { Dropcursor } from "@tiptap/extension-dropcursor"
+import { Gapcursor } from "@tiptap/extension-gapcursor"
 import { common, createLowlight } from "lowlight"
-
 import { EditorToolbar } from "./EditorToolbar"
 import { ColumnLayout, ColumnItem } from "./extensions/ColumnLayout"
+import { ResizableImage } from "./extensions/ResizableImage"
+import { TableWithDelete } from "./extensions/TableWithDelete"
 
 const lowlight = createLowlight(common)
 
@@ -55,7 +56,6 @@ export function TiptapEditor({
   const startY = useRef(0)
   const startHeight = useRef(0)
 
-  // リサイズハンドラー
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     setIsResizing(true)
@@ -78,10 +78,7 @@ export function TiptapEditor({
     document.addEventListener("mouseup", handleMouseUp)
   }, [editorHeight])
 
-  // フルスクリーン切替
-  const toggleFullscreen = useCallback(() => {
-    setIsFullscreen((prev) => !prev)
-  }, [])
+  const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), [])
 
   const editor = useEditor({
     immediatelyRender: false, // SSR対応
@@ -101,7 +98,7 @@ export function TiptapEditor({
           class: "text-primary underline cursor-pointer",
         },
       }),
-      Image.configure({
+      ResizableImage.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
         },
@@ -124,7 +121,7 @@ export function TiptapEditor({
       TaskItem.configure({
         nested: true,
       }),
-      Table.configure({
+      TableWithDelete.configure({
         resizable: true,
         HTMLAttributes: {
           class: "border-collapse table-auto w-full",
@@ -144,7 +141,7 @@ export function TiptapEditor({
       CodeBlockLowlight.configure({
         lowlight,
         HTMLAttributes: {
-          class: "bg-muted rounded-lg p-4 font-mono text-sm overflow-x-auto",
+          class: "rounded-lg p-4 font-mono text-sm overflow-x-auto",
         },
       }),
       HorizontalRule.configure({
@@ -156,6 +153,11 @@ export function TiptapEditor({
       Superscript,
       TextStyle,
       Color,
+      Dropcursor.configure({
+        color: "var(--primary)",
+        width: 2,
+      }),
+      Gapcursor,
       ColumnLayout,
       ColumnItem,
     ],
@@ -172,6 +174,37 @@ export function TiptapEditor({
       },
     },
   })
+
+  useEffect(() => {
+    if (!editor) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+Deleteでテーブル削除
+      if (e.key === 'Delete' && e.ctrlKey && e.shiftKey) {
+        const { state } = editor
+        const { selection } = state
+        const { $from } = selection
+
+        // カーソルがテーブル内にいるかチェック
+        for (let depth = $from.depth; depth > 0; depth--) {
+          const node = $from.node(depth)
+          if (node.type.name === 'table') {
+            const pos = $from.before(depth)
+            editor.chain().focus().deleteRange({ from: pos, to: pos + node.nodeSize }).run()
+            e.preventDefault()
+            return
+          }
+        }
+      }
+    }
+
+    const editorElement = editor.view.dom
+    editorElement.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      editorElement.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [editor])
 
   if (!editor) {
     return (
@@ -191,60 +224,22 @@ export function TiptapEditor({
       } ${className}`}
       style={!isFullscreen ? { minHeight: editorHeight } : undefined}
     >
-      {/* フルスクリーン時の背景オーバーレイ */}
-      {isFullscreen && (
-        <div
-          className="fixed inset-0 bg-black/50 -z-10"
-          onClick={toggleFullscreen}
-        />
-      )}
-
+      {isFullscreen && <div className="fixed inset-0 bg-black/50 -z-10" onClick={toggleFullscreen} />}
       <EditorToolbar editor={editor} />
-
-      {/* エディタ本体 */}
-      <div
-        className="overflow-auto"
-        style={{ height: isFullscreen ? "calc(100% - 120px)" : editorHeight }}
-      >
-        <EditorContent
-          editor={editor}
-          className="h-full"
-        />
+      <div className="overflow-auto" style={{ height: isFullscreen ? "calc(100% - 120px)" : editorHeight }}>
+        <EditorContent editor={editor} className="h-full" />
       </div>
-
-      {/* フッター */}
       <div className="border-t p-2 flex items-center justify-between text-xs text-muted-foreground bg-muted/30">
-        <span>
-          {editor.storage.characterCount.characters()} 文字 / {editor.storage.characterCount.words()} 単語
-        </span>
-
+        <span>{editor.storage.characterCount.characters()} 文字 / {editor.storage.characterCount.words()} 単語</span>
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline">Markdown記法・ショートカット対応</span>
-
-          {/* フルスクリーンボタン */}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className="p-1 hover:bg-muted rounded transition-colors"
-            title={isFullscreen ? "縮小" : "拡大"}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="h-4 w-4" />
-            ) : (
-              <Maximize2 className="h-4 w-4" />
-            )}
+          <button type="button" onClick={toggleFullscreen} className="p-1 hover:bg-muted rounded transition-colors" title={isFullscreen ? "縮小" : "拡大"}>
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
         </div>
       </div>
-
-      {/* リサイズハンドル（フルスクリーン時は非表示） */}
       {!isFullscreen && (
-        <div
-          onMouseDown={handleMouseDown}
-          className={`h-3 bg-muted/50 hover:bg-primary/20 cursor-ns-resize flex items-center justify-center transition-colors ${
-            isResizing ? "bg-primary/30" : ""
-          }`}
-        >
+        <div onMouseDown={handleMouseDown} className={`h-3 bg-muted/50 hover:bg-primary/20 cursor-ns-resize flex items-center justify-center transition-colors ${isResizing ? "bg-primary/30" : ""}`}>
           <GripVertical className="h-3 w-3 text-muted-foreground rotate-90" />
         </div>
       )}

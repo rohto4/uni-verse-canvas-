@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { GradientAccent } from "@/components/common"
 
-// Mock data
 const recentPosts = [
   {
     id: "1",
@@ -72,17 +71,11 @@ const inProgressItems = [
   },
 ]
 
-const statusLabels = {
-  not_started: { label: "未着手", className: "bg-muted text-muted-foreground" },
-  paused: { label: "中断中", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  in_progress: { label: "進行中", className: "bg-primary/20 text-primary" },
-  completed: { label: "完了", className: "bg-accent text-accent-foreground" },
-}
+const statusLabels = { not_started: { label: "未着手", className: "bg-muted text-muted-foreground" }, paused: { label: "中断中", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, in_progress: { label: "進行中", className: "bg-primary/20 text-primary" }, completed: { label: "完了", className: "bg-accent text-accent-foreground" } }
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
-      {/* Hero Section - 空の背景 */}
       <section className="relative py-20 lg:py-32 bg-sky">
         <GradientAccent position="bottom" type="section" thickness="2px" />
         <div className="container mx-auto px-4 relative">
@@ -119,9 +112,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* メインコンテンツエリア - 宇宙の背景 */}
       <div className="bg-universe py-16 space-y-16">
-        {/* Recent Posts - 雲のようなセクション */}
         <section className="cloud-section py-12 max-w-7xl mx-auto">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -164,7 +155,6 @@ export default function HomePage() {
         </div>
         </section>
 
-        {/* Recent Projects - 雲のようなセクション */}
         <section className="cloud-section py-12 max-w-7xl mx-auto">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
@@ -204,7 +194,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* In Progress - 雲のようなセクション */}
         <section className="cloud-section py-12 max-w-7xl mx-auto">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">

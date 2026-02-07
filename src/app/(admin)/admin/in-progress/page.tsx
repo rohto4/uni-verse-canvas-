@@ -1,38 +1,16 @@
 "use client"
-
 import { useState } from "react"
 import { Plus, MoreHorizontal, Edit, Trash2, CheckCircle2, PauseCircle, PlayCircle, Circle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Mock data
 const inProgressItems = [
   {
     id: "1",
@@ -72,28 +50,7 @@ const inProgressItems = [
   },
 ]
 
-const statusConfig = {
-  not_started: {
-    label: "未着手",
-    icon: Circle,
-    className: "bg-muted text-muted-foreground",
-  },
-  paused: {
-    label: "中断中",
-    icon: PauseCircle,
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  },
-  in_progress: {
-    label: "進行中",
-    icon: PlayCircle,
-    className: "bg-primary/20 text-primary",
-  },
-  completed: {
-    label: "完了",
-    icon: CheckCircle2,
-    className: "bg-accent text-accent-foreground",
-  },
-}
+const statusConfig = { not_started: { label: "未着手", icon: Circle, className: "bg-muted text-muted-foreground" }, paused: { label: "中断中", icon: PauseCircle, className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, in_progress: { label: "進行中", icon: PlayCircle, className: "bg-primary/20 text-primary" }, completed: { label: "完了", icon: CheckCircle2, className: "bg-accent text-accent-foreground" } }
 
 export default function InProgressPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)

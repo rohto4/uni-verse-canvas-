@@ -6,93 +6,24 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Mock data
 const inProgressItems = [
-  {
-    id: "1",
-    title: "AI チャットボット開発",
-    description: "OpenAI APIを活用したカスタムチャットボット",
-    status: "in_progress",
-    progressRate: 65,
-    startedAt: "2024-01-10",
-    notes: "ベクトルデータベースの選定中",
-  },
-  {
-    id: "2",
-    title: "モバイルアプリ（Flutter）",
-    description: "クロスプラットフォームのモバイルアプリ開発",
-    status: "paused",
-    progressRate: 30,
-    startedAt: "2023-12-01",
-    notes: "他のプロジェクトを優先中",
-  },
-  {
-    id: "3",
-    title: "Rust入門",
-    description: "システムプログラミング言語Rustの学習",
-    status: "in_progress",
-    progressRate: 40,
-    startedAt: "2024-01-05",
-    notes: null,
-  },
-  {
-    id: "4",
-    title: "技術書執筆",
-    description: "Next.js + Supabaseの技術書",
-    status: "not_started",
-    progressRate: 0,
-    startedAt: null,
-    notes: "アウトライン作成中",
-  },
+  { id: "1", title: "AI チャットボット開発", description: "OpenAI APIを活用したカスタムチャットボット", status: "in_progress", progressRate: 65, startedAt: "2024-01-10", notes: "ベクトルデータベースの選定中" },
+  { id: "2", title: "モバイルアプリ（Flutter）", description: "クロスプラットフォームのモバイルアプリ開発", status: "paused", progressRate: 30, startedAt: "2023-12-01", notes: "他のプロジェクトを優先中" },
+  { id: "3", title: "Rust入門", description: "システムプログラミング言語Rustの学習", status: "in_progress", progressRate: 40, startedAt: "2024-01-05", notes: null },
+  { id: "4", title: "技術書執筆", description: "Next.js + Supabaseの技術書", status: "not_started", progressRate: 0, startedAt: null, notes: "アウトライン作成中" },
 ]
 
 const statusConfig = {
-  not_started: {
-    label: "未着手",
-    icon: Circle,
-    className: "bg-muted text-muted-foreground",
-  },
-  paused: {
-    label: "中断中",
-    icon: PauseCircle,
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  },
-  in_progress: {
-    label: "進行中",
-    icon: PlayCircle,
-    className: "bg-primary/20 text-primary",
-  },
-  completed: {
-    label: "完了",
-    icon: CheckCircle2,
-    className: "bg-accent text-accent-foreground",
-  },
+  not_started: { label: "未着手", icon: Circle, className: "bg-muted text-muted-foreground" },
+  paused: { label: "中断中", icon: PauseCircle, className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+  in_progress: { label: "進行中", icon: PlayCircle, className: "bg-primary/20 text-primary" },
+  completed: { label: "完了", icon: CheckCircle2, className: "bg-accent text-accent-foreground" },
 }
 
 export default function InProgressPage() {
@@ -119,9 +50,7 @@ export default function InProgressPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>新しい項目を追加</DialogTitle>
-              <DialogDescription>
-                進行中のプロジェクトや学習を追加します
-              </DialogDescription>
+              <DialogDescription>進行中のプロジェクトや学習を追加します</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -161,9 +90,7 @@ export default function InProgressPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                キャンセル
-              </Button>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>キャンセル</Button>
               <Button>追加</Button>
             </DialogFooter>
           </DialogContent>
@@ -172,51 +99,23 @@ export default function InProgressPage() {
 
       <Tabs defaultValue="all" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="all">
-            すべて
-            <Badge variant="secondary" className="ml-2">
-              {inProgressItems.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="in_progress">
-            進行中
-            <Badge variant="secondary" className="ml-2">
-              {activeCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="paused">
-            中断中
-            <Badge variant="secondary" className="ml-2">
-              {pausedCount}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="not_started">
-            未着手
-            <Badge variant="secondary" className="ml-2">
-              {notStartedCount}
-            </Badge>
-          </TabsTrigger>
+          <TabsTrigger value="all">すべて<Badge variant="secondary" className="ml-2">{inProgressItems.length}</Badge></TabsTrigger>
+          <TabsTrigger value="in_progress">進行中<Badge variant="secondary" className="ml-2">{activeCount}</Badge></TabsTrigger>
+          <TabsTrigger value="paused">中断中<Badge variant="secondary" className="ml-2">{pausedCount}</Badge></TabsTrigger>
+          <TabsTrigger value="not_started">未着手<Badge variant="secondary" className="ml-2">{notStartedCount}</Badge></TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          {inProgressItems.map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {inProgressItems.map((item) => <ItemCard key={item.id} item={item} />)}
         </TabsContent>
         <TabsContent value="in_progress" className="space-y-4">
-          {inProgressItems.filter((i) => i.status === "in_progress").map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {inProgressItems.filter((i) => i.status === "in_progress").map((item) => <ItemCard key={item.id} item={item} />)}
         </TabsContent>
         <TabsContent value="paused" className="space-y-4">
-          {inProgressItems.filter((i) => i.status === "paused").map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {inProgressItems.filter((i) => i.status === "paused").map((item) => <ItemCard key={item.id} item={item} />)}
         </TabsContent>
         <TabsContent value="not_started" className="space-y-4">
-          {inProgressItems.filter((i) => i.status === "not_started").map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {inProgressItems.filter((i) => i.status === "not_started").map((item) => <ItemCard key={item.id} item={item} />)}
         </TabsContent>
       </Tabs>
     </div>
@@ -280,26 +179,18 @@ function ItemCard({ item }: { item: typeof inProgressItems[0] }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">進捗</span>
             <span className="font-medium">{item.progressRate}%</span>
           </div>
           <div className="h-3 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${item.progressRate}%` }}
-            />
+            <div className="h-full bg-primary transition-all duration-500" style={{ width: `${item.progressRate}%` }} />
           </div>
         </div>
-
-        {/* Info */}
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
           {item.startedAt && <span>開始: {item.startedAt}</span>}
         </div>
-
-        {/* Notes */}
         {item.notes && (
           <div className="p-3 bg-secondary/50 rounded-lg">
             <p className="text-sm">{item.notes}</p>

@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Copy, ExternalLink } from "lucide-react"
@@ -7,33 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Mock data
-type Post = {
-  id: string
-  title: string
-  slug: string
-  status: "draft" | "scheduled" | "published"
-  tags: string[]
-  publishedAt: string | null
-  viewCount: number
-  updatedAt: string
-}
+type Post = { id: string; title: string; slug: string; status: "draft" | "scheduled" | "published"; tags: string[]; publishedAt: string | null; viewCount: number; updatedAt: string }
 
 const posts: Post[] = [
   {
@@ -88,11 +65,7 @@ const posts: Post[] = [
   },
 ]
 
-const statusConfig = {
-  draft: { label: "下書き", className: "bg-muted text-muted-foreground" },
-  scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  published: { label: "公開", className: "bg-accent text-accent-foreground" },
-}
+const statusConfig = { draft: { label: "下書き", className: "bg-muted text-muted-foreground" }, scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, published: { label: "公開", className: "bg-accent text-accent-foreground" } }
 
 export default function PostsListPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -123,7 +96,6 @@ export default function PostsListPage() {
         </Button>
       </div>
 
-      {/* Filters */}
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -152,7 +124,6 @@ export default function PostsListPage() {
         </CardContent>
       </Card>
 
-      {/* Tabs */}
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">

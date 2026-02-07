@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Mock data
 const inProgressItems = [
   {
     id: "1",
@@ -82,28 +81,7 @@ const completedItems = [
   },
 ]
 
-const statusConfig = {
-  not_started: {
-    label: "未着手",
-    icon: Circle,
-    className: "bg-muted text-muted-foreground",
-  },
-  paused: {
-    label: "中断中",
-    icon: PauseCircle,
-    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  },
-  in_progress: {
-    label: "進行中",
-    icon: PlayCircle,
-    className: "bg-primary/20 text-primary",
-  },
-  completed: {
-    label: "完了",
-    icon: CheckCircle2,
-    className: "bg-accent text-accent-foreground",
-  },
-}
+const statusConfig = { not_started: { label: "未着手", icon: Circle, className: "bg-muted text-muted-foreground" }, paused: { label: "中断中", icon: PauseCircle, className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, in_progress: { label: "進行中", icon: PlayCircle, className: "bg-primary/20 text-primary" }, completed: { label: "完了", icon: CheckCircle2, className: "bg-accent text-accent-foreground" } }
 
 export const metadata = {
   title: "進行中のこと",
@@ -151,14 +129,12 @@ export default function ProgressPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Active */}
         <TabsContent value="active" className="space-y-4">
           {activeItems.map((item) => (
             <ProgressCard key={item.id} item={item} />
           ))}
         </TabsContent>
 
-        {/* Paused */}
         <TabsContent value="paused" className="space-y-4">
           {pausedItems.length > 0 ? (
             pausedItems.map((item) => (
@@ -169,7 +145,6 @@ export default function ProgressPage() {
           )}
         </TabsContent>
 
-        {/* Planned */}
         <TabsContent value="planned" className="space-y-4">
           {notStartedItems.length > 0 ? (
             notStartedItems.map((item) => (
@@ -180,7 +155,6 @@ export default function ProgressPage() {
           )}
         </TabsContent>
 
-        {/* Completed */}
         <TabsContent value="completed" className="space-y-4">
           {completedItems.map((item) => (
             <Card key={item.id}>
@@ -225,7 +199,6 @@ function ProgressCard({ item }: { item: typeof inProgressItems[0] }) {
         <CardDescription>{item.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">進捗</span>
@@ -242,14 +215,12 @@ function ProgressCard({ item }: { item: typeof inProgressItems[0] }) {
           </div>
         </div>
 
-        {/* Info */}
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
           {item.startedAt && (
             <span>開始: {item.startedAt}</span>
           )}
         </div>
 
-        {/* Notes */}
         {item.notes && (
           <div className="p-3 bg-secondary/50 rounded-lg">
             <p className="text-sm">{item.notes}</p>

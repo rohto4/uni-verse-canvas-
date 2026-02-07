@@ -2,31 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Save, Eye, Clock, Download, Settings, Trash2 } from "lucide-react"
+import { ArrowLeft, Save, Eye, Download, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
-// Mock data - existing post
 const existingPost = {
   id: "1",
   title: "Next.js 15の新機能を試してみた",
@@ -55,22 +40,17 @@ export default function EditPostPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>(existingPost.tags)
   const [hasChanges, setHasChanges] = useState(false)
 
-  const handleChange = () => {
-    setHasChanges(true)
-  }
+  const handleChange = () => setHasChanges(true)
 
   const toggleTag = (tagId: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId]
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
     )
     handleChange()
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
@@ -124,10 +104,8 @@ export default function EditPostPage() {
       </header>
 
       <div className="flex-1 flex">
-        {/* Main Editor Area */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="max-w-3xl mx-auto space-y-6">
-            {/* Title */}
             <div>
               <Input
                 type="text"
@@ -139,12 +117,9 @@ export default function EditPostPage() {
                 }}
                 className="text-2xl font-bold border-none shadow-none focus-visible:ring-0 px-0 placeholder:text-muted-foreground/50"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                {title.length}/200文字
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{title.length}/200文字</p>
             </div>
 
-            {/* Editor Placeholder */}
             <Card className="min-h-[500px]">
               <CardHeader className="border-b">
                 <div className="flex items-center gap-2 text-sm">
@@ -166,51 +141,30 @@ export default function EditPostPage() {
               <CardContent className="p-6">
                 <div className="prose dark:prose-invert max-w-none">
                   <h2>はじめに</h2>
-                  <p>
-                    Next.js 15がリリースされました。今回のアップデートでは、パフォーマンスの
-                    大幅な改善と、開発者体験の向上に焦点が当てられています。
-                  </p>
+                  <p>Next.js 15がリリースされました。今回のアップデートでは、パフォーマンスの大幅な改善と、開発者体験の向上に焦点が当てられています。</p>
                   <h2>主な新機能</h2>
                   <h3>1. Partial Prerendering (PPR)</h3>
-                  <p>
-                    PPRは、静的コンテンツと動的コンテンツを1つのページ内でシームレスに
-                    組み合わせることができる新機能です。
-                  </p>
+                  <p>PPRは、静的コンテンツと動的コンテンツを1つのページ内でシームレスに組み合わせることができる新機能です。</p>
                   <pre className="bg-muted p-4 rounded-lg">
                     <code>export const experimental_ppr = true;</code>
                   </pre>
-                  <p className="text-muted-foreground italic">
-                    （これはモック表示です。実際にはTiptapエディタが動作します）
-                  </p>
+                  <p className="text-muted-foreground italic">（これはモック表示です。実際にはTiptapエディタが動作します）</p>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Sidebar */}
         <aside className="w-80 border-l bg-muted/30 p-4 overflow-auto hidden lg:block">
           <div className="space-y-6">
-            {/* Status */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  公開設定
-                </CardTitle>
+                <CardTitle className="text-sm">公開設定</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                    ステータス
-                  </label>
-                  <Select
-                    value={status}
-                    onValueChange={(v) => {
-                      setStatus(v)
-                      handleChange()
-                    }}
-                  >
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">ステータス</label>
+                  <Select value={status} onValueChange={(v) => { setStatus(v); handleChange() }}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -221,27 +175,17 @@ export default function EditPostPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {status === "scheduled" && (
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                      公開日時
-                    </label>
+                    <label className="text-xs font-medium text-muted-foreground mb-2 block">公開日時</label>
                     <Input type="datetime-local" onChange={handleChange} />
                   </div>
                 )}
-
                 {status === "published" && (
                   <div className="p-3 bg-accent/50 rounded-lg text-sm">
                     <p className="font-medium">公開中</p>
-                    <p className="text-muted-foreground text-xs mt-1">
-                      公開日: 2024-01-15 10:00
-                    </p>
-                    <Link
-                      href={`/posts/${slug}`}
-                      target="_blank"
-                      className="text-primary text-xs hover:underline"
-                    >
+                    <p className="text-muted-foreground text-xs mt-1">公開日: 2024-01-15 10:00</p>
+                    <Link href={`/posts/${slug}`} target="_blank" className="text-primary text-xs hover:underline">
                       記事を見る →
                     </Link>
                   </div>
@@ -249,7 +193,6 @@ export default function EditPostPage() {
               </CardContent>
             </Card>
 
-            {/* Slug */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">URL スラッグ</CardTitle>
@@ -259,18 +202,12 @@ export default function EditPostPage() {
                   type="text"
                   placeholder="url-slug"
                   value={slug}
-                  onChange={(e) => {
-                    setSlug(e.target.value)
-                    handleChange()
-                  }}
+                  onChange={(e) => { setSlug(e.target.value); handleChange() }}
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  /posts/{slug || "..."}
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">/posts/{slug || "..."}</p>
               </CardContent>
             </Card>
 
-            {/* Excerpt */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">抜粋</CardTitle>
@@ -279,19 +216,13 @@ export default function EditPostPage() {
                 <Textarea
                   placeholder="記事の概要を入力..."
                   value={excerpt}
-                  onChange={(e) => {
-                    setExcerpt(e.target.value)
-                    handleChange()
-                  }}
+                  onChange={(e) => { setExcerpt(e.target.value); handleChange() }}
                   rows={3}
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  {excerpt.length}/300文字（OGP用）
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">{excerpt.length}/300文字（OGP用）</p>
               </CardContent>
             </Card>
 
-            {/* Tags */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">タグ</CardTitle>
@@ -312,7 +243,6 @@ export default function EditPostPage() {
               </CardContent>
             </Card>
 
-            {/* Cover Image */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">カバー画像</CardTitle>
@@ -321,13 +251,10 @@ export default function EditPostPage() {
                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
                   <span className="text-sm text-muted-foreground">カバー画像</span>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-2">
-                  画像を変更
-                </Button>
+                <Button variant="outline" size="sm" className="w-full mt-2">画像を変更</Button>
               </CardContent>
             </Card>
 
-            {/* Meta Info */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">メタ情報</CardTitle>

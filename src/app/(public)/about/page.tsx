@@ -3,14 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
-const skills = {
-  frontend: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Vue.js"],
-  backend: ["Node.js", "NestJS", "Python", "Go"],
-  database: ["PostgreSQL", "MongoDB", "Redis", "Supabase"],
-  devops: ["Docker", "AWS", "Vercel", "GitHub Actions"],
-  other: ["Git", "Figma", "Notion", "Tiptap"],
-}
-
+const skills = { frontend: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Vue.js"], backend: ["Node.js", "NestJS", "Python", "Go"], database: ["PostgreSQL", "MongoDB", "Redis", "Supabase"], devops: ["Docker", "AWS", "Vercel", "GitHub Actions"], other: ["Git", "Figma", "Notion", "Tiptap"] }
 const timeline = [
   {
     year: "2024",
@@ -47,9 +40,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-universe py-8">
       <div className="cloud-section max-w-3xl mx-auto py-8 px-4">
-        {/* Profile Header */}
         <div className="text-center mb-12">
-          {/* Avatar */}
           <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
             <span className="text-4xl">👋</span>
           </div>
@@ -67,7 +58,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Introduction */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -94,7 +84,6 @@ export default function AboutPage() {
           </CardContent>
         </Card>
 
-        {/* Skills */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -105,6 +94,7 @@ export default function AboutPage() {
           <CardContent className="space-y-6">
             <div>
               <h3 className="text-sm font-medium mb-3 text-muted-foreground">Frontend</h3>
+
               <div className="flex flex-wrap gap-2">
                 {skills.frontend.map((skill) => (
                   <Badge key={skill} variant="secondary">
@@ -149,7 +139,6 @@ export default function AboutPage() {
           </CardContent>
         </Card>
 
-        {/* Timeline */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -159,13 +148,11 @@ export default function AboutPage() {
           </CardHeader>
           <CardContent>
             <div className="relative">
-              {/* Timeline line */}
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
 
               <div className="space-y-8">
                 {timeline.map((item, index) => (
                   <div key={index} className="relative pl-12">
-                    {/* Timeline dot */}
                     <div className="absolute left-2 top-1 w-5 h-5 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-primary" />
                     </div>

@@ -42,6 +42,7 @@ import {
   Grid3X3,
   RemoveFormatting,
   Baseline,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -116,7 +117,6 @@ function ToolbarButton({ onClick, isActive, disabled, tooltip, shortcut, childre
   )
 }
 
-// カラーパレット
 const TEXT_COLORS = [
   { name: "デフォルト", color: null },
   { name: "グレー", color: "#6b7280" },
@@ -138,7 +138,6 @@ const TEXT_COLORS = [
   { name: "ピンク", color: "#db2777" },
   { name: "ローズ", color: "#e11d48" },
 ]
-
 const HIGHLIGHT_COLORS = [
   { name: "なし", color: null },
   { name: "イエロー", color: "#fef08a" },
@@ -148,17 +147,6 @@ const HIGHLIGHT_COLORS = [
   { name: "ピンク", color: "#fbcfe8" },
   { name: "オレンジ", color: "#fed7aa" },
   { name: "レッド", color: "#fecaca" },
-]
-
-// フォントサイズ
-const FONT_SIZES = [
-  { label: "極小", value: "12px" },
-  { label: "小", value: "14px" },
-  { label: "標準", value: "16px" },
-  { label: "中", value: "18px" },
-  { label: "大", value: "20px" },
-  { label: "特大", value: "24px" },
-  { label: "見出し", value: "30px" },
 ]
 
 export function EditorToolbar({ editor }: EditorToolbarProps) {
@@ -179,7 +167,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   const [tableCols, setTableCols] = useState(3)
   const [tableHasHeader, setTableHasHeader] = useState(true)
 
-  // リンク挿入
   const setLink = useCallback(() => {
     if (linkUrl === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run()
@@ -191,23 +178,17 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     setLinkText("")
   }, [editor, linkUrl])
 
-  // ファイル選択ハンドラー
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    // ファイルサイズチェック (5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert("ファイルサイズは5MB以下にしてください")
       return
     }
-
-    // 画像形式チェック
     if (!file.type.startsWith("image/")) {
       alert("画像ファイルを選択してください")
       return
     }
-
     const reader = new FileReader()
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string
@@ -217,15 +198,28 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     reader.readAsDataURL(file)
   }, [])
 
-  // 画像挿入
   const addImage = useCallback(() => {
     const srcUrl = imagePreview || imageUrl
     if (srcUrl) {
-      editor.chain().focus().setImage({
-        src: srcUrl,
-        alt: imageAlt,
-        title: imageAlt,
-      }).run()
+      const { state } = editor
+      const { selection } = state
+      const { $from } = selection
+
+      // 画像を挿入
+      editor.chain().focus().setImage({ src: srcUrl, alt: imageAlt, title: imageAlt }).run()
+
+      // 画像の後ろに段落を挿入してカーソルを移動
+      setTimeout(() => {
+        const { state: newState } = editor
+        const { selection: newSelection } = newState
+        const pos = newSelection.$anchor.pos
+
+        // 現在のノードが画像なら、その後ろに段落を挿入
+        const node = newState.doc.nodeAt(pos - 1)
+        if (node && node.type.name === 'resizableImage') {
+          editor.chain().focus().insertContentAt(pos, { type: 'paragraph' }).run()
+        }
+      }, 10)
     }
     setImageDialogOpen(false)
     setImageUrl("")
@@ -233,12 +227,9 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     setImageWidth(100)
     setImagePreview(null)
     setImageTab("upload")
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }, [editor, imageUrl, imageAlt, imagePreview])
 
-  // YouTube挿入
   const addYoutube = useCallback(() => {
     if (youtubeUrl) {
       editor.chain().focus().setYoutubeVideo({ src: youtubeUrl }).run()
@@ -247,13 +238,8 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     setYoutubeUrl("")
   }, [editor, youtubeUrl])
 
-  // テーブル挿入
   const addTable = useCallback(() => {
-    editor
-      .chain()
-      .focus()
-      .insertTable({ rows: tableRows, cols: tableCols, withHeaderRow: tableHasHeader })
-      .run()
+    editor.chain().focus().insertTable({ rows: tableRows, cols: tableCols, withHeaderRow: tableHasHeader }).run()
     setTableDialogOpen(false)
   }, [editor, tableRows, tableCols, tableHasHeader])
 
@@ -266,28 +252,19 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     setLinkDialogOpen(true)
   }, [editor])
 
-  // 二段組挿入
-  const insertColumnLayout = useCallback(() => {
-    editor
-      .chain()
-      .focus()
-      .insertContent({
-        type: "columnLayout",
-        content: [
-          {
-            type: "columnItem",
-            content: [{ type: "paragraph", content: [{ type: "text", text: "左カラム" }] }],
-          },
-          {
-            type: "columnItem",
-            content: [{ type: "paragraph", content: [{ type: "text", text: "右カラム" }] }],
-          },
-        ],
-      })
-      .run()
+  const insertColumnLayout = useCallback((bgColor: "none" | "blue" = "none") => {
+    editor.chain().focus().insertContent({
+      type: "columnLayout",
+      attrs: {
+        bgColor,
+      },
+      content: [
+        { type: "columnItem", content: [{ type: "paragraph", content: [{ type: "text", text: "左カラム" }] }] },
+        { type: "columnItem", content: [{ type: "paragraph", content: [{ type: "text", text: "右カラム" }] }] },
+      ],
+    }).run()
   }, [editor])
 
-  // 書式クリア
   const clearFormatting = useCallback(() => {
     editor.chain().focus().clearNodes().unsetAllMarks().run()
   }, [editor])
@@ -295,31 +272,16 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   return (
     <>
       <div className="border-b bg-muted/30">
-        {/* メインツールバー */}
         <div className="flex flex-wrap items-center gap-0.5 p-1.5">
-          {/* 履歴 */}
           <div className="flex items-center">
-            <ToolbarButton
-              onClick={() => editor.chain().focus().undo().run()}
-              disabled={!editor.can().undo()}
-              tooltip="元に戻す"
-              shortcut="Ctrl+Z"
-            >
+            <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} tooltip="元に戻す" shortcut="Ctrl+Z">
               <Undo className="h-4 w-4" />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={() => editor.chain().focus().redo().run()}
-              disabled={!editor.can().redo()}
-              tooltip="やり直し"
-              shortcut="Ctrl+Y"
-            >
+            <ToolbarButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} tooltip="やり直し" shortcut="Ctrl+Y">
               <Redo className="h-4 w-4" />
             </ToolbarButton>
           </div>
-
           <Separator orientation="vertical" className="h-6 mx-1" />
-
-          {/* 見出しドロップダウン */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 gap-1 px-2">
@@ -331,77 +293,40 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuLabel className="text-xs">テキストスタイル</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => editor.chain().focus().setParagraph().run()}
-                className={editor.isActive("paragraph") ? "bg-primary/10" : ""}
-              >
+              <DropdownMenuItem onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive("paragraph") ? "bg-primary/10" : ""}>
                 <Baseline className="h-4 w-4 mr-2" />
                 本文
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                className={editor.isActive("heading", { level: 1 }) ? "bg-primary/10" : ""}
-              >
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive("heading", { level: 1 }) ? "bg-primary/10" : ""}>
                 <Heading1 className="h-4 w-4 mr-2" />
                 見出し 1
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={editor.isActive("heading", { level: 2 }) ? "bg-primary/10" : ""}
-              >
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive("heading", { level: 2 }) ? "bg-primary/10" : ""}>
                 <Heading2 className="h-4 w-4 mr-2" />
                 見出し 2
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                className={editor.isActive("heading", { level: 3 }) ? "bg-primary/10" : ""}
-              >
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive("heading", { level: 3 }) ? "bg-primary/10" : ""}>
                 <Heading3 className="h-4 w-4 mr-2" />
                 見出し 3
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-                className={editor.isActive("heading", { level: 4 }) ? "bg-primary/10" : ""}
-              >
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} className={editor.isActive("heading", { level: 4 }) ? "bg-primary/10" : ""}>
                 <Heading4 className="h-4 w-4 mr-2" />
                 見出し 4
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
           <Separator orientation="vertical" className="h-6 mx-1" />
-
-          {/* テキスト装飾 */}
           <div className="flex items-center">
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              isActive={editor.isActive("bold")}
-              tooltip="太字"
-              shortcut="Ctrl+B"
-            >
+            <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive("bold")} tooltip="太字" shortcut="Ctrl+B">
               <Bold className="h-4 w-4" />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              isActive={editor.isActive("italic")}
-              tooltip="斜体"
-              shortcut="Ctrl+I"
-            >
+            <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive("italic")} tooltip="斜体" shortcut="Ctrl+I">
               <Italic className="h-4 w-4" />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              isActive={editor.isActive("underline")}
-              tooltip="下線"
-              shortcut="Ctrl+U"
-            >
+            <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive("underline")} tooltip="下線" shortcut="Ctrl+U">
               <Underline className="h-4 w-4" />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={() => editor.chain().focus().toggleStrike().run()}
-              isActive={editor.isActive("strike")}
-              tooltip="取り消し線"
-            >
+            <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive("strike")} tooltip="取り消し線">
               <Strikethrough className="h-4 w-4" />
             </ToolbarButton>
           </div>
@@ -633,12 +558,34 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             >
               <Grid3X3 className="h-4 w-4" />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={insertColumnLayout}
-              tooltip="二段組レイアウト"
-            >
-              <Columns2 className="h-4 w-4" />
-            </ToolbarButton>
+            {editor.isActive("table") && (
+              <ToolbarButton
+                onClick={() => editor.chain().focus().deleteTable().run()}
+                tooltip="テーブル削除"
+              >
+                <X className="h-4 w-4" />
+              </ToolbarButton>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 px-2">
+                  <Columns2 className="h-4 w-4 mr-1" />
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuLabel>二段組レイアウト</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => insertColumnLayout("none")}>
+                  <Columns2 className="h-4 w-4 mr-2" />
+                  背景色なし
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => insertColumnLayout("blue")}>
+                  <Columns2 className="h-4 w-4 mr-2" />
+                  薄い水色の背景
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <Separator orientation="vertical" className="h-6 mx-1" />

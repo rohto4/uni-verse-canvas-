@@ -22,38 +22,21 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative">
-      {/* 下部のグラデーションライン */}
       <GradientAccent position="bottom" type="card" thickness="2px" />
-
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
           <Sparkles className="h-6 w-6 text-primary" />
           <span className="hidden sm:inline">UniVerse Canvas</span>
           <span className="sm:hidden">UC</span>
         </Link>
-
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                pathname === item.href
-                  ? "bg-primary/20 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              )}
-            >
+            <Link key={item.href} href={item.href} className={cn("px-3 py-2 rounded-md text-sm font-medium transition-colors", pathname === item.href ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground")}>
               {item.label}
             </Link>
           ))}
         </nav>
-
-        {/* Right side */}
         <div className="flex items-center gap-2">
-          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
@@ -64,16 +47,7 @@ export function Header() {
             <SheetContent side="right" className="w-[280px]">
               <nav className="flex flex-col gap-2 mt-8">
                 {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "px-4 py-3 rounded-lg text-base font-medium transition-colors",
-                      pathname === item.href
-                        ? "bg-primary/20 text-primary"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    )}
-                  >
+                  <Link key={item.href} href={item.href} className={cn("px-4 py-3 rounded-lg text-base font-medium transition-colors", pathname === item.href ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary hover:text-foreground")}>
                     {item.label}
                   </Link>
                 ))}

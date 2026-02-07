@@ -6,68 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Textarea } from "@/components/ui/textarea"
 
-// Mock data
 const projects = [
-  {
-    id: "1",
-    title: "UniVerse Canvas",
-    slug: "universe-canvas",
-    description: "個人用ポートフォリオ＆ブログシステム",
-    tags: ["Next.js", "Supabase", "Tiptap"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com/example/universe-canvas",
-    status: "completed",
-    startDate: "2024-01",
-    endDate: null,
-  },
-  {
-    id: "2",
-    title: "Task Manager Pro",
-    slug: "task-manager-pro",
-    description: "チーム向けのタスク管理アプリケーション",
-    tags: ["React", "Firebase", "Redux"],
-    demoUrl: "https://example.com",
-    githubUrl: "https://github.com/example/task-manager",
-    status: "completed",
-    startDate: "2023-08",
-    endDate: "2023-12",
-  },
-  {
-    id: "3",
-    title: "CLI Toolkit",
-    slug: "cli-toolkit",
-    description: "開発効率化のためのCLIツールキット",
-    tags: ["Node.js", "TypeScript"],
-    demoUrl: null,
-    githubUrl: "https://github.com/example/cli-toolkit",
-    status: "archived",
-    startDate: "2023-05",
-    endDate: "2023-07",
-  },
+  { id: "1", title: "UniVerse Canvas", slug: "universe-canvas", description: "個人用ポートフォリオ＆ブログシステム", tags: ["Next.js", "Supabase", "Tiptap"], demoUrl: "https://example.com", githubUrl: "https://github.com/example/universe-canvas", status: "completed", startDate: "2024-01", endDate: null },
+  { id: "2", title: "Task Manager Pro", slug: "task-manager-pro", description: "チーム向けのタスク管理アプリケーション", tags: ["React", "Firebase", "Redux"], demoUrl: "https://example.com", githubUrl: "https://github.com/example/task-manager", status: "completed", startDate: "2023-08", endDate: "2023-12" },
+  { id: "3", title: "CLI Toolkit", slug: "cli-toolkit", description: "開発効率化のためのCLIツールキット", tags: ["Node.js", "TypeScript"], demoUrl: null, githubUrl: "https://github.com/example/cli-toolkit", status: "archived", startDate: "2023-05", endDate: "2023-07" },
 ]
 
-const availableTags = [
-  "Next.js", "React", "Vue.js", "TypeScript", "Node.js",
-  "Supabase", "Firebase", "PostgreSQL", "Tailwind CSS", "Tiptap",
-]
+const availableTags = ["Next.js", "React", "Vue.js", "TypeScript", "Node.js", "Supabase", "Firebase", "PostgreSQL", "Tailwind CSS", "Tiptap"]
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -94,9 +43,7 @@ export default function ProjectsPage() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>プロジェクトを追加</DialogTitle>
-              <DialogDescription>
-                新しいプロジェクトの情報を入力してください
-              </DialogDescription>
+              <DialogDescription>新しいプロジェクトの情報を入力してください</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -121,11 +68,7 @@ export default function ProjectsPage() {
                 <label className="text-sm font-medium">タグ</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {availableTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-primary/10"
-                    >
+                    <Badge key={tag} variant="outline" className="cursor-pointer hover:bg-primary/10">
                       {tag}
                     </Badge>
                   ))}
@@ -143,16 +86,13 @@ export default function ProjectsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                キャンセル
-              </Button>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>キャンセル</Button>
               <Button>追加</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Search */}
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="relative">
@@ -168,13 +108,10 @@ export default function ProjectsPage() {
         </CardContent>
       </Card>
 
-      {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredProjects.map((project) => (
           <Card key={project.id} className="flex flex-col">
-            {/* Cover Image Placeholder */}
             <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg" />
-
             <CardHeader className="flex-1">
               <div className="flex items-start justify-between">
                 <div>
@@ -218,17 +155,12 @@ export default function ProjectsPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {project.description}
-              </p>
+              <p className="text-sm text-muted-foreground mt-2">{project.description}</p>
             </CardHeader>
-
             <CardContent>
               <div className="flex flex-wrap gap-1">
                 {project.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
+                  <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
                 ))}
               </div>
             </CardContent>

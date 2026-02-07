@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
-// Mock data
 const posts = [
   {
     id: "1",
@@ -81,9 +80,7 @@ export default function PostsPage() {
         </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Search */}
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -93,7 +90,6 @@ export default function PostsPage() {
             />
           </div>
 
-          {/* Posts List */}
           <div className="space-y-4">
             {posts.map((post) => (
               <Card key={post.id} className="hover:shadow-lg transition-shadow">
@@ -127,7 +123,6 @@ export default function PostsPage() {
             ))}
           </div>
 
-          {/* Pagination */}
           <div className="flex justify-center gap-2 mt-8">
             <Button variant="outline" disabled>
               前へ
@@ -143,7 +138,6 @@ export default function PostsPage() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <aside className="lg:w-80">
           <div className="sticky top-24">
             <Card>

@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Save, Eye, Clock, Download, Settings, Trash2 } from "lucide-react"
@@ -8,25 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
-// Mock data - existing post
 const existingPost = {
   id: "1",
   title: "Next.js 15の新機能を試してみた",
@@ -60,17 +44,12 @@ export default function EditPostPage() {
   }
 
   const toggleTag = (tagId: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId]
-    )
+    setSelectedTags((prev) => prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId])
     handleChange()
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-4">
@@ -124,7 +103,6 @@ export default function EditPostPage() {
       </header>
 
       <div className="flex-1 flex">
-        {/* Main Editor Area */}
         <div className="flex-1 p-6 overflow-auto">
           <div className="max-w-3xl mx-auto space-y-6">
             {/* Title */}
@@ -188,7 +166,6 @@ export default function EditPostPage() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <aside className="w-80 border-l bg-muted/30 p-4 overflow-auto hidden lg:block">
           <div className="space-y-6">
             {/* Status */}

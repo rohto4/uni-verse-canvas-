@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
-// Mock data
 const projects = [
   {
     id: "1",
@@ -101,7 +100,6 @@ export default function WorksPage() {
           </p>
         </div>
 
-        {/* Tag Filter */}
         <div className="flex flex-wrap gap-2 mb-8">
           <Badge variant="secondary" className="cursor-pointer bg-primary/20 text-primary">
             すべて
@@ -117,11 +115,9 @@ export default function WorksPage() {
           ))}
         </div>
 
-        {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
             <Card key={project.id} className="flex flex-col hover:shadow-lg transition-shadow" id={project.slug}>
-              {/* Cover Image */}
               <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg flex items-center justify-center">
                 <span className="text-muted-foreground text-sm">プロジェクト画像</span>
               </div>
@@ -138,7 +134,6 @@ export default function WorksPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {/* Tags */}
                 <div className="flex flex-wrap gap-1">
                   {project.tags.slice(0, 4).map((tag) => (
                     <Badge key={tag} variant="outline" className="text-xs">
@@ -152,7 +147,6 @@ export default function WorksPage() {
                   )}
                 </div>
 
-                {/* Links */}
                 <div className="flex gap-2">
                   {project.demoUrl && (
                     <Button asChild variant="default" size="sm" className="flex-1">
