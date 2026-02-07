@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Save, Eye, Download, Settings, Loader2 } from "lucide-react"
+import { ArrowLeft, Save, Eye, Clock, Download, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -15,10 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { TiptapEditor } from "@/components/editor"
-import { PreviewModal } from "@/components/editor/PreviewModal"
+import { Separator } from "@/components/ui/separator"
 
-// TODO: Supabase連携時にAPIから取得
 const availableTags = [
   { id: "1", name: "Next.js", slug: "nextjs" },
   { id: "2", name: "React", slug: "react" },
@@ -32,76 +30,27 @@ export default function NewPostPage() {
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [excerpt, setExcerpt] = useState("")
-  const [content, setContent] = useState("")
   const [status, setStatus] = useState("draft")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [isSaving, setIsSaving] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
 
-  const handleTitleChange = useCallback((value: string) => {
+  const handleTitleChange = (value: string) => {
     setTitle(value)
-    // タイトルからスラッグを自動生成（英数字のみ）
+    // Auto-generate slug from title (simplified)
     const generatedSlug = value
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .slice(0, 200)
     setSlug(generatedSlug)
-  }, [])
+  }
 
-  const toggleTag = useCallback((tagId: string) => {
+  const toggleTag = (tagId: string) => {
     setSelectedTags((prev) =>
       prev.includes(tagId)
         ? prev.filter((id) => id !== tagId)
         : [...prev, tagId]
     )
-  }, [])
-
-  const handleContentChange = useCallback((html: string) => {
-    setContent(html)
-  }, [])
-
-  const handleSave = useCallback(async () => {
-    setIsSaving(true)
-    try {
-      // TODO: Supabase連携時に実装
-      // const postData = {
-      //   title,
-      //   slug,
-      //   excerpt,
-      //   content,
-      //   status,
-      //   tags: selectedTags,
-      // }
-      // await savePost(postData)
-
-      // 仮の保存処理（1秒待機）
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setLastSaved(new Date())
-      console.log("Post saved:", { title, slug, excerpt, content, status, selectedTags })
-    } catch (error) {
-      console.error("Failed to save post:", error)
-    } finally {
-      setIsSaving(false)
-    }
-  }, [title, slug, excerpt, content, status, selectedTags])
-
-  const handlePreview = useCallback(() => {
-    setPreviewOpen(true)
-  }, [])
-
-  const handleExport = useCallback(() => {
-    // Markdown形式でエクスポート（簡易実装）
-    const markdown = `# ${title}\n\n${excerpt}\n\n---\n\n${content}`
-    const blob = new Blob([markdown], { type: "text/markdown" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${slug || "post"}.md`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [title, slug, excerpt, content])
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -116,31 +65,20 @@ export default function NewPostPage() {
             </Button>
             <div>
               <h1 className="font-semibold">新規記事作成</h1>
-              <p className="text-xs text-muted-foreground">
-                {status === "draft" ? "下書き" : status === "scheduled" ? "予約投稿" : "公開"}
-                {lastSaved && (
-                  <span className="ml-2">
-                    • 最終保存: {lastSaved.toLocaleTimeString("ja-JP")}
-                  </span>
-                )}
-              </p>
+              <p className="text-xs text-muted-foreground">下書き • 自動保存: オフ</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handlePreview}>
+            <Button variant="outline" size="sm">
               <Eye className="h-4 w-4 mr-2" />
               プレビュー
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
               エクスポート
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
+            <Button size="sm">
+              <Save className="h-4 w-4 mr-2" />
               保存
             </Button>
           </div>
@@ -165,12 +103,43 @@ export default function NewPostPage() {
               </p>
             </div>
 
-            {/* Tiptap Editor */}
-            <TiptapEditor
-              content={content}
-              onChange={handleContentChange}
-              placeholder="本文を入力してください..."
-            />
+            {/* Editor Placeholder */}
+            <Card className="min-h-[500px]">
+              <CardHeader className="border-b">
+                <div className="flex items-center gap-2 text-sm">
+                  <Button variant="ghost" size="sm">B</Button>
+                  <Button variant="ghost" size="sm"><em>I</em></Button>
+                  <Button variant="ghost" size="sm"><u>U</u></Button>
+                  <Separator orientation="vertical" className="h-6" />
+                  <Button variant="ghost" size="sm">H1</Button>
+                  <Button variant="ghost" size="sm">H2</Button>
+                  <Button variant="ghost" size="sm">H3</Button>
+                  <Separator orientation="vertical" className="h-6" />
+                  <Button variant="ghost" size="sm">🔗</Button>
+                  <Button variant="ghost" size="sm">📷</Button>
+                  <Button variant="ghost" size="sm">📺</Button>
+                  <Button variant="ghost" size="sm">💻</Button>
+                  <Button variant="ghost" size="sm">📊</Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="prose dark:prose-invert max-w-none">
+                  <p className="text-muted-foreground">
+                    ここにTiptapエディタが表示されます...
+                  </p>
+                  <p className="text-muted-foreground">
+                    本文を入力してください。マークダウン記法やショートカットキーが使えます。
+                  </p>
+                  <ul className="text-muted-foreground">
+                    <li>**太字** → <strong>太字</strong></li>
+                    <li>*斜体* → <em>斜体</em></li>
+                    <li>```code``` → コードブロック</li>
+                    <li>/image → 画像挿入</li>
+                    <li>/youtube → YouTube埋め込み</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -291,18 +260,6 @@ export default function NewPostPage() {
           </div>
         </aside>
       </div>
-
-      {/* プレビューモーダル */}
-      <PreviewModal
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        title={title}
-        content={content}
-        excerpt={excerpt}
-        tags={selectedTags.map(
-          (id) => availableTags.find((t) => t.id === id)?.name || ""
-        )}
-      />
     </div>
   )
 }
