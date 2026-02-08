@@ -1,85 +1,11 @@
+import Link from "next/link"
 import { Clock, CheckCircle2, PauseCircle, PlayCircle, Circle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-const inProgressItems = [
-  {
-    id: "1",
-    title: "AI チャットボット開発",
-    description: "OpenAI APIを活用したカスタムチャットボットの開発。RAG（Retrieval-Augmented Generation）を実装予定。",
-    status: "in_progress" as const,
-    progressRate: 65,
-    startedAt: "2024-01-10",
-    notes: "現在、ベクトルデータベースの選定中。Pinecone vs Weaviate で検討中。",
-  },
-  {
-    id: "2",
-    title: "モバイルアプリ（Flutter）",
-    description: "クロスプラットフォームのモバイルアプリ開発。iOS/Android両対応のタスク管理アプリ。",
-    status: "paused" as const,
-    progressRate: 30,
-    startedAt: "2023-12-01",
-    notes: "他のプロジェクトを優先中。2月に再開予定。",
-  },
-  {
-    id: "3",
-    title: "Rust入門",
-    description: "システムプログラミング言語Rustの学習。The Rust Programming Language を読み進め中。",
-    status: "in_progress" as const,
-    progressRate: 40,
-    startedAt: "2024-01-05",
-    notes: "所有権の概念に苦戦中。CLIツールを作りながら学習予定。",
-  },
-  {
-    id: "4",
-    title: "ブログシステム刷新",
-    description: "UniVerse Canvasの本格実装。ドキュメント駆動開発で進行中。",
-    status: "in_progress" as const,
-    progressRate: 25,
-    startedAt: "2024-01-15",
-    notes: "設計フェーズ完了。実装フェーズに突入。",
-  },
-  {
-    id: "5",
-    title: "技術書執筆",
-    description: "Next.js + Supabaseで作るフルスタックアプリ開発の技術書執筆プロジェクト。",
-    status: "not_started" as const,
-    progressRate: 0,
-    startedAt: null,
-    notes: "アウトライン作成中。3月から本格執筆開始予定。",
-  },
-  {
-    id: "6",
-    title: "OSS貢献",
-    description: "お気に入りのOSSプロジェクトへのコントリビュート。ドキュメント改善から始める予定。",
-    status: "not_started" as const,
-    progressRate: 0,
-    startedAt: null,
-    notes: "対象プロジェクトを選定中。",
-  },
-]
-
-const completedItems = [
-  {
-    id: "c1",
-    title: "TypeScript 5.x マスター",
-    description: "TypeScript 5.xの新機能を完全理解。decorators、satisfies演算子など。",
-    status: "completed" as const,
-    progressRate: 100,
-    completedAt: "2024-01-08",
-    completedProjectSlug: null,
-  },
-  {
-    id: "c2",
-    title: "AWS認定 SAA取得",
-    description: "AWS Solutions Architect Associate認定試験に合格。",
-    status: "completed" as const,
-    progressRate: 100,
-    completedAt: "2023-12-20",
-    completedProjectSlug: null,
-  },
-]
+import { getInProgressItems } from "@/lib/actions/in-progress"
+import type { InProgressWithProject } from "@/types/database"
 
 const statusConfig = { not_started: { label: "未着手", icon: Circle, className: "bg-muted text-muted-foreground" }, paused: { label: "中断中", icon: PauseCircle, className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, in_progress: { label: "進行中", icon: PlayCircle, className: "bg-primary/20 text-primary" }, completed: { label: "完了", icon: CheckCircle2, className: "bg-accent text-accent-foreground" } }
 
@@ -88,10 +14,13 @@ export const metadata = {
   description: "現在取り組んでいるプロジェクトや学習の進捗状況です。",
 }
 
-export default function ProgressPage() {
-  const activeItems = inProgressItems.filter((item) => item.status === "in_progress")
-  const pausedItems = inProgressItems.filter((item) => item.status === "paused")
-  const notStartedItems = inProgressItems.filter((item) => item.status === "not_started")
+export default async function ProgressPage() {
+  const allItems = await getInProgressItems()
+
+  const activeItems = allItems.filter((item) => item.status === "in_progress")
+  const pausedItems = allItems.filter((item) => item.status === "paused")
+  const notStartedItems = allItems.filter((item) => item.status === "not_started")
+  const completedItems = allItems.filter((item) => item.status === "completed")
 
   return (
     <div className="min-h-screen bg-universe py-8">
@@ -168,10 +97,17 @@ export default function ProgressPage() {
                 </div>
                 <CardDescription>{item.description}</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  完了日: {item.completedAt}
+                  完了日: {item.completed_at}
                 </p>
+                {item.completedProject && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/works/${item.completedProject.slug}`}>
+                      詳細を見る
+                    </Link>
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -182,7 +118,7 @@ export default function ProgressPage() {
   )
 }
 
-function ProgressCard({ item }: { item: typeof inProgressItems[0] }) {
+function ProgressCard({ item }: { item: InProgressWithProject }) {
   const config = statusConfig[item.status]
   const Icon = config.icon
 
@@ -202,13 +138,13 @@ function ProgressCard({ item }: { item: typeof inProgressItems[0] }) {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">進捗</span>
-            <span className="font-medium">{item.progressRate}%</span>
+            <span className="font-medium">{item.progress_rate}%</span>
           </div>
           <div className="h-3 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full transition-all duration-500"
               style={{
-                width: `${item.progressRate}%`,
+                width: `${item.progress_rate}%`,
                 background: "var(--card-accent-gradient)",
               }}
             />
@@ -216,8 +152,8 @@ function ProgressCard({ item }: { item: typeof inProgressItems[0] }) {
         </div>
 
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          {item.startedAt && (
-            <span>開始: {item.startedAt}</span>
+          {item.started_at && (
+            <span>開始: {item.started_at}</span>
           )}
         </div>
 

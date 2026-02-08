@@ -1,72 +1,40 @@
 import { ExternalLink, Github, Twitter, Linkedin, Mail, Globe, BookOpen, MessageCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { getPage } from "@/lib/actions/pages"
 
-const socialLinks = [
+const iconMap: Record<string, any> = {
+  Github,
+  Twitter,
+  Linkedin,
+  Mail,
+  BookOpen,
+  Globe,
+  MessageCircle,
+}
 
-  {
-    name: "GitHub",
-    description: "ソースコードやOSS活動",
-    url: "https://github.com/username",
-    icon: Github,
-    color: "hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900",
-  },
-  {
-    name: "Twitter / X",
-    description: "日々のつぶやきや技術情報",
-    url: "https://twitter.com/username",
-    icon: Twitter,
-    color: "hover:bg-blue-500 hover:text-white",
-  },
-  {
-    name: "LinkedIn",
-    description: "ビジネス関連のつながり",
-    url: "https://linkedin.com/in/username",
-    icon: Linkedin,
-    color: "hover:bg-blue-700 hover:text-white",
-  },
-  {
-    name: "メール",
-    description: "お問い合わせ・仕事のご相談",
-    url: "mailto:example@example.com",
-    icon: Mail,
-    color: "hover:bg-primary hover:text-primary-foreground",
-  },
-]
-
-const otherLinks = [
-  {
-    name: "Qiita",
-    description: "技術記事を投稿しています",
-    url: "https://qiita.com/username",
-    icon: BookOpen,
-  },
-  {
-    name: "Zenn",
-    description: "技術記事・本を書いています",
-    url: "https://zenn.dev/username",
-    icon: BookOpen,
-  },
-  {
-    name: "個人ブログ",
-    description: "このサイトです",
-    url: "/",
-    icon: Globe,
-  },
-  {
-    name: "Discord",
-    description: "技術コミュニティ参加中",
-    url: "https://discord.com",
-    icon: MessageCircle,
-  },
-]
+const colorMap: Record<string, string> = {
+  Github: "hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 dark:hover:text-gray-900",
+  Twitter: "hover:bg-blue-500 hover:text-white",
+  Linkedin: "hover:bg-blue-700 hover:text-white",
+  Mail: "hover:bg-primary hover:text-primary-foreground",
+}
 
 export const metadata = {
   title: "関連リンク",
   description: "SNSや外部サービスへのリンク集です。",
 }
 
-export default function LinksPage() {
+export default async function LinksPage() {
+  const pageData = await getPage('links')
+
+  if (!pageData) {
+    return <div>ページが見つかりません</div>
+  }
+
+  const metadata = pageData.metadata as any
+  const socialLinks = metadata.socialLinks || []
+  const otherLinks = metadata.otherLinks || []
   return (
     <div className="min-h-screen bg-universe py-8">
       <div className="cloud-section max-w-2xl mx-auto py-8 px-4">
@@ -80,8 +48,9 @@ export default function LinksPage() {
         <div className="mb-12">
           <h2 className="text-xl font-semibold mb-6">SNS</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {socialLinks.map((link) => {
-              const Icon = link.icon
+            {socialLinks.map((link: any) => {
+              const Icon = iconMap[link.icon] || Globe
+              const color = colorMap[link.icon] || ""
               return (
                 <a
                   key={link.name}
@@ -90,7 +59,7 @@ export default function LinksPage() {
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <Card className={`transition-all duration-300 ${link.color}`}>
+                  <Card className={`transition-all duration-300 ${color}`}>
                     <CardContent className="flex items-center gap-4 p-6">
                       <div className="p-3 rounded-full bg-secondary">
                         <Icon className="h-6 w-6" />
@@ -113,8 +82,8 @@ export default function LinksPage() {
         <div>
           <h2 className="text-xl font-semibold mb-6">その他</h2>
           <div className="space-y-3">
-            {otherLinks.map((link) => {
-              const Icon = link.icon
+            {otherLinks.map((link: any) => {
+              const Icon = iconMap[link.icon] || Globe
               const isExternal = link.url.startsWith("http")
               return (
                 <a

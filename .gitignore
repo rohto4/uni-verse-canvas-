@@ -50,3 +50,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# secrets
+secrets/
+
+# Lock files should be committed for tracking
+# Do NOT ignore .locks/ directory - it's used for agent coordination

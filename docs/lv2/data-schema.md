@@ -93,6 +93,12 @@
 | start_date | DATE | NULL | 開始日 |
 | end_date | DATE | NULL | 完了日 |
 | status | VARCHAR(20) | DEFAULT 'completed' | completed/archived |
+| steps_count | INTEGER | NULL | 開発規模（ステップ数） |
+| used_ai | JSONB | NULL | 使用した生成AI（配列） |
+| gallery_images | TEXT[] | NULL | ギャラリー画像URL配列 |
+| tech_stack | JSONB | NULL | 技術スタック・言語使用率 |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | 作成日時 |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | 更新日時 |
 
 ### 3.3 in_progress（進行中）
 
@@ -148,21 +154,27 @@
 
 ## 4. TypeScript型定義
 
+**実装ファイル**: `src/types/database.ts`
+
+### 4.1 基本型定義
+
 ```typescript
+import type { JSONContent } from '@tiptap/core'
+
 // 記事
 export interface Post {
   id: string
   title: string
   slug: string
-  content: JSONContent
+  content: JSONContent                // Tiptap JSONコンテンツ
   excerpt: string | null
   status: 'draft' | 'scheduled' | 'published'
-  published_at: string | null
-  cover_image: string | null
-  ogp_image: string | null
+  published_at: string | null          // ISO 8601形式
+  cover_image: string | null           // 画像URL
+  ogp_image: string | null             // OGP画像URL
   view_count: number
-  created_at: string
-  updated_at: string
+  created_at: string                   // ISO 8601形式
+  updated_at: string                   // ISO 8601形式
 }
 
 export interface PostWithTags extends Post {
@@ -181,13 +193,19 @@ export interface Project {
   title: string
   slug: string
   description: string
-  content: JSONContent | null
+  content: JSONContent | null          // Tiptap JSONコンテンツ
   demo_url: string | null
   github_url: string | null
   cover_image: string | null
-  start_date: string | null
-  end_date: string | null
+  start_date: string | null            // ISO 8601形式
+  end_date: string | null              // ISO 8601形式
   status: 'completed' | 'archived'
+  steps_count: number | null           // 開発規模（ステップ数）
+  used_ai: string[] | null             // 使用した生成AI（例: ["Claude Sonnet 4.5"]）
+  gallery_images: string[] | null      // ギャラリー画像URL配列
+  tech_stack: Record<string, number> | null  // 技術スタック（言語: 使用率%）
+  created_at: string                   // ISO 8601形式
+  updated_at: string                   // ISO 8601形式
 }
 
 export interface ProjectWithTags extends Project {
@@ -200,15 +218,17 @@ export interface InProgress {
   title: string
   description: string
   status: 'not_started' | 'paused' | 'in_progress' | 'completed'
-  progress_rate: number
-  started_at: string | null
-  completed_at: string | null
-  completed_project_id: string | null
+  progress_rate: number                 // 0-100
+  started_at: string | null             // ISO 8601形式
+  completed_at: string | null           // ISO 8601形式
+  completed_project_id: string | null   // FK: projects.id
   notes: string | null
+  created_at: string                    // ISO 8601形式
+  updated_at: string                    // ISO 8601形式
 }
 
 export interface InProgressWithProject extends InProgress {
-  completedProject?: Project
+  completedProject?: Project            // 完了後のプロジェクト情報
 }
 
 // タグ
@@ -217,12 +237,135 @@ export interface Tag {
   name: string
   slug: string
   description: string | null
-  color: string
+  color: string                         // HEXカラーコード（例: '#6B7280'）
+  created_at: string                    // ISO 8601形式
 }
 
 export interface TagWithCount extends Tag {
-  postCount: number
-  projectCount: number
+  postCount: number                     // 記事での使用回数
+  projectCount: number                  // プロジェクトでの使用回数
+}
+
+// 固定ページ
+export interface Page {
+  page_type: 'home' | 'about' | 'links'
+  title: string
+  content: JSONContent                  // Tiptap JSONコンテンツ
+  metadata: Record<string, any>         // 任意のメタデータ（JSON）
+  created_at: string                    // ISO 8601形式
+  updated_at: string                    // ISO 8601形式
+}
+```
+
+### 4.2 Database型定義（Supabase用）
+
+```typescript
+export interface Database {
+  public: {
+    Tables: {
+      posts: {
+        Row: Post
+        Insert: Omit<Post, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Post, 'id' | 'created_at'>>
+      }
+      projects: {
+        Row: Project
+        Insert: Omit<Project, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Project, 'id' | 'created_at'>>
+      }
+      in_progress: {
+        Row: InProgress
+        Insert: Omit<InProgress, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<InProgress, 'id' | 'created_at'>>
+      }
+      tags: {
+        Row: Tag
+        Insert: Omit<Tag, 'id' | 'created_at'>
+        Update: Partial<Omit<Tag, 'id' | 'created_at'>>
+      }
+      pages: {
+        Row: Page
+        Insert: Omit<Page, 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Page, 'created_at'>>
+      }
+      post_tags: {
+        Row: { post_id: string; tag_id: string }
+        Insert: { post_id: string; tag_id: string }
+        Update: never
+      }
+      project_tags: {
+        Row: { project_id: string; tag_id: string }
+        Insert: { project_id: string; tag_id: string }
+        Update: never
+      }
+      post_links: {
+        Row: { from_post_id: string; to_post_id: string; link_type: string }
+        Insert: { from_post_id: string; to_post_id: string; link_type?: string }
+        Update: never
+      }
+      post_project_links: {
+        Row: { post_id: string; project_id: string }
+        Insert: { post_id: string; project_id: string }
+        Update: never
+      }
+    }
+  }
+}
+```
+
+### 4.3 型の使用例
+
+**Server Actions**:
+```typescript
+// 記事取得（タグ付き）
+async function getPosts(): Promise<PostWithTags[]> {
+  const { data } = await supabase
+    .from('posts')
+    .select(`*, tags:post_tags(tag:tags(*))`)
+
+  return data as PostWithTags[]
+}
+
+// プロジェクト取得（タグ付き）
+async function getProjects(): Promise<ProjectWithTags[]> {
+  const { data } = await supabase
+    .from('projects')
+    .select(`*, tags:project_tags(tag:tags(*))`)
+
+  return data as ProjectWithTags[]
+}
+
+// 進行中取得（プロジェクト情報付き）
+async function getInProgress(): Promise<InProgressWithProject[]> {
+  const { data } = await supabase
+    .from('in_progress')
+    .select(`*, completedProject:completed_project_id(*)`)
+
+  return data as InProgressWithProject[]
+}
+```
+
+**コンポーネント**:
+```typescript
+// 記事カード
+interface PostCardProps {
+  post: PostWithTags
+}
+
+function PostCard({ post }: PostCardProps) {
+  return (
+    <div>
+      <h2>{post.title}</h2>
+      <p>{post.excerpt}</p>
+      <div>
+        {post.tags.map(tag => (
+          <span key={tag.id} style={{ color: tag.color }}>
+            {tag.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
 }
 ```
 
