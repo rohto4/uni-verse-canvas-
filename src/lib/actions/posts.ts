@@ -1,7 +1,9 @@
 'use server'
 
+import { z } from 'zod'
 import { createServerClient } from '@/lib/supabase/server'
 import type { PostWithTags } from '@/types/database'
+import { revalidatePath } from 'next/cache'
 
 export interface GetPostsParams {
   page?: number
@@ -202,6 +204,34 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
   }
 }
 
+export async function getPostById(id: string): Promise<PostWithTags | null> {
+  const supabase = createServerClient() as any
+
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      tags:post_tags(
+        tag:tags(*)
+      )
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    console.error('Error fetching post:', error)
+    return null
+  }
+
+  const postData = data as any
+
+  return {
+    ...postData,
+    tags: postData.tags.map((pt: any) => pt.tag).filter(Boolean),
+  }
+}
+
+
 export async function getRelatedPosts(postId: string, limit: number = 3): Promise<PostWithTags[]> {
   const supabase = createServerClient()
 
@@ -320,4 +350,247 @@ export async function getRelatedPostsByTagsWithRandom(
     ...post,
     tags: post.tags.map((pt: any) => pt.tag).filter(Boolean),
   }))
+}
+
+// --- Schemas & Types ---
+
+// Base schema without refinements so we can derive partial/extended variants
+const BasePostSchema = z.object({
+  title: z.string().min(1, 'タイトルは必須です').max(200, 'タイトルは200文字以内で入力してください'),
+  slug: z.string().min(1, 'スラグは必須です').regex(/^[a-zA-Z0-9-]+$/, 'スラグは半角英数字とハイフンのみ使用可能です'),
+  content: z.any(),
+  excerpt: z.string().optional().nullable(),
+  status: z.enum(['draft', 'scheduled', 'published']),
+  published_at: z.string().optional().nullable(),
+  cover_image: z.string().optional().nullable(),
+  ogp_image: z.string().optional().nullable(),
+})
+
+// Create schema includes tags and a refinement for scheduled posts
+const CreatePostSchema = BasePostSchema.extend({
+  tags: z.array(z.string()).default([]),
+}).refine((data) => {
+  if (data.status === 'scheduled') {
+    if (!data.published_at) return false
+    return new Date(data.published_at) > new Date()
+  }
+  return true
+}, {
+  message: '予約投稿の場合は未来の日時を指定してください',
+  path: ['published_at'],
+})
+
+// Update schema is a partial of the base (no refine) and allows optional tags
+const UpdatePostSchema = BasePostSchema.partial().extend({
+  tags: z.array(z.string()).optional()
+})
+
+export type CreatePostInput = z.infer<typeof CreatePostSchema>
+export type UpdatePostInput = z.infer<typeof UpdatePostSchema>
+
+export interface ActionResponse<T = void> {
+  success: boolean
+  data?: T
+  error?: string
+}
+
+// --- Actions ---
+
+export async function createPost(input: CreatePostInput): Promise<ActionResponse<PostWithTags>> {
+  const result = CreatePostSchema.safeParse(input)
+  if (!result.success) {
+    return { success: false, error: (result.error as any).errors[0].message }
+  }
+
+  const { tags, ...postData } = result.data
+  const supabase = createServerClient() as any
+
+  // 公開日時の自動設定
+  let published_at = postData.published_at
+  if (postData.status === 'published' && !published_at) {
+    published_at = new Date().toISOString()
+  }
+
+  try {
+    // 1. 記事本体の作成
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .insert({
+        ...postData,
+        published_at,
+        view_count: 0
+      } as any) // Type assertion to avoid complexity with JSONContent
+      .select()
+      .single()
+
+    if (postError) {
+      if (postError.code === '23505') { // Unique violation
+        return { success: false, error: 'このスラグは既に使用されています' }
+      }
+      throw postError
+    }
+
+    // 2. タグの紐付け（トランザクション補償付き）
+    if (tags && tags.length > 0) {
+      const postTags = tags.map(tagId => ({
+        post_id: post.id,
+        tag_id: tagId
+      }))
+
+      const { error: tagError } = await supabase
+        .from('post_tags')
+        .insert(postTags)
+
+      if (tagError) {
+        // 補償処理: タグ付けに失敗した場合、作成した記事を削除してロールバックする
+        console.error('Failed to add tags, rolling back post creation:', tagError)
+        await supabase.from('posts').delete().eq('id', post.id)
+        throw new Error('タグの設定に失敗したため、処理を中断しました')
+      }
+    }
+
+    revalidatePath('/posts')
+    
+    // 作成された完全なデータを取得して返す
+    const newPost = await getPostBySlug(post.slug)
+    if (!newPost) throw new Error('Failed to fetch created post')
+    
+    return { success: true, data: newPost }
+
+  } catch (error: any) {
+    console.error('Error creating post:', error)
+    return { success: false, error: error.message || '記事の作成に失敗しました' }
+  }
+}
+
+export async function updatePost(id: string, input: UpdatePostInput): Promise<ActionResponse<PostWithTags>> {
+  const result = UpdatePostSchema.safeParse(input)
+  if (!result.success) {
+    return { success: false, error: (result.error as any).errors[0].message }
+  }
+
+  const supabase = createServerClient() as any
+  const { tags, ...updateData } = result.data
+
+  // 現在のデータを取得（ロールバック用）
+  const { data: currentPost, error: fetchError } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (fetchError || !currentPost) {
+    return { success: false, error: '記事が見つかりません' }
+  }
+
+  // 現在のタグを取得（ロールバック用）
+  const { data: currentTags } = await supabase
+    .from('post_tags')
+    .select('tag_id')
+    .eq('post_id', id)
+
+  const oldTagIds = currentTags?.map((t: any) => t.tag_id) || []
+
+  // 公開日時の調整
+  let published_at = updateData.published_at
+  if (updateData.status === 'published' && currentPost.status !== 'published') {
+     published_at = currentPost.published_at || new Date().toISOString()
+  } else if (updateData.status && !published_at) {
+     published_at = currentPost.published_at
+  } else if (updateData.status === undefined && !published_at) {
+     published_at = currentPost.published_at
+  }
+
+  try {
+    // 1. 記事本体の更新
+    const { data: updatedPost, error: updateError } = await supabase
+      .from('posts')
+      .update({
+        ...updateData,
+        published_at,
+        updated_at: new Date().toISOString()
+      } as any) // Type assertion
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (updateError) {
+      if (updateError.code === '23505') {
+        return { success: false, error: 'このスラグは既に使用されています' }
+      }
+      throw updateError
+    }
+
+    // 2. タグの更新（トランザクション補償付き）
+    if (tags !== undefined) {
+      // 一旦全削除して再挿入
+      const { error: deleteTagsError } = await supabase
+        .from('post_tags')
+        .delete()
+        .eq('post_id', id)
+
+      if (deleteTagsError) {
+        throw new Error('タグ更新の前処理に失敗しました')
+      }
+
+      if (tags.length > 0) {
+        const postTags = tags.map(tagId => ({
+          post_id: id,
+          tag_id: tagId
+        }))
+        
+        const { error: insertTagsError } = await supabase
+          .from('post_tags')
+          .insert(postTags)
+
+        if (insertTagsError) {
+          // 補償処理: タグ更新失敗時、記事とタグを元の状態に戻す
+          console.error('Failed to update tags, rolling back:', insertTagsError)
+          
+          // 記事データのロールバック
+          await supabase.from('posts').update(currentPost as any).eq('id', id)
+          
+          // タグデータのロールバック（削除してしまったので元に戻す）
+          if (oldTagIds.length > 0) {
+             await supabase.from('post_tags').insert(
+               oldTagIds.map((tid: string) => ({ post_id: id, tag_id: tid }))
+             )
+          }
+          
+          throw new Error('タグの更新に失敗したため、変更を元に戻しました')
+        }
+      }
+    }
+
+    revalidatePath('/posts')
+    revalidatePath(`/posts/${updatedPost.slug}`)
+
+    const resultPost = await getPostBySlug(updatedPost.slug)
+    if (!resultPost) throw new Error('Failed to fetch updated post')
+
+    return { success: true, data: resultPost }
+
+  } catch (error: any) {
+    console.error('Error updating post:', error)
+    return { success: false, error: error.message || '記事の更新に失敗しました' }
+  }
+}
+
+export async function deletePost(id: string): Promise<ActionResponse<void>> {
+  const supabase = createServerClient() as any
+  
+  try {
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', id)
+      
+    if (error) throw error
+    
+    revalidatePath('/posts')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error deleting post:', error)
+    return { success: false, error: error.message || '記事の削除に失敗しました' }
+  }
 }

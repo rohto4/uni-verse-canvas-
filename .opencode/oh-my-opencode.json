@@ -1,0 +1,74 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "main": {
+      "model": "openai/gpt-5-mini",
+      "language": "ja",
+      "role": "orchestrator",
+      "description": "プロジェクト種別に依存せず、全体文脈を統合して意思決定を行う中核エージェント。設計・実装・ドキュメントの整合性を最優先する"
+    },
+    "sisyphus": {
+      "model": "google/gemini-3-pro-preview",
+      "role": "implementation-worker",
+      "description": "与えられた仕様・方針に基づき、具体的な実装案や変更差分を作成する汎用実装担当"
+    },
+    "prometheus": {
+      "model": "google/gpt-5-mini",
+      "role": "architecture-reviewer",
+      "description": "アーキテクチャ原則・設計思想に照らし、構造的な破綻や将来的リスクを検知するレビュー担当"
+    },
+    "metis": {
+      "model": "google/gpt-5-mini",
+      "role": "spec-clarifier",
+      "description": "要件・仕様・前提条件の曖昧さを検出し、明確化のための論点整理や質問を生成する"
+    },
+    "momus": {
+      "model": "google/gpt-5-mini",
+      "role": "ux-reviewer",
+      "description": "UI/UX・操作性・理解容易性の観点から設計や実装を評価する"
+    },
+    "hephaestus": {
+      "model": "openai/gpt-5-mini",
+      "role": "code-generator",
+      "description": "限定されたスコープの機能・処理をコードとして具体化する生成担当"
+    },
+    "oracle": {
+      "model": "google/gpt-5-mini",
+      "role": "future-planner",
+      "description": "将来拡張・技術的負債・長期的進化の観点から示唆を与える"
+    },
+    "librarian": {
+      "model": "openai/gpt-5-mini",
+      "role": "document-updater",
+      "description": "実装・決定事項をドキュメントへ反映し、知識の一貫性を保つ"
+    },
+    "explore": {
+      "model": "openai/gpt-5-mini",
+      "role": "codebase-explorer",
+      "description": "コードベースや資料を横断的に調査し、関連箇所や影響範囲を洗い出す"
+    }
+  },
+  "categories": {
+    "quick": {
+      "model": "openai/gpt-5-mini"
+    },
+    "visual-engineering": {
+      "model": "openai/gpt-5-mini"
+    },
+    "ultrabrain": {
+      "model": "google/gemini-3-pro-preview"
+    },
+    "artistry": {
+      "model": "google/gpt-5-mini"
+    },
+    "writing": {
+      "model": "openai/gpt-5-mini"
+    },
+    "unspecified-low": {
+      "model": "openai/gpt-5-mini"
+    },
+    "unspecified-high": {
+      "model": "google/gpt-5-mini"
+    }
+  }
+}

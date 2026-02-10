@@ -2,86 +2,46 @@ import { FileText, Folder, Clock, Eye, TrendingUp, Calendar, ArrowUpRight, Arrow
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { createServerClient } from '@/lib/supabase/server'
+import { getProjects } from '@/lib/actions/projects'
+import { getInProgressItems } from '@/lib/actions/in-progress'
 
 type ChangeType = "increase" | "decrease" | "neutral"
-const stats: { title: string; value: number | string; change: string; changeType: ChangeType; icon: typeof FileText }[] = [
-  {
-    title: "総記事数",
-    value: 42,
-    change: "+3",
-    changeType: "increase",
-    icon: FileText,
-  },
-  {
-    title: "総プロジェクト数",
-    value: 12,
-    change: "+1",
-    changeType: "increase",
-    icon: Folder,
-  },
-  {
-    title: "進行中",
-    value: 4,
-    change: "0",
-    changeType: "neutral",
-    icon: Clock,
-  },
-  {
-    title: "今月の閲覧数",
-    value: "12,456",
-    change: "+18%",
-    changeType: "increase",
-    icon: Eye,
-  },
-]
-
-const recentPosts = [
-  {
-    id: "1",
-    title: "Next.js 15の新機能を試してみた",
-    status: "published",
-    publishedAt: "2024-01-15",
-    viewCount: 1234,
-  },
-  {
-    id: "2",
-    title: "TypeScriptの型パズルを解いてみる",
-    status: "published",
-    publishedAt: "2024-01-12",
-    viewCount: 856,
-  },
-  {
-    id: "3",
-    title: "Supabaseで認証機能を実装する（下書き）",
-    status: "draft",
-    publishedAt: null,
-    viewCount: 0,
-  },
-  {
-    id: "4",
-    title: "来週公開予定の記事",
-    status: "scheduled",
-    publishedAt: "2024-01-22",
-    viewCount: 0,
-  },
-]
-
-const scheduledPosts = [
-  {
-    id: "4",
-    title: "来週公開予定の記事",
-    scheduledAt: "2024-01-22 10:00",
-  },
-  {
-    id: "5",
-    title: "月末に公開する記事",
-    scheduledAt: "2024-01-31 09:00",
-  },
-]
 
 const statusConfig = { draft: { label: "下書き", className: "bg-muted text-muted-foreground" }, scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, published: { label: "公開", className: "bg-accent text-accent-foreground" } }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Fetch data in parallel
+  const [postsResult, projectsResult, inProgressItems] = await Promise.all([
+    // get latest 5 posts regardless of status: use direct query for flexibility
+    (async () => {
+      const supabase = createServerClient()
+      const { data } = await supabase
+        .from('posts')
+        .select('id, title, slug, status, published_at, view_count')
+        .order('created_at', { ascending: false })
+        .limit(5)
+      return (data as any[]) || []
+    })(),
+    getProjects(10, 1),
+    getInProgressItems(),
+  ])
+
+  const totalPostsCount = await (async () => {
+    const supabase = createServerClient()
+    const { count } = await supabase.from('posts').select('*', { count: 'exact', head: true })
+    return count || 0
+  })()
+
+  const stats = [
+    { title: '総記事数', value: totalPostsCount, change: '+0', changeType: 'neutral' as ChangeType, icon: FileText },
+    { title: '総プロジェクト数', value: projectsResult.totalCount, change: '+0', changeType: 'neutral' as ChangeType, icon: Folder },
+    { title: '進行中', value: inProgressItems.filter(i => i.status === 'in_progress').length, change: '0', changeType: 'neutral' as ChangeType, icon: Clock },
+    { title: '今月の閲覧数', value: '—', change: '+0%', changeType: 'neutral' as ChangeType, icon: Eye },
+  ]
+
+  const recentPosts = postsResult
+
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
@@ -109,15 +69,13 @@ export default function DashboardPage() {
                   {stat.changeType === "decrease" && (
                     <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
                   )}
-                  <span
-                    className={
+                  <span className={
                       stat.changeType === "increase"
                         ? "text-green-500"
                         : stat.changeType === "decrease"
                         ? "text-red-500"
                         : "text-muted-foreground"
-                    }
-                  >
+                    }>
                     {stat.change}
                   </span>
                   <span className="text-muted-foreground ml-1">先月比</span>
@@ -133,7 +91,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>最近の記事</CardTitle>
-              <CardDescription>最新の投稿と下書き</CardDescription>
+              <CardDescription>最新の投稿</CardDescription>
             </div>
             <Link
               href="/admin/posts"
@@ -144,7 +102,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentPosts.map((post) => (
+              {recentPosts.map((post: any) => (
                 <div
                   key={post.id}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors"
@@ -157,11 +115,11 @@ export default function DashboardPage() {
                       {post.title}
                     </Link>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      {post.publishedAt && <span>{post.publishedAt}</span>}
+                      {post.published_at && <span>{new Date(post.published_at).toLocaleDateString()}</span>}
                       {post.status === "published" && (
                         <span className="flex items-center gap-1">
                           <Eye className="h-3 w-3" />
-                          {post.viewCount}
+                          {post.view_count}
                         </span>
                       )}
                     </div>
@@ -179,37 +137,27 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              予約投稿
+              進行中の項目
             </CardTitle>
-            <CardDescription>公開予定の記事</CardDescription>
+            <CardDescription>現在の進捗状況</CardDescription>
           </CardHeader>
           <CardContent>
-            {scheduledPosts.length > 0 ? (
+            {inProgressItems.length > 0 ? (
               <div className="space-y-4">
-                {scheduledPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
-                  >
+                {inProgressItems.slice(0,5).map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-lg">
                     <div>
-                      <Link
-                        href={`/admin/posts/${post.id}`}
-                        className="font-medium hover:text-primary"
-                      >
-                        {post.title}
+                      <Link href={`/admin/in-progress`} className="font-medium hover:text-primary">
+                        {item.title}
                       </Link>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {post.scheduledAt}
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">{item.status} · {item.progress_rate}%</p>
                     </div>
-                    <Clock className="h-4 w-4 text-yellow-600" />
+                    <Clock className="h-4 w-4 text-muted-foreground" />
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground py-8">
-                予約投稿はありません
-              </p>
+              <p className="text-center text-muted-foreground py-8">進行中の項目はありません</p>
             )}
           </CardContent>
         </Card>
@@ -262,15 +210,10 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {[
-                { action: "記事を公開しました", target: "Next.js 15の新機能", time: "2時間前" },
-                { action: "記事を編集しました", target: "TypeScriptの型パズル", time: "5時間前" },
-                { action: "プロジェクトを追加しました", target: "UniVerse Canvas", time: "1日前" },
-                { action: "バックアップを作成しました", target: "全データ", time: "2日前" },
+                { action: "記事を公開しました", target: "サイト記事", time: "2時間前" },
+                { action: "記事を編集しました", target: "記事", time: "5時間前" },
               ].map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 text-sm"
-                >
+                <div key={index} className="flex items-center gap-3 text-sm">
                   <div className="w-2 h-2 rounded-full bg-primary" />
                   <div className="flex-1">
                     <span className="text-muted-foreground">{activity.action}</span>

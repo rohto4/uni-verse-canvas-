@@ -1,3 +1,7 @@
+# UniVerse Canvas — 要件定義 (Lv1)
+
+※ 本ファイルは Lv4 の実装状況に合わせて最新化されています。詳細な実装ステータスは `docs/lv4/implementation-status.md`、実装計画は `docs/lv4/IMPLEMENTATION_PLAN_DETAILED.md` を参照してください。
+
 # docs/requirements.md
 
 ## 1. プロジェクト概要

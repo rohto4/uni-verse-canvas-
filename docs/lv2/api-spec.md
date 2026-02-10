@@ -646,5 +646,7 @@ export async function importData(file: File): Promise<{ imported: number; skippe
 
 ---
 
-**最終更新**: 2026-02-08
+**最終更新**: 2026-02-10
 **メンテナ**: Claude Sonnet 4.5
+
+※ 注: いくつかの Server Actions（Posts, Projects, InProgress）の CUD 操作は Lv4 実装により追加・改善されています。実装済みの関数は `docs/lv4/implementation-status.md` を参照してください。

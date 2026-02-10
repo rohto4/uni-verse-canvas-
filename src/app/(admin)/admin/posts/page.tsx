@@ -1,7 +1,7 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Copy, ExternalLink } from "lucide-react"
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Copy, ExternalLink, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,73 +9,63 @@ import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getPosts, deletePost } from "@/lib/actions/posts"
+import type { PostWithTags } from "@/types/database"
+import { toast } from "sonner"
 
-type Post = { id: string; title: string; slug: string; status: "draft" | "scheduled" | "published"; tags: string[]; publishedAt: string | null; viewCount: number; updatedAt: string }
-
-const posts: Post[] = [
-  {
-    id: "1",
-    title: "Next.js 15の新機能を試してみた",
-    slug: "nextjs-15-features",
-    status: "published",
-    tags: ["Next.js", "React"],
-    publishedAt: "2024-01-15",
-    viewCount: 1234,
-    updatedAt: "2024-01-16",
-  },
-  {
-    id: "2",
-    title: "TypeScriptの型パズルを解いてみる",
-    slug: "typescript-type-puzzle",
-    status: "published",
-    tags: ["TypeScript"],
-    publishedAt: "2024-01-12",
-    viewCount: 856,
-    updatedAt: "2024-01-12",
-  },
-  {
-    id: "3",
-    title: "Supabaseで認証機能を実装する",
-    slug: "supabase-auth-guide",
-    status: "draft",
-    tags: ["Supabase", "認証"],
-    publishedAt: null,
-    viewCount: 0,
-    updatedAt: "2024-01-18",
-  },
-  {
-    id: "4",
-    title: "来週公開予定の記事",
-    slug: "scheduled-post",
-    status: "scheduled",
-    tags: ["Next.js"],
-    publishedAt: "2024-01-22",
-    viewCount: 0,
-    updatedAt: "2024-01-17",
-  },
-  {
-    id: "5",
-    title: "Tiptapでリッチテキストエディタを作る",
-    slug: "tiptap-rich-editor",
-    status: "draft",
-    tags: ["Tiptap", "React"],
-    publishedAt: null,
-    viewCount: 0,
-    updatedAt: "2024-01-15",
-  },
-]
-
-const statusConfig = { draft: { label: "下書き", className: "bg-muted text-muted-foreground" }, scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, published: { label: "公開", className: "bg-accent text-accent-foreground" } }
+const statusConfig = { 
+  draft: { label: "下書き", className: "bg-muted text-muted-foreground" }, 
+  scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, 
+  published: { label: "公開", className: "bg-accent text-accent-foreground" } 
+}
 
 export default function PostsListPage() {
+  const [posts, setPosts] = useState<PostWithTags[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || post.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const fetchPosts = async () => {
+    setLoading(true)
+    try {
+      // Fetch all posts for admin (pagination can be added later)
+      const { posts } = await getPosts({ 
+        limit: 100, 
+        status: statusFilter === 'all' ? undefined : statusFilter as any,
+        search: searchQuery
+      })
+      setPosts(posts)
+    } catch (error) {
+      console.error("Failed to fetch posts:", error)
+      toast.error("記事の取得に失敗しました")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPosts()
+  }, [searchQuery, statusFilter])
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("本当にこの記事を削除しますか？")) return
+
+    setIsDeleting(id)
+    try {
+      const result = await deletePost(id)
+      if (result.success) {
+        toast.success("記事を削除しました")
+        fetchPosts() // Refresh list
+      } else {
+        toast.error(result.error || "削除に失敗しました")
+      }
+    } catch (error) {
+      toast.error("予期せぬエラーが発生しました")
+    } finally {
+      setIsDeleting(null)
+    }
+  }
 
   const draftCount = posts.filter((p) => p.status === "draft").length
   const scheduledCount = posts.filter((p) => p.status === "scheduled").length
@@ -124,7 +114,7 @@ export default function PostsListPage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="all" className="space-y-4">
+      <Tabs defaultValue="all" className="space-y-4" onValueChange={(val) => setStatusFilter(val)}>
         <TabsList>
           <TabsTrigger value="all">
             すべて
@@ -152,24 +142,21 @@ export default function PostsListPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-0">
-          <PostList posts={filteredPosts} />
-        </TabsContent>
-        <TabsContent value="draft">
-          <PostList posts={filteredPosts.filter((p) => p.status === "draft")} />
-        </TabsContent>
-        <TabsContent value="scheduled">
-          <PostList posts={filteredPosts.filter((p) => p.status === "scheduled")} />
-        </TabsContent>
-        <TabsContent value="published">
-          <PostList posts={filteredPosts.filter((p) => p.status === "published")} />
-        </TabsContent>
+        <div className="space-y-0">
+          {loading ? (
+            <div className="flex justify-center p-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <PostList posts={posts} onDelete={handleDelete} isDeleting={isDeleting} />
+          )}
+        </div>
       </Tabs>
     </div>
   )
 }
 
-function PostList({ posts }: { posts: Post[] }) {
+function PostList({ posts, onDelete, isDeleting }: { posts: PostWithTags[], onDelete: (id: string) => void, isDeleting: string | null }) {
   if (posts.length === 0) {
     return (
       <Card>
@@ -197,8 +184,8 @@ function PostList({ posts }: { posts: Post[] }) {
                   >
                     {post.title}
                   </Link>
-                  <Badge className={statusConfig[post.status as keyof typeof statusConfig].className}>
-                    {statusConfig[post.status as keyof typeof statusConfig].label}
+                  <Badge className={statusConfig[post.status as keyof typeof statusConfig]?.className}>
+                    {statusConfig[post.status as keyof typeof statusConfig]?.label || post.status}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -206,15 +193,15 @@ function PostList({ posts }: { posts: Post[] }) {
                   {post.status === "published" && (
                     <span className="flex items-center gap-1">
                       <Eye className="h-3 w-3" />
-                      {post.viewCount}
+                      {post.view_count}
                     </span>
                   )}
-                  <span>更新: {post.updatedAt}</span>
+                  <span>更新: {new Date(post.updated_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex gap-1 mt-2">
-                  {post.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
+                  {post.tags?.map((tag) => (
+                    <Badge key={tag.id} variant="outline" className="text-xs">
+                      {tag.name}
                     </Badge>
                   ))}
                 </div>
@@ -222,8 +209,12 @@ function PostList({ posts }: { posts: Post[] }) {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" disabled={isDeleting === post.id}>
+                    {isDeleting === post.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MoreHorizontal className="h-4 w-4" />
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -241,12 +232,11 @@ function PostList({ posts }: { posts: Post[] }) {
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem>
-                    <Copy className="h-4 w-4 mr-2" />
-                    複製
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem 
+                    className="text-destructive focus:text-destructive" 
+                    onClick={() => onDelete(post.id)}
+                  >
                     <Trash2 className="h-4 w-4 mr-2" />
                     削除
                   </DropdownMenuItem>

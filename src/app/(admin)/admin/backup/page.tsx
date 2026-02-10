@@ -49,6 +49,31 @@ export default function BackupPage() {
   const [exportFormat, setExportFormat] = useState("json")
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
 
+  const handleExport = async () => {
+    try {
+      const res = await fetch('/api/backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: exportType, format: exportFormat }),
+      })
+
+      if (!res.ok) throw new Error('エクスポートに失敗しました')
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const ct = res.headers.get('Content-Disposition') || 'backup.json'
+      const match = /filename="?([^";]+)"?/.exec(ct)
+      a.download = match ? match[1] : `backup.${exportFormat === 'json' ? 'json' : exportFormat === 'markdown' ? 'md' : 'dat'}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error(err)
+      // silent for now; in production show toast
+    }
+  }
+
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">

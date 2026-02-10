@@ -1,6 +1,7 @@
 "use client"
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, Save, Eye, Download, Settings, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,25 +10,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TiptapEditor } from "@/components/editor"
-
-const availableTags = [
-  { id: "1", name: "Next.js", slug: "nextjs" },
-  { id: "2", name: "React", slug: "react" },
-  { id: "3", name: "TypeScript", slug: "typescript" },
-  { id: "4", name: "Supabase", slug: "supabase" },
-  { id: "5", name: "Tailwind CSS", slug: "tailwindcss" },
-  { id: "6", name: "Tiptap", slug: "tiptap" },
-]
+import { createPost, type CreatePostInput } from "@/lib/actions/posts"
+import { getTags } from "@/lib/actions/tags"
+import type { Tag } from "@/types/database"
+import { toast } from "sonner"
 
 export default function NewPostPage() {
+  const router = useRouter()
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [excerpt, setExcerpt] = useState("")
-  const [content, setContent] = useState("")
-  const [status, setStatus] = useState("draft")
+  const [content, setContent] = useState<any>({})
+  const [status, setStatus] = useState<"draft" | "scheduled" | "published">("draft")
+  const [publishedAt, setPublishedAt] = useState<string>("")
+  const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const tags = await getTags()
+        setAvailableTags(tags)
+      } catch (error) {
+        console.error("Failed to fetch tags:", error)
+        toast.error("タグの取得に失敗しました")
+      }
+    }
+    fetchTags()
+  }, [])
 
   const handleTitleChange = useCallback((value: string) => {
     setTitle(value)
@@ -53,17 +65,43 @@ export default function NewPostPage() {
   }, [])
 
   const handleSave = useCallback(async () => {
+    if (!title) {
+      toast.error("タイトルを入力してください")
+      return
+    }
+    if (!slug) {
+      toast.error("スラッグを入力してください")
+      return
+    }
+
     setIsSaving(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setLastSaved(new Date())
-      console.log("Post saved:", { title, slug, excerpt, content, status, selectedTags })
+      const input: CreatePostInput = {
+        title,
+        slug,
+        excerpt: excerpt || null,
+        content: content, // Already JSON
+        status,
+        published_at: publishedAt || null,
+        tags: selectedTags,
+      }
+
+      const result = await createPost(input)
+
+      if (result.success) {
+        setLastSaved(new Date())
+        toast.success("記事を作成しました")
+        router.push("/admin/posts")
+      } else {
+        toast.error(result.error || "記事の作成に失敗しました")
+      }
     } catch (error) {
       console.error("Failed to save post:", error)
+      toast.error("予期せぬエラーが発生しました")
     } finally {
       setIsSaving(false)
     }
-  }, [title, slug, excerpt, content, status, selectedTags])
+  }, [title, slug, excerpt, content, status, publishedAt, selectedTags, router])
 
   const handlePreview = useCallback(() => {
     const previewData = {
@@ -152,8 +190,8 @@ export default function NewPostPage() {
 
             {/* Tiptap Editor */}
             <TiptapEditor
-              content={content}
-              onChange={handleContentChange}
+              content={""} // Initial content is empty for new post
+              onUpdate={(editor) => setContent(editor.getJSON())}
               placeholder="本文を入力してください..."
             />
 
@@ -173,7 +211,7 @@ export default function NewPostPage() {
                       <label className="text-xs font-medium text-muted-foreground mb-2 block">
                         ステータス
                       </label>
-                      <Select value={status} onValueChange={setStatus}>
+                      <Select value={status} onValueChange={(val) => setStatus(val as "draft" | "scheduled" | "published")}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -190,7 +228,11 @@ export default function NewPostPage() {
                         <label className="text-xs font-medium text-muted-foreground mb-2 block">
                           公開日時
                         </label>
-                        <Input type="datetime-local" />
+                        <Input 
+                          type="datetime-local" 
+                          value={publishedAt}
+                          onChange={(e) => setPublishedAt(e.target.value)}
+                        />
                       </div>
                     )}
                   </CardContent>

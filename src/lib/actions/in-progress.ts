@@ -1,7 +1,21 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import type { InProgressWithProject } from '@/types/database'
+import type { InProgress, InProgressWithProject } from '@/types/database'
+import { revalidatePath } from 'next/cache'
+
+export interface CreateInProgressInput {
+  title: string
+  description: string
+  status: 'not_started' | 'paused' | 'in_progress' | 'completed'
+  progress_rate: number
+  started_at: string | null
+  completed_at: string | null
+  completed_project_id: string | null
+  notes: string | null
+}
+
+export interface UpdateInProgressInput extends Partial<CreateInProgressInput> {}
 
 export async function getInProgressItems(
   status?: 'not_started' | 'paused' | 'in_progress' | 'completed'
@@ -76,4 +90,59 @@ export async function getInProgressById(id: string): Promise<InProgressWithProje
     updated_at: itemData.updated_at,
     completedProject: itemData.completedProject || undefined,
   }
+}
+
+export async function createInProgress(input: CreateInProgressInput): Promise<InProgress | null> {
+  const supabase = createServerClient()
+
+  const { data, error } = await (supabase.from('in_progress') as any)
+    .insert(input)
+    .select()
+    // may return array; don't force .single() to avoid coercion errors when RLS blocks
+    
+
+  if (error) {
+    console.error('Error creating in-progress item:', error)
+    return null
+  }
+
+  const created = Array.isArray(data) ? data[0] : data
+
+  revalidatePath('/admin/in-progress')
+  return created as InProgress
+}
+
+export async function updateInProgress(
+  id: string,
+  input: UpdateInProgressInput
+): Promise<InProgress | null> {
+  const supabase = createServerClient()
+
+  const { data, error } = await (supabase.from('in_progress') as any)
+    .update(input)
+    .eq('id', id)
+    .select()
+
+  if (error) {
+    console.error('Error updating in-progress item:', error)
+    return null
+  }
+
+  const updated = Array.isArray(data) ? data[0] : data
+
+  revalidatePath('/admin/in-progress')
+  return updated as InProgress
+}
+
+export async function deleteInProgress(id: string): Promise<void> {
+  const supabase = createServerClient()
+
+  const { error } = await supabase.from('in_progress').delete().eq('id', id)
+
+  if (error) {
+    console.error('Error deleting in-progress item:', error)
+    throw new Error(error.message)
+  }
+
+  revalidatePath('/admin/in-progress')
 }
