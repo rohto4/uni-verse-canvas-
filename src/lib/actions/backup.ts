@@ -41,17 +41,21 @@ export async function exportData() {
   return exportObj
 }
 
+import type { Database } from '@/types/database'
+
+type Tables = Database['public']['Tables']
+
 interface BackupData {
   version: string
   exportedAt: string
   data: {
-    posts?: Array<Record<string, unknown>>
-    projects?: Array<Record<string, unknown>>
-    in_progress?: Array<Record<string, unknown>>
-    tags?: Array<Record<string, unknown>>
-    post_tags?: Array<Record<string, unknown>>
-    project_tags?: Array<Record<string, unknown>>
-    pages?: Array<Record<string, unknown>>
+    tags?: Tables['tags']['Insert'][]
+    posts?: Tables['posts']['Insert'][]
+    projects?: Tables['projects']['Insert'][]
+    in_progress?: Tables['in_progress']['Insert'][]
+    pages?: Tables['pages']['Insert'][]
+    post_tags?: Tables['post_tags']['Insert'][]
+    project_tags?: Tables['project_tags']['Insert'][]
   }
 }
 

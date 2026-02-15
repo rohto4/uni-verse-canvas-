@@ -1,5 +1,8 @@
 import { createServerClient } from '@/lib/supabase/server'
-import type { Project, ProjectWithTags, Tag } from '@/types/database'
+import type { Project, ProjectWithTags, Tag, Database } from '@/types/database'
+
+type ProjectInsert = Database['public']['Tables']['projects']['Insert']
+type ProjectUpdate = Database['public']['Tables']['projects']['Update']
 
 type ProjectTag = {
     project_id: string;
@@ -146,7 +149,7 @@ export async function getProjectById(id: string): Promise<ProjectWithTags | null
   }
 }
 
-export async function createProject(input: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>): Promise<Project | null> {
+export async function createProject(input: ProjectInsert): Promise<Project | null> {
   const supabase = await createServerClient()
 
   try {
@@ -168,7 +171,7 @@ export async function createProject(input: Partial<Omit<Project, 'id' | 'created
   }
 }
 
-export async function updateProject(id: string, input: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>): Promise<Project | null> {
+export async function updateProject(id: string, input: ProjectUpdate): Promise<Project | null> {
   const supabase = await createServerClient()
 
   try {

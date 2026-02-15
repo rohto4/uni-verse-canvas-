@@ -56,6 +56,7 @@ export async function isAdminByUid(uid: string): Promise<boolean> {
   // Use admin client (service role) to check admins table
   const adminSupabase = createAdminClient()
   const { data, error } = await adminSupabase
+    // @ts-expect-error - admins table not yet in schema
     .from('admins')
     .select('user_id')
     .eq('user_id', uid)
