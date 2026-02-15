@@ -76,7 +76,7 @@ export const ColumnItem = Node.create({
   },
 })
 
-function ColumnLayoutView({ node, updateAttributes, deleteNode }: any) {
+function ColumnLayoutView({ node, deleteNode }: any) {
   const [viewMode, setViewMode] = React.useState<"side" | "stack">("side")
   const bgColor = node.attrs.bgColor || "none"
 

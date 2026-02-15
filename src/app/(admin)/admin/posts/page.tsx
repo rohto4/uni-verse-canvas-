@@ -1,15 +1,15 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, Copy, ExternalLink, Loader2 } from "lucide-react"
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, ExternalLink, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getPosts, deletePost } from "@/lib/actions/posts"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getPosts, deletePost, GetPostsParams } from "@/lib/actions/posts"
 import type { PostWithTags } from "@/types/database"
 import { toast } from "sonner"
 
@@ -26,27 +26,26 @@ export default function PostsListPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
-      // Fetch all posts for admin (pagination can be added later)
+      const status = statusFilter === 'all' ? undefined : statusFilter as GetPostsParams['status'];
       const { posts } = await getPosts({ 
         limit: 100, 
-        status: statusFilter === 'all' ? undefined : statusFilter as any,
+        status,
         search: searchQuery
       })
       setPosts(posts)
-    } catch (error) {
-      console.error("Failed to fetch posts:", error)
+    } catch {
       toast.error("記事の取得に失敗しました")
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter, searchQuery])
 
   useEffect(() => {
     fetchPosts()
-  }, [searchQuery, statusFilter])
+  }, [fetchPosts])
 
   const handleDelete = async (id: string) => {
     if (!confirm("本当にこの記事を削除しますか？")) return
@@ -60,7 +59,7 @@ export default function PostsListPage() {
       } else {
         toast.error(result.error || "削除に失敗しました")
       }
-    } catch (error) {
+    } catch {
       toast.error("予期せぬエラーが発生しました")
     } finally {
       setIsDeleting(null)

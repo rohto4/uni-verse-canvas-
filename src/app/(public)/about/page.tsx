@@ -1,8 +1,33 @@
 import { MapPin, Briefcase, GraduationCap, Heart, Code2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { getPage } from "@/lib/actions/pages"
+import { JSONContent } from "@tiptap/core"
+
+interface Skills {
+  frontend: string[];
+  backend: string[];
+  database: string[];
+  devops: string[];
+  other: string[];
+}
+
+interface TimelineItem {
+  year: string;
+  title: string;
+  description: string;
+}
+
+interface AboutMetadata {
+  name: string;
+  role: string;
+  location: string;
+  employment: string;
+  skills: Skills;
+  timeline: TimelineItem[];
+}
+
 
 export const metadata = {
   title: "自己紹介",
@@ -16,7 +41,7 @@ export default async function AboutPage() {
     return <div>ページが見つかりません</div>
   }
 
-  const metadata = pageData.metadata as any
+  const metadata = pageData.metadata as AboutMetadata
   const skills = metadata.skills || {}
   const timeline = metadata.timeline || []
   return (
@@ -48,9 +73,9 @@ export default async function AboutPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="prose dark:prose-invert">
-            {pageData.content.content?.map((node: any, index: number) => (
+            {pageData.content.content?.map((node: JSONContent, index: number) => (
               <p key={index}>
-                {node.content?.map((textNode: any, textIndex: number) => (
+                {node.content?.map((textNode, textIndex: number) => (
                   <span key={textIndex}>{textNode.text}</span>
                 ))}
               </p>
@@ -138,7 +163,7 @@ export default async function AboutPage() {
               <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
 
               <div className="space-y-8">
-                {timeline.map((item: any, index: number) => (
+                {timeline.map((item: TimelineItem, index: number) => (
                   <div key={index} className="relative pl-12">
                     <div className="absolute left-2 top-1 w-5 h-5 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-primary" />

@@ -88,7 +88,7 @@ export interface Project {
   cover_image: string | null
   start_date: string | null
   end_date: string | null
-  status: 'completed' | 'archived'
+  status: 'completed' | 'archived' | 'registered'
   steps_count: number | null
   used_ai: string[] | null
   gallery_images: string[] | null
@@ -137,7 +137,7 @@ export interface Page {
   page_type: 'home' | 'about' | 'links'
   title: string
   content: JSONContent
-  metadata: Record<string, any>
+  metadata: JSONContent
   created_at: string
   updated_at: string
 }

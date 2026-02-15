@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { Page } from '@/types/database'
 
 export async function getPage(pageType: 'home' | 'about' | 'links'): Promise<Page | null> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('pages')
@@ -21,7 +21,7 @@ export async function getPage(pageType: 'home' | 'about' | 'links'): Promise<Pag
 }
 
 export async function getAllPages(): Promise<Page[]> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('pages')

@@ -11,17 +11,24 @@ export const metadata = {
 interface WorksPageProps {
   searchParams: Promise<{
     tags?: string
+    status?: string
   }>
 }
 
 export default async function WorksPage({ searchParams }: WorksPageProps) {
   const params = await searchParams
   const tags = params.tags?.split(',').filter(Boolean) || []
+  const statusParam = params.status
 
-  const [projects, allTags] = await Promise.all([
-    getProjects({ status: 'completed', tags }),
+  const statusFilter = statusParam === 'registered' 
+    ? ['registered'] 
+    : ['completed', 'registered'];
+
+  const [projectsResult, allTags] = await Promise.all([
+    getProjects({ status: statusFilter as ('completed' | 'registered')[], tags }),
     getTagsWithCount(),
   ])
+  const projects = projectsResult.projects;
   return (
     <div className="min-h-screen bg-universe py-8">
       <div className="cloud-section max-w-7xl mx-auto py-8 px-4">

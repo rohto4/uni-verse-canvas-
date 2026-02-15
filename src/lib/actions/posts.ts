@@ -2,8 +2,10 @@
 
 import { z } from 'zod'
 import { createServerClient } from '@/lib/supabase/server'
-import type { PostWithTags } from '@/types/database'
+import type { Post, PostWithTags, Tag } from '@/types/database'
 import { revalidatePath } from 'next/cache'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { Database } from '@/types/database'
 
 export interface GetPostsParams {
   page?: number
@@ -25,6 +27,12 @@ export interface PaginatedPosts {
   }
 }
 
+type PostTag = {
+  post_id: string;
+  tag: Tag;
+}
+
+
 export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPosts> {
   const {
     page = 1,
@@ -35,7 +43,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
     status = 'published',
   } = params
 
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   // Build base query
   let query = supabase
@@ -65,7 +73,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
       .in('slug', tagSlugs)
 
     if (tagData && tagData.length > 0) {
-      const tagIds = (tagData as any[]).map((t: any) => t.id)
+      const tagIds = tagData.map((t) => t.id)
 
       // Get posts that have ALL the specified tags
       const { data: postTagData } = await supabase
@@ -75,15 +83,15 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
 
       if (postTagData) {
         // Count occurrences of each post_id
-        const postCounts = (postTagData as any[]).reduce((acc: Record<string, number>, pt: any) => {
+        const postCounts = postTagData.reduce((acc: Record<string, number>, pt: {post_id: string}) => {
           acc[pt.post_id] = (acc[pt.post_id] || 0) + 1
           return acc
         }, {} as Record<string, number>)
 
         // Filter posts that have all tags (count equals number of requested tags)
         const matchingPostIds = Object.entries(postCounts)
-          .filter(([_, count]) => count === tagIds.length)
-          .map(([postId, _]) => postId)
+          .filter(([, count]) => count === tagIds.length)
+          .map(([postId]) => postId)
 
         if (matchingPostIds.length === 0) {
           // No posts match all tags
@@ -148,9 +156,9 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
     }
   }
 
-  const posts: PostWithTags[] = ((data as any[]) || []).map((post: any) => ({
-    ...post,
-    tags: post.tags.map((pt: any) => pt.tag).filter(Boolean),
+  const posts: PostWithTags[] = (data || []).map((post) => ({
+    ...(post as Post),
+    tags: (post.tags as PostTag[]).map(pt => pt.tag).filter(Boolean),
   }))
 
   const totalPages = Math.ceil((totalCount || 0) / limit)
@@ -168,7 +176,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
 }
 
 export async function getPostBySlug(slug: string): Promise<PostWithTags | null> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   const { data, error } = await supabase
     .from('posts')
@@ -186,13 +194,13 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
     return null
   }
 
-  const postData = data as any
+  const postData = data as Post & { tags: PostTag[] }
 
   // Increment view count in background
   try {
     await supabase
       .from('posts')
-      .update({ view_count: (postData.view_count || 0) + 1 } as any)
+      .update({ view_count: (postData.view_count || 0) + 1 })
       .eq('id', postData.id)
   } catch (error) {
     console.error('Error incrementing view count:', error)
@@ -200,12 +208,12 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
 
   return {
     ...postData,
-    tags: postData.tags.map((pt: any) => pt.tag).filter(Boolean),
+    tags: postData.tags.map((pt) => pt.tag).filter(Boolean),
   }
 }
 
 export async function getPostById(id: string): Promise<PostWithTags | null> {
-  const supabase = createServerClient() as any
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   const { data, error } = await supabase
     .from('posts')
@@ -223,17 +231,17 @@ export async function getPostById(id: string): Promise<PostWithTags | null> {
     return null
   }
 
-  const postData = data as any
+  const postData = data as Post & { tags: PostTag[] }
 
   return {
     ...postData,
-    tags: postData.tags.map((pt: any) => pt.tag).filter(Boolean),
+    tags: postData.tags.map((pt) => pt.tag).filter(Boolean),
   }
 }
 
 
 export async function getRelatedPosts(postId: string, limit: number = 3): Promise<PostWithTags[]> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   const { data: currentPost } = await supabase
     .from('posts')
@@ -245,12 +253,12 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     .eq('id', postId)
     .single()
 
-  const currentPostData = currentPost as any
+  const currentPostData = currentPost as { tags: { tag_id: string }[] } | null
   if (!currentPostData || !currentPostData.tags.length) {
     return []
   }
 
-  const tagIds = currentPostData.tags.map((pt: any) => pt.tag_id)
+  const tagIds = currentPostData.tags.map((pt) => pt.tag_id)
 
   const { data: relatedPostTags } = await supabase
     .from('post_tags')
@@ -262,7 +270,7 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     return []
   }
 
-  const postCounts = (relatedPostTags as any[]).reduce((acc: Record<string, number>, pt: any) => {
+  const postCounts = relatedPostTags.reduce((acc: Record<string, number>, pt: {post_id: string}) => {
     acc[pt.post_id] = (acc[pt.post_id] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -270,7 +278,7 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
   const relatedPostIds = Object.entries(postCounts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, limit)
-    .map(([postId, _]) => postId)
+    .map(([postId]) => postId)
 
   const { data, error } = await supabase
     .from('posts')
@@ -289,9 +297,9 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     return []
   }
 
-  return ((data as any[]) || []).map((post: any) => ({
-    ...post,
-    tags: post.tags.map((pt: any) => pt.tag).filter(Boolean),
+  return (data || []).map((post) => ({
+    ...(post as Post),
+    tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }))
 }
 
@@ -300,7 +308,7 @@ export async function getRelatedPostsByTagsWithRandom(
   limit: number = 3,
   candidateLimit: number = 10
 ): Promise<PostWithTags[]> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   if (tagIds.length === 0) {
     const result = await getPosts({ limit, sort: 'latest', status: 'published' })
@@ -317,7 +325,7 @@ export async function getRelatedPostsByTagsWithRandom(
     return result.posts
   }
 
-  const postCounts = (relatedPostTags as any[]).reduce((acc: Record<string, number>, pt: any) => {
+  const postCounts = relatedPostTags.reduce((acc: Record<string, number>, pt: {post_id: string}) => {
     acc[pt.post_id] = (acc[pt.post_id] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -325,7 +333,7 @@ export async function getRelatedPostsByTagsWithRandom(
   const candidatePostIds = Object.entries(postCounts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, candidateLimit)
-    .map(([postId, _]) => postId)
+    .map(([postId]) => postId)
 
   const shuffled = candidatePostIds.sort(() => Math.random() - 0.5)
   const selectedPostIds = shuffled.slice(0, limit)
@@ -346,9 +354,9 @@ export async function getRelatedPostsByTagsWithRandom(
     return []
   }
 
-  return ((data as any[]) || []).map((post: any) => ({
-    ...post,
-    tags: post.tags.map((pt: any) => pt.tag).filter(Boolean),
+  return (data || []).map((post) => ({
+    ...(post as Post),
+    tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }))
 }
 
@@ -399,11 +407,11 @@ export interface ActionResponse<T = void> {
 export async function createPost(input: CreatePostInput): Promise<ActionResponse<PostWithTags>> {
   const result = CreatePostSchema.safeParse(input)
   if (!result.success) {
-    return { success: false, error: (result.error as any).errors[0].message }
+    return { success: false, error: (result.error.errors[0]).message }
   }
 
   const { tags, ...postData } = result.data
-  const supabase = createServerClient() as any
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   // 公開日時の自動設定
   let published_at = postData.published_at
@@ -419,7 +427,7 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
         ...postData,
         published_at,
         view_count: 0
-      } as any) // Type assertion to avoid complexity with JSONContent
+      } as Omit<Post, 'id'|'created_at'|'updated_at'|'view_count'> & {view_count: number}) 
       .select()
       .single()
 
@@ -457,19 +465,20 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
     
     return { success: true, data: newPost }
 
-  } catch (error: any) {
-    console.error('Error creating post:', error)
-    return { success: false, error: error.message || '記事の作成に失敗しました' }
+  } catch (error) {
+    const err = error as Error
+    console.error('Error creating post:', err)
+    return { success: false, error: err.message || '記事の作成に失敗しました' }
   }
 }
 
 export async function updatePost(id: string, input: UpdatePostInput): Promise<ActionResponse<PostWithTags>> {
   const result = UpdatePostSchema.safeParse(input)
   if (!result.success) {
-    return { success: false, error: (result.error as any).errors[0].message }
+    return { success: false, error: (result.error.errors[0]).message }
   }
 
-  const supabase = createServerClient() as any
+  const supabase: SupabaseClient<Database> = await createServerClient()
   const { tags, ...updateData } = result.data
 
   // 現在のデータを取得（ロールバック用）
@@ -489,7 +498,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
     .select('tag_id')
     .eq('post_id', id)
 
-  const oldTagIds = currentTags?.map((t: any) => t.tag_id) || []
+  const oldTagIds = currentTags?.map((t) => t.tag_id) || []
 
   // 公開日時の調整
   let published_at = updateData.published_at
@@ -509,7 +518,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
         ...updateData,
         published_at,
         updated_at: new Date().toISOString()
-      } as any) // Type assertion
+      })
       .eq('id', id)
       .select()
       .single()
@@ -548,7 +557,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
           console.error('Failed to update tags, rolling back:', insertTagsError)
           
           // 記事データのロールバック
-          await supabase.from('posts').update(currentPost as any).eq('id', id)
+          await supabase.from('posts').update(currentPost).eq('id', id)
           
           // タグデータのロールバック（削除してしまったので元に戻す）
           if (oldTagIds.length > 0) {
@@ -570,14 +579,15 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
 
     return { success: true, data: resultPost }
 
-  } catch (error: any) {
-    console.error('Error updating post:', error)
-    return { success: false, error: error.message || '記事の更新に失敗しました' }
+  } catch (error) {
+    const err = error as Error
+    console.error('Error updating post:', err)
+    return { success: false, error: err.message || '記事の更新に失敗しました' }
   }
 }
 
 export async function deletePost(id: string): Promise<ActionResponse<void>> {
-  const supabase = createServerClient() as any
+  const supabase: SupabaseClient<Database> = await createServerClient()
   
   try {
     const { error } = await supabase
@@ -589,8 +599,9 @@ export async function deletePost(id: string): Promise<ActionResponse<void>> {
     
     revalidatePath('/posts')
     return { success: true }
-  } catch (error: any) {
-    console.error('Error deleting post:', error)
-    return { success: false, error: error.message || '記事の削除に失敗しました' }
+  } catch (error) {
+    const err = error as Error;
+    console.error('Error deleting post:', err)
+    return { success: false, error: err.message || '記事の削除に失敗しました' }
   }
 }

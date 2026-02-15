@@ -38,7 +38,7 @@ const projectSchema = z.object({
   slug: z.string().min(1, 'スラッグは必須です').regex(/^[a-z0-9-]+$/, '半角英数字とハイフンのみ使用可能です'),
   description: z.string().min(1, '説明は必須です'),
   content: z.any().optional(), // Tiptap content (HTML string or JSON)
-  status: z.enum(['completed', 'archived']),
+  status: z.enum(['completed', 'archived', 'registered']),
   demo_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   github_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   cover_image: z.string().nullable().optional(),
@@ -256,6 +256,7 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
                       <SelectContent>
                         <SelectItem value="completed">Completed (完了)</SelectItem>
                         <SelectItem value="archived">Archived (アーカイブ)</SelectItem>
+                        <SelectItem value="registered">Registered (公開済み)</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

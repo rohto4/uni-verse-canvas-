@@ -19,9 +19,6 @@ import {
   Minus,
   Link,
   Unlink,
-  Image,
-  Youtube,
-  Table,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -35,7 +32,6 @@ import {
   Columns2,
   ChevronDown,
   Type,
-  Palette,
   MoreHorizontal,
   FileImage,
   Video,
@@ -75,7 +71,7 @@ import {
 } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
+
 
 interface EditorToolbarProps {
   editor: Editor
@@ -156,7 +152,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState("")
   const [imageAlt, setImageAlt] = useState("")
-  const [imageWidth, setImageWidth] = useState(100)
   const [imageTab, setImageTab] = useState<"url" | "upload">("upload")
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -201,10 +196,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   const addImage = useCallback(() => {
     const srcUrl = imagePreview || imageUrl
     if (srcUrl) {
-      const { state } = editor
-      const { selection } = state
-      const { $from } = selection
-
       // 画像を挿入
       editor.chain().focus().setImage({ src: srcUrl, alt: imageAlt, title: imageAlt }).run()
 
@@ -224,7 +215,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     setImageDialogOpen(false)
     setImageUrl("")
     setImageAlt("")
-    setImageWidth(100)
     setImagePreview(null)
     setImageTab("upload")
     if (fileInputRef.current) fileInputRef.current.value = ""

@@ -1,0 +1,69 @@
+'use server'
+
+import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+
+export async function exportData() {
+  const supabase = await createServerClient()
+  
+  const [
+    { data: posts },
+    { data: projects },
+    { data: inProgress },
+    { data: tags },
+    { data: postTags },
+    { data: projectTags },
+    { data: pages }
+  ] = await Promise.all([
+    supabase.from('posts').select('*'),
+    supabase.from('projects').select('*'),
+    supabase.from('in_progress').select('*'),
+    supabase.from('tags').select('*'),
+    supabase.from('post_tags').select('*'),
+    supabase.from('project_tags').select('*'),
+    supabase.from('pages').select('*')
+  ])
+
+  const exportObj = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    data: {
+      posts: posts || [],
+      projects: projects || [],
+      in_progress: inProgress || [],
+      tags: tags || [],
+      post_tags: postTags || [],
+      project_tags: projectTags || [],
+      pages: pages || []
+    }
+  }
+
+  return exportObj
+}
+
+export async function importData(jsonData: any) {
+  const supabase = await createServerClient()
+  const { data } = jsonData
+
+  if (!data) throw new Error('Invalid backup data')
+
+  try {
+    // Note: This is a simple import that might conflict with existing IDs.
+    // In a real scenario, we might want to UPSERT or clear existing data.
+    
+    // For this implementation, we use UPSERT based on ID.
+    if (data.tags?.length) await supabase.from('tags').upsert(data.tags)
+    if (data.posts?.length) await supabase.from('posts').upsert(data.posts)
+    if (data.projects?.length) await supabase.from('projects').upsert(data.projects)
+    if (data.in_progress?.length) await supabase.from('in_progress').upsert(data.in_progress)
+    if (data.pages?.length) await supabase.from('pages').upsert(data.pages)
+    if (data.post_tags?.length) await supabase.from('post_tags').upsert(data.post_tags)
+    if (data.project_tags?.length) await supabase.from('project_tags').upsert(data.project_tags)
+
+    revalidatePath('/', 'layout')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Import error:', error)
+    return { success: false, error: error.message }
+  }
+}

@@ -126,21 +126,26 @@ ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pages ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for public read access
+DROP POLICY IF EXISTS "Public read published posts" ON posts;
 CREATE POLICY "Public read published posts" ON posts
   FOR SELECT USING (
     status = 'published' OR
     (status = 'scheduled' AND published_at <= NOW())
   );
 
+DROP POLICY IF EXISTS "Public read completed projects" ON projects;
 CREATE POLICY "Public read completed projects" ON projects
   FOR SELECT USING (status = 'completed');
 
+DROP POLICY IF EXISTS "Public read in progress" ON in_progress;
 CREATE POLICY "Public read in progress" ON in_progress
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Public read tags" ON tags;
 CREATE POLICY "Public read tags" ON tags
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Public read pages" ON pages;
 CREATE POLICY "Public read pages" ON pages
   FOR SELECT USING (true);
 
@@ -156,14 +161,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_posts_updated_at ON posts;
 CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_projects_updated_at ON projects;
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_in_progress_updated_at ON in_progress;
 CREATE TRIGGER update_in_progress_updated_at BEFORE UPDATE ON in_progress
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_pages_updated_at ON pages;
 CREATE TRIGGER update_pages_updated_at BEFORE UPDATE ON pages
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

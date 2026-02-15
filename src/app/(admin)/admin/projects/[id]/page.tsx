@@ -51,7 +51,7 @@ export default function EditProjectPage({ params }: PageProps) {
     try {
       // updateProject は Partial<CreateProjectInput> を取るが、
       // ProjectFormValues はほぼ互換性があるため any でキャストして渡す
-      const result = await updateProject(projectId, data as any)
+      const result = await updateProject(projectId, data)
 
       if (result) {
         toast.success('プロジェクトを更新しました')

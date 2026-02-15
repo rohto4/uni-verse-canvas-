@@ -1,13 +1,21 @@
-"use client"
-import { useState } from "react"
-import { AdminSidebar } from "@/components/layout/AdminSidebar"
+import { redirect } from 'next/navigation'
+import { getUserServer, isAdminByUid } from '@/lib/supabase/auth'
+import { AdminClientLayout } from './AdminClientLayout'
+import type { ReactNode } from 'react'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  return (
-    <div className="h-screen flex overflow-hidden">
-      <AdminSidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-      <main className="flex-1 overflow-auto">{children}</main>
-    </div>
-  )
+// Server component for authentication guard
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const user = await getUserServer()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  const isAdmin = await isAdminByUid(user.id)
+
+  if (!isAdmin) {
+    redirect('/')
+  }
+
+  return <AdminClientLayout>{children}</AdminClientLayout>
 }

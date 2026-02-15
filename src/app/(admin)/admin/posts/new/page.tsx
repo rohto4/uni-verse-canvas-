@@ -15,12 +15,14 @@ import { getTags } from "@/lib/actions/tags"
 import type { Tag } from "@/types/database"
 import { toast } from "sonner"
 
+import { JSONContent } from "@tiptap/core"
+
 export default function NewPostPage() {
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [excerpt, setExcerpt] = useState("")
-  const [content, setContent] = useState<any>({})
+  const [content, setContent] = useState<JSONContent>({})
   const [status, setStatus] = useState<"draft" | "scheduled" | "published">("draft")
   const [publishedAt, setPublishedAt] = useState<string>("")
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
@@ -58,10 +60,6 @@ export default function NewPostPage() {
         ? prev.filter((id) => id !== tagId)
         : [...prev, tagId]
     )
-  }, [])
-
-  const handleContentChange = useCallback((html: string) => {
-    setContent(html)
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -114,7 +112,7 @@ export default function NewPostPage() {
     }
     localStorage.setItem("post-preview-data", JSON.stringify(previewData))
     window.open("/admin/posts/preview", "_blank")
-  }, [title, content, excerpt, selectedTags])
+  }, [title, content, excerpt, selectedTags, availableTags])
 
   const handleExport = useCallback(() => {
     // Markdown形式でエクスポート（簡易実装）

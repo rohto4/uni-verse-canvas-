@@ -31,7 +31,7 @@ export function TechStackInput({ value, onChange }: TechStackInputProps) {
     } else {
       setEntries([])
     }
-  }, [])
+  }, [value])
 
   const addEntry = () => {
     setEntries([

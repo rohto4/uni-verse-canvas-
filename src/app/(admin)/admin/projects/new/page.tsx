@@ -10,7 +10,7 @@ export default function NewProjectPage() {
 
   const handleSubmit = async (data: ProjectFormValues) => {
     try {
-      const result = await createProject(data as any)
+      const result = await createProject(data)
 
       if (result) {
         toast.success('プロジェクトを作成しました')

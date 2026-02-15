@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const type = body.type || 'full'
     const format = body.format || 'json'
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     const result: any = {}
 

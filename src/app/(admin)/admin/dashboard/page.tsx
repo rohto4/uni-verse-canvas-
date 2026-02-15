@@ -2,45 +2,32 @@ import { FileText, Folder, Clock, Eye, TrendingUp, Calendar, ArrowUpRight, Arrow
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { createServerClient } from '@/lib/supabase/server'
+import { cn } from "@/lib/utils"
 import { getProjects } from '@/lib/actions/projects'
 import { getInProgressItems } from '@/lib/actions/in-progress'
+import { getDashboardStats } from "@/lib/actions/system"
+import type { Post } from '@/types/database'
 
 type ChangeType = "increase" | "decrease" | "neutral"
+type RecentPost = Pick<Post, 'id' | 'title' | 'slug' | 'status' | 'published_at' | 'view_count'>
 
 const statusConfig = { draft: { label: "下書き", className: "bg-muted text-muted-foreground" }, scheduled: { label: "予約", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, published: { label: "公開", className: "bg-accent text-accent-foreground" } }
 
 export default async function DashboardPage() {
-  // Fetch data in parallel
-  const [postsResult, projectsResult, inProgressItems] = await Promise.all([
-    // get latest 5 posts regardless of status: use direct query for flexibility
-    (async () => {
-      const supabase = createServerClient()
-      const { data } = await supabase
-        .from('posts')
-        .select('id, title, slug, status, published_at, view_count')
-        .order('created_at', { ascending: false })
-        .limit(5)
-      return (data as any[]) || []
-    })(),
-    getProjects(10, 1),
-    getInProgressItems(),
-  ])
-
-  const totalPostsCount = await (async () => {
-    const supabase = createServerClient()
-    const { count } = await supabase.from('posts').select('*', { count: 'exact', head: true })
-    return count || 0
-  })()
+  const dashboardStats = await getDashboardStats()
+  const inProgressItems = await getInProgressItems()
 
   const stats = [
-    { title: '総記事数', value: totalPostsCount, change: '+0', changeType: 'neutral' as ChangeType, icon: FileText },
-    { title: '総プロジェクト数', value: projectsResult.totalCount, change: '+0', changeType: 'neutral' as ChangeType, icon: Folder },
-    { title: '進行中', value: inProgressItems.filter(i => i.status === 'in_progress').length, change: '0', changeType: 'neutral' as ChangeType, icon: Clock },
-    { title: '今月の閲覧数', value: '—', change: '+0%', changeType: 'neutral' as ChangeType, icon: Eye },
+    { title: '総記事数', value: dashboardStats.counts.posts, change: '+0', changeType: 'neutral' as ChangeType, icon: FileText },
+    { title: '総プロジェクト数', value: dashboardStats.counts.projects, change: '+0', changeType: 'neutral' as ChangeType, icon: Folder },
+    { title: '進行中', value: dashboardStats.counts.inProgress, change: '0', changeType: 'neutral' as ChangeType, icon: Clock },
+    { title: '累計閲覧数', value: dashboardStats.totalViews.toLocaleString(), change: '+0%', changeType: 'neutral' as ChangeType, icon: Eye },
   ]
 
-  const recentPosts = postsResult
+  // We still fetch latest posts for the detailed list
+  const [{ posts: recentPosts }] = await Promise.all([
+    import('@/lib/actions/posts').then(mod => mod.getPosts({ limit: 5, status: 'published' }))
+  ])
 
   return (
     <div className="p-6 lg:p-8">
@@ -102,7 +89,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentPosts.map((post: any) => (
+              {recentPosts.map((post: RecentPost) => (
                 <div
                   key={post.id}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors"
@@ -205,23 +192,30 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>最近のアクティビティ</CardTitle>
-            <CardDescription>システムログ</CardDescription>
+            <CardDescription>最新の更新履歴</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[
-                { action: "記事を公開しました", target: "サイト記事", time: "2時間前" },
-                { action: "記事を編集しました", target: "記事", time: "5時間前" },
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center gap-3 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <div className="flex-1">
-                    <span className="text-muted-foreground">{activity.action}</span>
-                    <span className="font-medium ml-1">{activity.target}</span>
+              {dashboardStats.recentActivities.length > 0 ? (
+                dashboardStats.recentActivities.map((activity) => (
+                  <div key={`${activity.type}-${activity.id}`} className="flex items-center gap-3 text-sm">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      activity.type === 'post' ? "bg-primary" : "bg-accent"
+                    )} />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-muted-foreground truncate block">
+                        {activity.type === 'post' ? '記事' : 'プロジェクト'}: {activity.title}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {new Date(activity.date).toLocaleDateString()}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{activity.time}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-4 text-sm">アクティビティはありません</p>
+              )}
             </div>
           </CardContent>
         </Card>

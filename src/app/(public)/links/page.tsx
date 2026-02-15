@@ -2,8 +2,21 @@ import { ExternalLink, Github, Twitter, Linkedin, Mail, Globe, BookOpen, Message
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getPage } from "@/lib/actions/pages"
+import { ComponentType } from "react"
 
-const iconMap: Record<string, any> = {
+interface LinkItem {
+    name: string;
+    url: string;
+    description: string;
+    icon: string;
+}
+
+interface LinksMetadata {
+    socialLinks: LinkItem[];
+    otherLinks: LinkItem[];
+}
+
+const iconMap: Record<string, ComponentType<{ className?: string }>> = {
   Github,
   Twitter,
   Linkedin,
@@ -32,7 +45,7 @@ export default async function LinksPage() {
     return <div>ページが見つかりません</div>
   }
 
-  const metadata = pageData.metadata as any
+  const metadata = pageData.metadata as LinksMetadata
   const socialLinks = metadata.socialLinks || []
   const otherLinks = metadata.otherLinks || []
   return (
@@ -48,7 +61,7 @@ export default async function LinksPage() {
         <div className="mb-12">
           <h2 className="text-xl font-semibold mb-6">SNS</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {socialLinks.map((link: any) => {
+            {socialLinks.map((link: LinkItem) => {
               const Icon = iconMap[link.icon] || Globe
               const color = colorMap[link.icon] || ""
               return (
@@ -82,7 +95,7 @@ export default async function LinksPage() {
         <div>
           <h2 className="text-xl font-semibold mb-6">その他</h2>
           <div className="space-y-3">
-            {otherLinks.map((link: any) => {
+            {otherLinks.map((link: LinkItem) => {
               const Icon = iconMap[link.icon] || Globe
               const isExternal = link.url.startsWith("http")
               return (

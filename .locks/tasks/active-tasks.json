@@ -2,179 +2,55 @@
   "tasks": [
     {
       "id": "task-001",
-      "title": "記事詳細ページ実装",
+      "title": "記事詳細ページの仕上げ",
       "feature": "posts",
       "priority": "high",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "1-2d",
-      "dependencies": [],
-      "files": [
-        "src/app/(public)/posts/[slug]/page.tsx",
-        "src/components/posts/PostContent.tsx",
-        "src/components/posts/TableOfContents.tsx",
-        "src/components/posts/ShareButtons.tsx"
-      ],
-      "documentation": "docs/lv4/01-posts-feature.md",
-      "description": "記事本文表示、目次自動生成、関連記事表示、シェアボタンを実装"
-    },
-    {
-      "id": "task-002",
-      "title": "記事作成のServer Actions実装",
-      "feature": "posts",
-      "priority": "high",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "2-3d",
-      "dependencies": [],
-      "files": [
-        "src/lib/actions/posts.ts",
-        "src/lib/validations/post.ts"
-      ],
-      "documentation": "docs/lv4/01-posts-feature.md",
-      "description": "createPost(), updatePost(), deletePost(), uploadPostImage() を実装"
+      "status": "completed",
+      "assignedTo": "agent-gemini",
+      "completedAt": "2026-02-15T00:00:00Z"
     },
     {
       "id": "task-003",
       "title": "認証機能実装",
       "feature": "auth",
       "priority": "high",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "2-3d",
-      "dependencies": [],
-      "files": [
-        "src/lib/supabase/auth.ts",
-        "src/app/(admin)/login/page.tsx",
-        "src/lib/supabase/middleware.ts",
-        "supabase/migrations/20260210_add_rls_policies.sql"
-      ],
-      "documentation": "docs/lv4/06-auth-feature.md",
-      "description": "Supabase Auth統合、ログイン画面、セッション管理、RLSポリシー適用"
-    },
-    {
-      "id": "task-004",
-      "title": "プロジェクト作成フォーム実装",
-      "feature": "projects",
-      "priority": "medium",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "2-3d",
-      "dependencies": [],
-      "files": [
-        "src/app/(admin)/admin/projects/new/page.tsx"
-      ],
-      "documentation": "docs/lv4/02-projects-feature.md",
-      "description": "フォーム統合、TechStackInput・ImageUploadMultiple使用、createProject()呼び出し"
-    },
-    {
-      "id": "task-005",
-      "title": "記事作成画面の保存処理統合",
-      "feature": "posts",
-      "priority": "high",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "1d",
-      "dependencies": ["task-002"],
-      "files": [
-        "src/app/(admin)/admin/posts/new/page.tsx"
-      ],
-      "documentation": "docs/lv4/01-posts-feature.md",
-      "description": "フォーム送信処理、Server Actions呼び出し、エラーハンドリング"
+      "status": "completed",
+      "assignedTo": "agent-gemini",
+      "completedAt": "2026-02-15T00:00:00Z"
     },
     {
       "id": "task-006",
       "title": "ホームページDB連携",
       "feature": "pages",
       "priority": "medium",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "1d",
-      "dependencies": [],
-      "files": [
-        "src/app/(public)/page.tsx"
-      ],
-      "documentation": "docs/lv4/04-pages-feature.md",
-      "description": "最新記事・プロジェクト・進行中アイテムのDB連携"
-    },
-    {
-      "id": "task-007",
-      "title": "記事一覧（管理画面）実装",
-      "feature": "posts",
-      "priority": "medium",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "1-2d",
-      "dependencies": [],
-      "files": [
-        "src/app/(admin)/admin/posts/page.tsx",
-        "src/components/admin/PostsTable.tsx"
-      ],
-      "documentation": "docs/lv4/01-posts-feature.md",
-      "description": "テーブル表示、ステータスフィルタ、検索機能、編集・削除ボタン"
-    },
-    {
-      "id": "task-008",
-      "title": "記事編集画面実装",
-      "feature": "posts",
-      "priority": "medium",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "1d",
-      "dependencies": ["task-002"],
-      "files": [
-        "src/app/(admin)/admin/posts/[id]/page.tsx"
-      ],
-      "documentation": "docs/lv4/01-posts-feature.md",
-      "description": "記事データ取得、エディタ初期値設定、更新・削除処理"
-    },
-    {
-      "id": "task-009",
-      "title": "プロジェクト編集フォーム実装",
-      "feature": "projects",
-      "priority": "medium",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "1d",
-      "dependencies": ["task-004"],
-      "files": [
-        "src/app/(admin)/admin/projects/[id]/page.tsx"
-      ],
-      "documentation": "docs/lv4/02-projects-feature.md",
-      "description": "プロジェクトデータ取得、エディタ初期値設定、更新・削除処理"
+      "status": "completed",
+      "assignedTo": "agent-gemini",
+      "completedAt": "2026-02-15T00:00:00Z"
     },
     {
       "id": "task-010",
       "title": "バックアップ機能実装",
       "feature": "admin",
       "priority": "medium",
-      "status": "pending",
-      "assignedTo": null,
-      "startedAt": null,
-      "estimatedDuration": "2-3d",
-      "dependencies": [],
-      "files": [
-        "src/lib/actions/backup.ts",
-        "src/app/(admin)/admin/backup/page.tsx"
-      ],
-      "documentation": "docs/lv4/05-admin-feature.md",
-      "description": "JSON/Markdownエクスポート、ZIPダウンロード、インポート機能"
+      "status": "completed",
+      "assignedTo": "agent-gemini",
+      "completedAt": "2026-02-15T00:00:00Z"
+    },
+    {
+      "id": "task-012",
+      "title": "ダッシュボード統計情報実装",
+      "feature": "admin",
+      "priority": "low",
+      "status": "completed",
+      "assignedTo": "agent-gemini",
+      "completedAt": "2026-02-15T00:00:00Z"
     }
   ],
   "metadata": {
-    "lastUpdated": "2026-02-09T00:00:00Z",
-    "totalTasks": 10,
-    "completedTasks": 0,
+    "lastUpdated": "2026-02-15T00:00:00Z",
+    "totalTasks": 5,
+    "completedTasks": 5,
     "inProgressTasks": 0,
-    "pendingTasks": 10
+    "pendingTasks": 0
   }
 }

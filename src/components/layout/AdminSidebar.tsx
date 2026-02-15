@@ -8,15 +8,14 @@ import {
   Folder,
   Clock,
   Database,
-  Settings,
   Sparkles,
   LogOut,
   ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { GradientAccent } from "@/components/common"
 import { cn } from "@/lib/utils"
+
+import { signOut } from "@/lib/supabase/auth"
 
 const adminNavItems = [
   { label: "ダッシュボード", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -33,6 +32,12 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps) {
   const pathname = usePathname()
+
+  const handleSignOut = async () => {
+    if (confirm('ログアウトしますか？')) {
+      await signOut()
+    }
+  }
 
   return (
     <aside className={cn("h-screen bg-sidebar border-r-0 flex flex-col transition-all duration-300 relative overflow-hidden", collapsed ? "w-16" : "w-64")}>
@@ -70,14 +75,24 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
         })}
       </nav>
 
-      {/* サイトを表示（最下部固定） */}
-      <div className="mt-auto border-t border-sidebar-border">
-        <div className="p-2">
-          <Link href="/" className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors", collapsed && "justify-center px-2")} title={collapsed ? "サイトを表示" : undefined}>
-            <LogOut className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>サイトを表示</span>}
-          </Link>
-        </div>
+      {/* ログアウト・サイトを表示（最下部固定） */}
+      <div className="mt-auto border-t border-sidebar-border space-y-1 p-2">
+        <button 
+          onClick={handleSignOut}
+          className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors", collapsed && "justify-center px-2")}
+          title={collapsed ? "ログアウト" : undefined}
+        >
+          <LogOut className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>ログアウト</span>}
+        </button>
+        <Link 
+          href="/" 
+          className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors", collapsed && "justify-center px-2")} 
+          title={collapsed ? "サイトを表示" : undefined}
+        >
+          <Sparkles className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>サイトを表示</span>}
+        </Link>
       </div>
     </aside>
   )

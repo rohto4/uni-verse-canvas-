@@ -16,7 +16,7 @@ function formatDate(dateString: string | null): string {
 }
 
 export default async function AdminProjectsPage() {
-  const projects = await getProjects({ status: 'completed' })
+  const { projects } = await getProjects({ status: 'completed' })
 
   return (
     <div className="space-y-6">

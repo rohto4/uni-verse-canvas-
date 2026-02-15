@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Save, Eye, Download, Settings, Trash2, Loader2, ExternalLink } from "lucide-react"
+import { ArrowLeft, Save, Eye, Settings, Trash2, Loader2, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -15,6 +15,7 @@ import { getPostById, updatePost, deletePost, type UpdatePostInput } from "@/lib
 import { getTags } from "@/lib/actions/tags"
 import type { Tag } from "@/types/database"
 import { toast } from "sonner"
+import { JSONContent } from "@tiptap/core"
 
 export default function EditPostPage() {
   const params = useParams()
@@ -31,7 +32,7 @@ export default function EditPostPage() {
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [excerpt, setExcerpt] = useState("")
-  const [content, setContent] = useState<any>({})
+  const [content, setContent] = useState<JSONContent>({})
   const [status, setStatus] = useState<"draft" | "scheduled" | "published">("draft")
   const [publishedAt, setPublishedAt] = useState<string>("")
   const [viewCount, setViewCount] = useState(0)
@@ -87,9 +88,9 @@ export default function EditPostPage() {
     }
   }, [id, router])
 
-  const handleChange = () => {
+  const handleChange = useCallback(() => {
     if (!isLoading) setHasChanges(true)
-  }
+  }, [isLoading])
 
   const toggleTag = useCallback((tagId: string) => {
     setSelectedTags((prev) =>
@@ -98,7 +99,7 @@ export default function EditPostPage() {
         : [...prev, tagId]
     )
     handleChange()
-  }, [])
+  }, [handleChange])
 
   const handleSave = useCallback(async () => {
     if (!title) {
@@ -150,7 +151,7 @@ export default function EditPostPage() {
       } else {
         toast.error(result.error || "削除に失敗しました")
       }
-    } catch (error) {
+    } catch {
       toast.error("予期せぬエラーが発生しました")
     } finally {
       setIsDeleting(false)

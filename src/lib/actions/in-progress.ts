@@ -1,8 +1,9 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import type { InProgress, InProgressWithProject } from '@/types/database'
+import type { InProgress, InProgressWithProject, Database, Project } from '@/types/database'
 import { revalidatePath } from 'next/cache'
+import { SupabaseClient } from '@supabase/supabase-js'
 
 export interface CreateInProgressInput {
   title: string
@@ -15,12 +16,12 @@ export interface CreateInProgressInput {
   notes: string | null
 }
 
-export interface UpdateInProgressInput extends Partial<CreateInProgressInput> {}
+export type UpdateInProgressInput = Partial<CreateInProgressInput>
 
 export async function getInProgressItems(
   status?: 'not_started' | 'paused' | 'in_progress' | 'completed'
 ): Promise<InProgressWithProject[]> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   let query = supabase
     .from('in_progress')
@@ -40,25 +41,15 @@ export async function getInProgressItems(
     console.error('Error fetching in-progress items:', error)
     return []
   }
-
-  return ((data as any[]) || []).map((item: any) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    status: item.status,
-    progress_rate: item.progress_rate,
-    started_at: item.started_at,
-    completed_at: item.completed_at,
-    completed_project_id: item.completed_project_id,
-    notes: item.notes,
-    created_at: item.created_at,
-    updated_at: item.updated_at,
-    completedProject: item.completedProject || undefined,
-  }))
+  
+  return (data || []).map((item) => ({
+    ...item,
+    completedProject: item.completedProject as Project | undefined,
+  })) as InProgressWithProject[]
 }
 
 export async function getInProgressById(id: string): Promise<InProgressWithProject | null> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   const { data, error } = await supabase
     .from('in_progress')
@@ -74,33 +65,20 @@ export async function getInProgressById(id: string): Promise<InProgressWithProje
     return null
   }
 
-  const itemData = data as any
-
   return {
-    id: itemData.id,
-    title: itemData.title,
-    description: itemData.description,
-    status: itemData.status,
-    progress_rate: itemData.progress_rate,
-    started_at: itemData.started_at,
-    completed_at: itemData.completed_at,
-    completed_project_id: itemData.completed_project_id,
-    notes: itemData.notes,
-    created_at: itemData.created_at,
-    updated_at: itemData.updated_at,
-    completedProject: itemData.completedProject || undefined,
-  }
+    ...data,
+    completedProject: data.completedProject as Project | undefined,
+  } as InProgressWithProject
 }
 
 export async function createInProgress(input: CreateInProgressInput): Promise<InProgress | null> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
-  const { data, error } = await (supabase.from('in_progress') as any)
-    .insert(input)
+  const { data, error } = await supabase
+    .from('in_progress')
+    .insert(input as InProgress)
     .select()
-    // may return array; don't force .single() to avoid coercion errors when RLS blocks
     
-
   if (error) {
     console.error('Error creating in-progress item:', error)
     return null
@@ -116,10 +94,11 @@ export async function updateInProgress(
   id: string,
   input: UpdateInProgressInput
 ): Promise<InProgress | null> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
-  const { data, error } = await (supabase.from('in_progress') as any)
-    .update(input)
+  const { data, error } = await supabase
+    .from('in_progress')
+    .update(input as Partial<InProgress>)
     .eq('id', id)
     .select()
 
@@ -135,7 +114,7 @@ export async function updateInProgress(
 }
 
 export async function deleteInProgress(id: string): Promise<void> {
-  const supabase = createServerClient()
+  const supabase: SupabaseClient<Database> = await createServerClient()
 
   const { error } = await supabase.from('in_progress').delete().eq('id', id)
 

@@ -4,76 +4,33 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { GradientAccent } from "@/components/common"
+import { getPosts } from "@/lib/actions/posts"
+import { getProjects } from "@/lib/actions/projects"
+import { getInProgressItems } from "@/lib/actions/in-progress"
 
-const recentPosts = [
-  {
-    id: "1",
-    title: "Next.js 15の新機能を試してみた",
-    slug: "nextjs-15-features",
-    excerpt: "Next.js 15がリリースされたので、主要な新機能を実際に試してみました。",
-    tags: ["Next.js", "React"],
-    publishedAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    title: "TypeScriptの型パズルを解いてみる",
-    slug: "typescript-type-puzzle",
-    excerpt: "TypeScriptの高度な型機能を使った型パズルに挑戦してみました。",
-    tags: ["TypeScript"],
-    publishedAt: "2024-01-12",
-  },
-  {
-    id: "3",
-    title: "Supabaseで認証機能を実装する",
-    slug: "supabase-auth-guide",
-    excerpt: "Supabase Authを使った認証機能の実装方法を解説します。",
-    tags: ["Supabase", "認証"],
-    publishedAt: "2024-01-10",
-  },
-]
+const statusLabels: Record<string, { label: string, className: string }> = { 
+  not_started: { label: "未着手", className: "bg-muted text-muted-foreground" }, 
+  paused: { label: "中断中", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, 
+  in_progress: { label: "進行中", className: "bg-primary/20 text-primary" }, 
+  completed: { label: "完了", className: "bg-accent text-accent-foreground" } 
+}
 
-const recentProjects = [
-  {
-    id: "1",
-    title: "UniVerse Canvas",
-    slug: "universe-canvas",
-    description: "個人用ポートフォリオ＆ブログシステム",
-    tags: ["Next.js", "Supabase", "Tiptap"],
-  },
-  {
-    id: "2",
-    title: "Task Manager",
-    slug: "task-manager",
-    description: "シンプルなタスク管理アプリ",
-    tags: ["React", "Firebase"],
-  },
-  {
-    id: "3",
-    title: "CLI Tool",
-    slug: "cli-tool",
-    description: "開発効率化のためのCLIツール",
-    tags: ["Node.js", "TypeScript"],
-  },
-]
+function formatDate(dateString: string | null): string {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 
-const inProgressItems = [
-  {
-    id: "1",
-    title: "AI チャットボット開発",
-    status: "in_progress" as const,
-    progressRate: 65,
-  },
-  {
-    id: "2",
-    title: "モバイルアプリ（Flutter）",
-    status: "paused" as const,
-    progressRate: 30,
-  },
-]
+export default async function HomePage() {
+  const [{ posts: recentPosts }, { projects: recentProjects }, inProgressItems] = await Promise.all([
+    getPosts({ limit: 3, status: 'published' }),
+    getProjects({ limit: 3 }),
+    getInProgressItems('in_progress').then(items => items.slice(0, 2))
+  ])
 
-const statusLabels = { not_started: { label: "未着手", className: "bg-muted text-muted-foreground" }, paused: { label: "中断中", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" }, in_progress: { label: "進行中", className: "bg-primary/20 text-primary" }, completed: { label: "完了", className: "bg-accent text-accent-foreground" } }
-
-export default function HomePage() {
   return (
     <div className="min-h-screen">
       <section className="relative py-20 lg:py-32 bg-sky">
@@ -97,7 +54,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="gap-2">
                 <Link href="/posts">
-                  <BookOpen className="h-5 w-5" />
+                  < BookOpen className="h-5 w-5" />
                   読み物を見る
                 </Link>
               </Button>
@@ -130,8 +87,8 @@ export default function HomePage() {
                 <CardHeader>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {post.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
+                      <Badge key={tag.id} variant="secondary" className="text-xs" style={{ backgroundColor: tag.color, color: '#fff' }}>
+                        {tag.name}
                       </Badge>
                     ))}
                   </div>
@@ -141,7 +98,7 @@ export default function HomePage() {
                     </Link>
                   </CardTitle>
                   <CardDescription className="text-sm">
-                    {post.publishedAt}
+                    {formatDate(post.published_at)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -171,7 +128,7 @@ export default function HomePage() {
                 <Card key={project.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CardTitle className="line-clamp-1">
-                      <Link href={`/works#${project.slug}`} className="hover:text-primary transition-colors">
+                      <Link href={`/works/${project.slug}`} className="hover:text-primary transition-colors">
                         {project.title}
                       </Link>
                     </CardTitle>
@@ -182,8 +139,8 @@ export default function HomePage() {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {project.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
+                        <Badge key={tag.id} variant="outline" className="text-xs">
+                          {tag.name}
                         </Badge>
                       ))}
                     </div>
@@ -214,8 +171,8 @@ export default function HomePage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <Badge className={statusLabels[item.status].className}>
-                        {statusLabels[item.status].label}
+                      <Badge className={statusLabels[item.status]?.className || ""}>
+                        {statusLabels[item.status]?.label || item.status}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -223,13 +180,13 @@ export default function HomePage() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">進捗</span>
-                        <span className="font-medium">{item.progressRate}%</span>
+                        <span className="font-medium">{item.progress_rate}%</span>
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
                           className="h-full transition-all duration-300"
                           style={{
-                            width: `${item.progressRate}%`,
+                            width: `${item.progress_rate}%`,
                             background: "var(--card-accent-gradient)",
                           }}
                         />

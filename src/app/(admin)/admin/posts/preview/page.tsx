@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ArrowLeft, Calendar, Eye, Clock, X, Monitor, Smartphone, Tablet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -21,27 +21,44 @@ const tableOfContents = [
   { id: "conclusion", title: "まとめ", level: 2 },
 ]
 
+interface PreviewData {
+    title: string;
+    content: string;
+    excerpt: string;
+    tags: string[];
+}
+
+const getInitialPreviewData = (): PreviewData => {
+    if (typeof window === "undefined") {
+      return { title: "", content: "", excerpt: "", tags: [] };
+    }
+    try {
+        const storedData = localStorage.getItem("post-preview-data")
+        if (storedData) {
+            const data = JSON.parse(storedData)
+            return {
+                title: data.title || "",
+                content: data.content || "",
+                excerpt: data.excerpt || "",
+                tags: data.tags || []
+            }
+        }
+    } catch (error) {
+        console.error("Failed to parse preview data from localStorage", error)
+    }
+    return { title: "", content: "", excerpt: "", tags: [] };
+}
+
+
 export default function PreviewPage() {
   const [device, setDevice] = useState<DeviceType>("desktop")
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [excerpt, setExcerpt] = useState("")
-  const [tags, setTags] = useState<string[]>([])
-
-  useEffect(() => {
-    const previewData = localStorage.getItem("post-preview-data")
-    if (previewData) {
-      const data = JSON.parse(previewData)
-      setTitle(data.title || "")
-      setContent(data.content || "")
-      setExcerpt(data.excerpt || "")
-      setTags(data.tags || [])
-    }
-  }, [])
+  const [previewData] = useState<PreviewData>(getInitialPreviewData)
 
   const handleClose = () => {
     window.close()
   }
+
+  const { title, content, excerpt, tags } = previewData
 
   return (
     <div className="min-h-screen bg-universe">

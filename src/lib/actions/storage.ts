@@ -3,7 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 
 export async function uploadFile(formData: FormData): Promise<{ url: string | null; error?: string }> {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const file = formData.get('file') as File
 
   if (!file) {
