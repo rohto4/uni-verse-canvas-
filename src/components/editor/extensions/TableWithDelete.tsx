@@ -1,5 +1,5 @@
 import { Table } from "@tiptap/extension-table"
-import { Plugin, PluginKey } from "@tiptap/pm/state"
+import { Plugin, PluginKey, NodeSelection } from "@tiptap/pm/state"
 
 export const TableWithDelete = Table.extend({
   name: "table",
@@ -17,7 +17,7 @@ export const TableWithDelete = Table.extend({
 
             // Deleteキー: テーブル全体が選択されている場合に削除
             if (event.key === 'Delete') {
-              if (selection.node?.type.name === 'table') {
+              if (selection instanceof NodeSelection && selection.node.type.name === 'table') {
                 const tr = state.tr.deleteSelection()
                 dispatch(tr)
                 return true

@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core'
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       posts: {

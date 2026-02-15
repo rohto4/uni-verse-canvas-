@@ -1,13 +1,13 @@
-import { FileText, Folder, Clock, Eye, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { FileText, Folder, Clock, Eye, TrendingUp, Calendar, ArrowUpRight, ArrowDownRight, LucideIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
-const stats = [
-  { title: "総記事数", value: 42, change: "+3", changeType: "increase" as const, icon: FileText },
-  { title: "総プロジェクト数", value: 12, change: "+1", changeType: "increase" as const, icon: Folder },
-  { title: "進行中", value: 4, change: "0", changeType: "neutral" as const, icon: Clock },
-  { title: "今月の閲覧数", value: "12,456", change: "+18%", changeType: "increase" as const, icon: Eye },
+const stats: { title: string; value: string | number; change: string; changeType: "increase" | "decrease" | "neutral"; icon: LucideIcon }[] = [
+  { title: "総記事数", value: 42, change: "+3", changeType: "increase", icon: FileText },
+  { title: "総プロジェクト数", value: 12, change: "+1", changeType: "increase", icon: Folder },
+  { title: "進行中", value: 4, change: "0", changeType: "neutral", icon: Clock },
+  { title: "今月の閲覧数", value: "12,456", change: "+18%", changeType: "increase", icon: Eye },
 ]
 
 const recentPosts = [

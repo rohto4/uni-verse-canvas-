@@ -34,7 +34,7 @@ export async function getTagsWithCount(): Promise<TagWithCount[]> {
 
   // Get counts for each tag
   const tagsWithCount = await Promise.all(
-    tags.map(async (tag: any) => {
+    tags.map(async (tag: Tag) => {
       const [{ count: postCount }, { count: projectCount }] = await Promise.all([
         supabase.from('post_tags').select('*', { count: 'exact', head: true }).eq('tag_id', tag.id),
         supabase.from('project_tags').select('*', { count: 'exact', head: true }).eq('tag_id', tag.id),

@@ -1,5 +1,5 @@
 import { Node, mergeAttributes } from "@tiptap/core"
-import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent } from "@tiptap/react"
+import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent, NodeViewProps } from "@tiptap/react"
 import React from "react"
 import { Columns2, Rows2, X } from "lucide-react"
 
@@ -76,7 +76,7 @@ export const ColumnItem = Node.create({
   },
 })
 
-function ColumnLayoutView({ node, deleteNode }: any) {
+function ColumnLayoutView({ node, deleteNode }: NodeViewProps) {
   const [viewMode, setViewMode] = React.useState<"side" | "stack">("side")
   const bgColor = node.attrs.bgColor || "none"
 

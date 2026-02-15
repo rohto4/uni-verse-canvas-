@@ -1,6 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server'
-import type { Project, ProjectWithTags, Tag, Database } from '@/types/database'
-import { SupabaseClient } from '@supabase/supabase-js'
+import type { Project, ProjectWithTags, Tag } from '@/types/database'
 
 type ProjectTag = {
     project_id: string;
@@ -26,7 +25,7 @@ export interface PaginatedProjects {
 }
 
 export async function getProjects(params: GetProjectsParams): Promise<PaginatedProjects> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const {
     status,
@@ -38,7 +37,8 @@ export async function getProjects(params: GetProjectsParams): Promise<PaginatedP
   let query = supabase
     .from('projects')
     .select('*, tags:project_tags(tag:tags(*))', { count: 'exact' })
-    .order('created_at', { ascending: false })
+
+  query = query.order('created_at', { ascending: false })
 
   if (status) {
     if (Array.isArray(status)) {
@@ -53,10 +53,10 @@ export async function getProjects(params: GetProjectsParams): Promise<PaginatedP
     const tagSlugs = tags.map((t: string) => t.toLowerCase())
     const { data: tagData } = await supabase.from('tags').select('id,slug').in('slug', tagSlugs)
     if (tagData && tagData.length > 0) {
-      const tagIds = tagData.map((t) => t.id)
+      const tagIds = tagData.map((t) => t.id as string)
       const { data: projectTags } = await supabase.from('project_tags').select('project_id').in('tag_id', tagIds)
       if (projectTags) {
-        const counts = projectTags.reduce((acc: Record<string, number>, pt: {project_id: string}) => { acc[pt.project_id] = (acc[pt.project_id] || 0) + 1; return acc }, {})
+        const counts = (projectTags as Array<{project_id: string}>).reduce((acc: Record<string, number>, pt: {project_id: string}) => { acc[pt.project_id] = (acc[pt.project_id] || 0) + 1; return acc }, {})
         const matching = Object.entries(counts).filter(([, c]) => c === tagIds.length).map(([id]) => id)
         if (matching.length === 0) {
             return {
@@ -81,7 +81,12 @@ export async function getProjects(params: GetProjectsParams): Promise<PaginatedP
     };
   }
 
-  const projects: ProjectWithTags[] = (data || []).map(p => ({ ...(p as Project), tags: (p.tags as ProjectTag[]).map(pt => pt.tag).filter(Boolean) }))
+  const projects: ProjectWithTags[] = ((data as Array<Project & { tags: ProjectTag[] }>) || []).map((p) => {
+    return {
+      ...p,
+      tags: (p.tags as ProjectTag[]).map(pt => pt.tag).filter(Boolean)
+    }
+  })
 
   const totalCount = count || 0;
   const totalPages = Math.ceil(totalCount / limit);
@@ -99,7 +104,7 @@ export async function getProjects(params: GetProjectsParams): Promise<PaginatedP
 }
 
 export async function getProjectBySlug(slug: string): Promise<ProjectWithTags | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('projects')
@@ -116,12 +121,12 @@ export async function getProjectBySlug(slug: string): Promise<ProjectWithTags | 
 
   return {
     ...project,
-    tags: project.tags.map((pt) => pt.tag).filter(Boolean),
+    tags: (project.tags as ProjectTag[]).map((pt) => pt.tag).filter(Boolean),
   }
 }
 
 export async function getProjectById(id: string): Promise<ProjectWithTags | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('projects')
@@ -134,15 +139,15 @@ export async function getProjectById(id: string): Promise<ProjectWithTags | null
     return null
   }
 
-  const project = data as Project & { tags: ProjectTag[] };
+  const project = data as Project & { tags: ProjectTag[] }
   return {
     ...project,
-    tags: project.tags.map((pt) => pt.tag).filter(Boolean),
+    tags: (project.tags as ProjectTag[]).map((pt) => pt.tag).filter(Boolean),
   }
 }
 
 export async function createProject(input: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>): Promise<Project | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   try {
     const { data, error } = await supabase
@@ -156,7 +161,7 @@ export async function createProject(input: Partial<Omit<Project, 'id' | 'created
       return null
     }
 
-    return data
+    return data as Project
   } catch (err) {
     console.error('Error creating project:', err)
     return null
@@ -164,7 +169,7 @@ export async function createProject(input: Partial<Omit<Project, 'id' | 'created
 }
 
 export async function updateProject(id: string, input: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>): Promise<Project | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   try {
     const { data, error } = await supabase
@@ -179,7 +184,7 @@ export async function updateProject(id: string, input: Partial<Omit<Project, 'id
       return null
     }
 
-    return data
+    return data as Project
   } catch (err) {
     console.error('Error updating project:', err)
     return null

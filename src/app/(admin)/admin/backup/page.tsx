@@ -54,7 +54,7 @@ export default function BackupPage() {
           } else {
             toast.error('インポートに失敗しました: ' + result.error)
           }
-        } catch (err) {
+        } catch {
           toast.error('ファイルの形式が正しくありません')
         } finally {
           setIsImporting(false)

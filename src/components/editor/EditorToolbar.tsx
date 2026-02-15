@@ -772,6 +772,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
               <div className="p-3 bg-muted rounded-lg">
                 <Label className="text-xs text-muted-foreground">プレビュー</Label>
                 <div className="mt-2 flex justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={imagePreview || imageUrl}
                     alt={imageAlt || "プレビュー"}

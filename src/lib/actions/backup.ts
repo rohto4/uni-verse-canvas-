@@ -41,7 +41,21 @@ export async function exportData() {
   return exportObj
 }
 
-export async function importData(jsonData: any) {
+interface BackupData {
+  version: string
+  exportedAt: string
+  data: {
+    posts?: Array<Record<string, unknown>>
+    projects?: Array<Record<string, unknown>>
+    in_progress?: Array<Record<string, unknown>>
+    tags?: Array<Record<string, unknown>>
+    post_tags?: Array<Record<string, unknown>>
+    project_tags?: Array<Record<string, unknown>>
+    pages?: Array<Record<string, unknown>>
+  }
+}
+
+export async function importData(jsonData: BackupData) {
   const supabase = await createServerClient()
   const { data } = jsonData
 
@@ -62,8 +76,9 @@ export async function importData(jsonData: any) {
 
     revalidatePath('/', 'layout')
     return { success: true }
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     console.error('Import error:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: errorMessage }
   }
 }

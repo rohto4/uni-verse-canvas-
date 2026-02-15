@@ -46,7 +46,7 @@ describe("TiptapEditor", () => {
 
     // 文字数カウントが表示されることを確認
     await waitFor(() => {
-      expect(screen.getByText(/文字/)).toBeInTheDocument()
+      expect(screen.getByText(/文字/)).toBeDefined()
     })
   })
 
@@ -56,7 +56,7 @@ describe("TiptapEditor", () => {
 
     // エディタが読み込まれることを確認
     await waitFor(() => {
-      expect(screen.getByText(/文字/)).toBeInTheDocument()
+      expect(screen.getByText(/文字/)).toBeDefined()
     })
   })
 
@@ -65,7 +65,7 @@ describe("TiptapEditor", () => {
     render(<TiptapEditor content={initialContent} />)
 
     await waitFor(() => {
-      expect(screen.getByText(/文字/)).toBeInTheDocument()
+      expect(screen.getByText(/文字/)).toBeDefined()
     })
   })
 
@@ -74,7 +74,7 @@ describe("TiptapEditor", () => {
     render(<TiptapEditor placeholder={placeholder} />)
 
     await waitFor(() => {
-      expect(screen.getByText(/文字/)).toBeInTheDocument()
+      expect(screen.getByText(/文字/)).toBeDefined()
     })
   })
 })
@@ -84,7 +84,7 @@ describe("TiptapEditor Props", () => {
     render(<TiptapEditor editable={false} />)
 
     await waitFor(() => {
-      expect(screen.getByText(/文字/)).toBeInTheDocument()
+      expect(screen.getByText(/文字/)).toBeDefined()
     })
   })
 
@@ -92,7 +92,7 @@ describe("TiptapEditor Props", () => {
     render(<TiptapEditor className="custom-class" />)
 
     await waitFor(() => {
-      expect(screen.getByText(/文字/)).toBeInTheDocument()
+      expect(screen.getByText(/文字/)).toBeDefined()
     })
   })
 })

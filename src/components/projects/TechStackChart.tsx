@@ -2,6 +2,7 @@
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
+import type { TooltipItem } from 'chart.js'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -52,12 +53,12 @@ export function TechStackChart({ data }: TechStackChartProps) {
           font: {
             size: 12,
           },
-          generateLabels: (chart: any) => {
+          generateLabels: (chart: ChartJS) => {
             const data = chart.data
-            if (data.labels.length && data.datasets.length) {
-              return data.labels.map((label: string, i: number) => ({
+            if (data.labels && data.labels.length && data.datasets.length) {
+              return (data.labels as string[]).map((label: string, i: number) => ({
                 text: `${label}: ${data.datasets[0].data[i]}%`,
-                fillStyle: data.datasets[0].backgroundColor[i],
+                fillStyle: (data.datasets[0].backgroundColor as string[])[i],
                 hidden: false,
                 index: i,
               }))
@@ -68,7 +69,7 @@ export function TechStackChart({ data }: TechStackChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
+          label: (context: TooltipItem<'doughnut'>) => {
             return `${context.label}: ${context.parsed}%`
           },
         },

@@ -1,9 +1,8 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import type { InProgress, InProgressWithProject, Database, Project } from '@/types/database'
+import type { InProgress, InProgressWithProject, Project } from '@/types/database'
 import { revalidatePath } from 'next/cache'
-import { SupabaseClient } from '@supabase/supabase-js'
 
 export interface CreateInProgressInput {
   title: string
@@ -21,7 +20,7 @@ export type UpdateInProgressInput = Partial<CreateInProgressInput>
 export async function getInProgressItems(
   status?: 'not_started' | 'paused' | 'in_progress' | 'completed'
 ): Promise<InProgressWithProject[]> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   let query = supabase
     .from('in_progress')
@@ -42,14 +41,15 @@ export async function getInProgressItems(
     return []
   }
   
-  return (data || []).map((item) => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data as any[] || []).map((item) => ({
     ...item,
     completedProject: item.completedProject as Project | undefined,
   })) as InProgressWithProject[]
 }
 
 export async function getInProgressById(id: string): Promise<InProgressWithProject | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('in_progress')
@@ -65,18 +65,20 @@ export async function getInProgressById(id: string): Promise<InProgressWithProje
     return null
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const item = data as any
   return {
-    ...data,
-    completedProject: data.completedProject as Project | undefined,
+    ...item,
+    completedProject: item.completedProject as Project | undefined,
   } as InProgressWithProject
 }
 
 export async function createInProgress(input: CreateInProgressInput): Promise<InProgress | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
-  const { data, error } = await supabase
-    .from('in_progress')
-    .insert(input as InProgress)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.from('in_progress') as any)
+    .insert(input)
     .select()
     
   if (error) {
@@ -94,11 +96,11 @@ export async function updateInProgress(
   id: string,
   input: UpdateInProgressInput
 ): Promise<InProgress | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
-  const { data, error } = await supabase
-    .from('in_progress')
-    .update(input as Partial<InProgress>)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.from('in_progress') as any)
+    .update(input)
     .eq('id', id)
     .select()
 
@@ -114,7 +116,7 @@ export async function updateInProgress(
 }
 
 export async function deleteInProgress(id: string): Promise<void> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { error } = await supabase.from('in_progress').delete().eq('id', id)
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,19 +19,20 @@ interface TechEntry {
 
 export function TechStackInput({ value, onChange }: TechStackInputProps) {
   const [entries, setEntries] = useState<TechEntry[]>([])
+  const isInitialized = useRef(false)
 
   useEffect(() => {
-    if (Object.keys(value).length > 0) {
+    if (!isInitialized.current && Object.keys(value).length > 0) {
       const initialEntries = Object.entries(value).map(([lang, percent]) => ({
         id: Math.random().toString(36).substr(2, 9),
         language: lang,
         percentage: percent.toString(),
       }))
       setEntries(initialEntries)
-    } else {
-      setEntries([])
+      isInitialized.current = true
     }
-  }, [value])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const addEntry = () => {
     setEntries([

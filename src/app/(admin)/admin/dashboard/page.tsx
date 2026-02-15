@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { getProjects } from '@/lib/actions/projects'
 import { getInProgressItems } from '@/lib/actions/in-progress'
 import { getDashboardStats } from "@/lib/actions/system"
 import type { Post } from '@/types/database'

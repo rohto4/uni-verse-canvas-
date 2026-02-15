@@ -4,8 +4,6 @@ import { z } from 'zod'
 import { createServerClient } from '@/lib/supabase/server'
 import type { Post, PostWithTags, Tag } from '@/types/database'
 import { revalidatePath } from 'next/cache'
-import { SupabaseClient } from '@supabase/supabase-js'
-import { Database } from '@/types/database'
 
 export interface GetPostsParams {
   page?: number
@@ -43,7 +41,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
     status = 'published',
   } = params
 
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   // Build base query
   let query = supabase
@@ -53,7 +51,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
       tags:post_tags(
         tag:tags(*)
       )
-    `, { count: 'exact' })
+    `, { count: 'exact' }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
   // Status filter - for published, also check scheduled posts
   if (status === 'published') {
@@ -73,7 +71,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
       .in('slug', tagSlugs)
 
     if (tagData && tagData.length > 0) {
-      const tagIds = tagData.map((t) => t.id)
+      const tagIds = tagData.map((t) => t.id as string)
 
       // Get posts that have ALL the specified tags
       const { data: postTagData } = await supabase
@@ -83,7 +81,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
 
       if (postTagData) {
         // Count occurrences of each post_id
-        const postCounts = postTagData.reduce((acc: Record<string, number>, pt: {post_id: string}) => {
+        const postCounts = postTagData.reduce((acc: Record<string, number>, pt: { post_id: string }) => {
           acc[pt.post_id] = (acc[pt.post_id] || 0) + 1
           return acc
         }, {} as Record<string, number>)
@@ -156,8 +154,8 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
     }
   }
 
-  const posts: PostWithTags[] = (data || []).map((post) => ({
-    ...(post as Post),
+  const posts: PostWithTags[] = ((data as Array<Post & { tags: PostTag[] }>) || []).map((post) => ({
+    ...post,
     tags: (post.tags as PostTag[]).map(pt => pt.tag).filter(Boolean),
   }))
 
@@ -176,7 +174,7 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
 }
 
 export async function getPostBySlug(slug: string): Promise<PostWithTags | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('posts')
@@ -208,12 +206,12 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
 
   return {
     ...postData,
-    tags: postData.tags.map((pt) => pt.tag).filter(Boolean),
+    tags: (postData.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }
 }
 
 export async function getPostById(id: string): Promise<PostWithTags | null> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { data, error } = await supabase
     .from('posts')
@@ -235,13 +233,13 @@ export async function getPostById(id: string): Promise<PostWithTags | null> {
 
   return {
     ...postData,
-    tags: postData.tags.map((pt) => pt.tag).filter(Boolean),
+    tags: (postData.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }
 }
 
 
 export async function getRelatedPosts(postId: string, limit: number = 3): Promise<PostWithTags[]> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   const { data: currentPost } = await supabase
     .from('posts')
@@ -253,12 +251,12 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     .eq('id', postId)
     .single()
 
-  const currentPostData = currentPost as { tags: { tag_id: string }[] } | null
+  const currentPostData = currentPost as { tags: Array<{ tag_id: string }> }
   if (!currentPostData || !currentPostData.tags.length) {
     return []
   }
 
-  const tagIds = currentPostData.tags.map((pt) => pt.tag_id)
+  const tagIds = (currentPostData.tags as Array<{ tag_id: string }>).map((pt) => pt.tag_id)
 
   const { data: relatedPostTags } = await supabase
     .from('post_tags')
@@ -270,12 +268,13 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     return []
   }
 
-  const postCounts = relatedPostTags.reduce((acc: Record<string, number>, pt: {post_id: string}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const postCounts = (relatedPostTags as any[]).reduce((acc: Record<string, number>, pt: {post_id: string}) => {
     acc[pt.post_id] = (acc[pt.post_id] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const relatedPostIds = Object.entries(postCounts)
+  const relatedPostIds = (Object.entries(postCounts) as [string, number][])
     .sort(([, a], [, b]) => b - a)
     .slice(0, limit)
     .map(([postId]) => postId)
@@ -297,8 +296,8 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     return []
   }
 
-  return (data || []).map((post) => ({
-    ...(post as Post),
+  return ((data as Array<Post & { tags: PostTag[] }>) || []).map((post) => ({
+    ...post,
     tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }))
 }
@@ -308,7 +307,7 @@ export async function getRelatedPostsByTagsWithRandom(
   limit: number = 3,
   candidateLimit: number = 10
 ): Promise<PostWithTags[]> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   if (tagIds.length === 0) {
     const result = await getPosts({ limit, sort: 'latest', status: 'published' })
@@ -325,12 +324,13 @@ export async function getRelatedPostsByTagsWithRandom(
     return result.posts
   }
 
-  const postCounts = relatedPostTags.reduce((acc: Record<string, number>, pt: {post_id: string}) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const postCounts = (relatedPostTags as any[]).reduce((acc: Record<string, number>, pt: {post_id: string}) => {
     acc[pt.post_id] = (acc[pt.post_id] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const candidatePostIds = Object.entries(postCounts)
+  const candidatePostIds = (Object.entries(postCounts) as [string, number][])
     .sort(([, a], [, b]) => b - a)
     .slice(0, candidateLimit)
     .map(([postId]) => postId)
@@ -354,8 +354,8 @@ export async function getRelatedPostsByTagsWithRandom(
     return []
   }
 
-  return (data || []).map((post) => ({
-    ...(post as Post),
+  return ((data as Array<Post & { tags: PostTag[] }>) || []).map((post) => ({
+    ...post,
     tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }))
 }
@@ -407,11 +407,11 @@ export interface ActionResponse<T = void> {
 export async function createPost(input: CreatePostInput): Promise<ActionResponse<PostWithTags>> {
   const result = CreatePostSchema.safeParse(input)
   if (!result.success) {
-    return { success: false, error: (result.error.errors[0]).message }
+    return { success: false, error: (result.error.issues[0]).message }
   }
 
   const { tags, ...postData } = result.data
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
 
   // 公開日時の自動設定
   let published_at = postData.published_at
@@ -421,13 +421,13 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
 
   try {
     // 1. 記事本体の作成
-    const { data: post, error: postError } = await supabase
-      .from('posts')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: post, error: postError } = await (supabase.from('posts') as any)
       .insert({
         ...postData,
         published_at,
         view_count: 0
-      } as Omit<Post, 'id'|'created_at'|'updated_at'|'view_count'> & {view_count: number}) 
+      }) 
       .select()
       .single()
 
@@ -438,21 +438,24 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
       throw postError
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const createdPost = post as any
+
     // 2. タグの紐付け（トランザクション補償付き）
     if (tags && tags.length > 0) {
       const postTags = tags.map(tagId => ({
-        post_id: post.id,
+        post_id: createdPost.id,
         tag_id: tagId
       }))
 
-      const { error: tagError } = await supabase
-        .from('post_tags')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: tagError } = await (supabase.from('post_tags') as any)
         .insert(postTags)
 
       if (tagError) {
         // 補償処理: タグ付けに失敗した場合、作成した記事を削除してロールバックする
         console.error('Failed to add tags, rolling back post creation:', tagError)
-        await supabase.from('posts').delete().eq('id', post.id)
+        await supabase.from('posts').delete().eq('id', createdPost.id)
         throw new Error('タグの設定に失敗したため、処理を中断しました')
       }
     }
@@ -460,7 +463,7 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
     revalidatePath('/posts')
     
     // 作成された完全なデータを取得して返す
-    const newPost = await getPostBySlug(post.slug)
+    const newPost = await getPostBySlug(createdPost.slug)
     if (!newPost) throw new Error('Failed to fetch created post')
     
     return { success: true, data: newPost }
@@ -475,10 +478,10 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
 export async function updatePost(id: string, input: UpdatePostInput): Promise<ActionResponse<PostWithTags>> {
   const result = UpdatePostSchema.safeParse(input)
   if (!result.success) {
-    return { success: false, error: (result.error.errors[0]).message }
+    return { success: false, error: (result.error.issues[0]).message }
   }
 
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
   const { tags, ...updateData } = result.data
 
   // 現在のデータを取得（ロールバック用）
@@ -492,27 +495,31 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
     return { success: false, error: '記事が見つかりません' }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const postToUpdate = currentPost as any
+
   // 現在のタグを取得（ロールバック用）
   const { data: currentTags } = await supabase
     .from('post_tags')
     .select('tag_id')
     .eq('post_id', id)
 
-  const oldTagIds = currentTags?.map((t) => t.tag_id) || []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oldTagIds = (currentTags as any[])?.map((t) => t.tag_id) || []
 
   // 公開日時の調整
   let published_at = updateData.published_at
-  if (updateData.status === 'published' && currentPost.status !== 'published') {
-     published_at = currentPost.published_at || new Date().toISOString()
+  if (updateData.status === 'published' && postToUpdate.status !== 'published') {
+     published_at = postToUpdate.published_at || new Date().toISOString()
   } else if (updateData.status && !published_at) {
-     published_at = currentPost.published_at
+     published_at = postToUpdate.published_at
   } else if (updateData.status === undefined && !published_at) {
-     published_at = currentPost.published_at
+     published_at = postToUpdate.published_at
   }
 
   try {
     // 1. 記事本体の更新
-    const { data: updatedPost, error: updateError } = await supabase
+    const { data: updatedPostData, error: updateError } = await supabase
       .from('posts')
       .update({
         ...updateData,
@@ -530,6 +537,8 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
       throw updateError
     }
 
+    const updatedPost = updatedPostData as Post
+
     // 2. タグの更新（トランザクション補償付き）
     if (tags !== undefined) {
       // 一旦全削除して再挿入
@@ -543,11 +552,11 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
       }
 
       if (tags.length > 0) {
-        const postTags = tags.map(tagId => ({
+        const postTags: Array<{ post_id: string; tag_id: string }> = tags.map(tagId => ({
           post_id: id,
           tag_id: tagId
         }))
-        
+
         const { error: insertTagsError } = await supabase
           .from('post_tags')
           .insert(postTags)
@@ -555,15 +564,14 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
         if (insertTagsError) {
           // 補償処理: タグ更新失敗時、記事とタグを元の状態に戻す
           console.error('Failed to update tags, rolling back:', insertTagsError)
-          
+
           // 記事データのロールバック
-          await supabase.from('posts').update(currentPost).eq('id', id)
-          
+          await supabase.from('posts').update(postToUpdate).eq('id', id)
+
           // タグデータのロールバック（削除してしまったので元に戻す）
           if (oldTagIds.length > 0) {
-             await supabase.from('post_tags').insert(
-               oldTagIds.map((tid: string) => ({ post_id: id, tag_id: tid }))
-             )
+             const rollbackTags: Array<{ post_id: string; tag_id: string }> = oldTagIds.map((tid: string) => ({ post_id: id, tag_id: tid }))
+             await supabase.from('post_tags').insert(rollbackTags)
           }
           
           throw new Error('タグの更新に失敗したため、変更を元に戻しました')
@@ -587,7 +595,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
 }
 
 export async function deletePost(id: string): Promise<ActionResponse<void>> {
-  const supabase: SupabaseClient<Database> = await createServerClient()
+  const supabase = await createServerClient()
   
   try {
     const { error } = await supabase

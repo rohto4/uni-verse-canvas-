@@ -37,11 +37,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     supabase.from('projects').select('id, title, created_at').order('created_at', { ascending: false }).limit(3)
   ])
 
-  const totalViews = (postsForViews || []).reduce((acc, p) => acc + (p.view_count || 0), 0)
+  const totalViews = ((postsForViews as Array<{ view_count: number }>) || []).reduce((acc, p) => acc + (p.view_count || 0), 0)
 
   const recentActivities: DashboardStats['recentActivities'] = [
-    ...(recentPosts || []).map(p => ({ id: p.id, type: 'post' as const, title: p.title, date: p.published_at || '' })),
-    ...(recentProjects || []).map(p => ({ id: p.id, type: 'project' as const, title: p.title, date: p.created_at || '' }))
+    ...((recentPosts as Array<{ id: string; title: string; published_at: string | null }>) || []).map(p => ({ id: p.id, type: 'post' as const, title: p.title, date: p.published_at || '' })),
+    ...((recentProjects as Array<{ id: string; title: string; created_at: string }>) || []).map(p => ({ id: p.id, type: 'project' as const, title: p.title, date: p.created_at || '' }))
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5)
 
   return {
@@ -82,7 +82,8 @@ export async function resetDemoData(): Promise<boolean> {
 
   for (const t of tables) {
     // Delete all rows. Service role key required for this operation.
-    const { error } = await supabase.from(t as any).delete().neq('id', '00000000-0000-0000-0000-000000000000')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.from(t) as any).delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
     if (error) {
       console.error(`Failed to truncate table ${t}:`, error)

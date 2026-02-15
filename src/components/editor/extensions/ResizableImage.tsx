@@ -1,8 +1,9 @@
 import Image from "@tiptap/extension-image"
-import { ReactNodeViewRenderer, NodeViewWrapper } from "@tiptap/react"
+import type { ImageOptions } from "@tiptap/extension-image"
+import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react"
 import React from "react"
 
-const ResizableImageView = ({ node, updateAttributes, selected }: any) => {
+const ResizableImageView = ({ node, updateAttributes, selected }: NodeViewProps) => {
   const [isResizing, setIsResizing] = React.useState(false)
   const [startWidth, setStartWidth] = React.useState(0)
   const [startX, setStartX] = React.useState(0)
@@ -48,6 +49,7 @@ const ResizableImageView = ({ node, updateAttributes, selected }: any) => {
         className={`resizable-image-container ${isResizing ? "resizing" : ""} ${selected ? "selected" : ""}`}
         style={{ width: node.attrs.width ? `${node.attrs.width}px` : "auto" }}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
           src={node.attrs.src}
@@ -75,7 +77,7 @@ export const ResizableImage = Image.extend({
 
   addOptions() {
     return {
-      ...this.parent?.(),
+      ...(this.parent?.() as ImageOptions),
       inline: false,
     }
   },

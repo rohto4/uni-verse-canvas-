@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Loader2, X, Plus } from 'lucide-react'
+import type { JSONContent } from '@tiptap/core'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -188,7 +189,7 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
                   name="content"
                   render={({ field }) => (
                     <TiptapEditor
-                      content={field.value as any}
+                      content={field.value as JSONContent}
                       onChange={field.onChange}
                       placeholder="プロジェクトの詳細内容..."
                     />

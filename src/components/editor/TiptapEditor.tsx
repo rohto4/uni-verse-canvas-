@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import { useEditor, EditorContent, Editor } from "@tiptap/react"
+import type { JSONContent } from "@tiptap/core"
 import { GripVertical, Maximize2, Minimize2 } from "lucide-react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
@@ -33,7 +34,7 @@ import { TableWithDelete } from "./extensions/TableWithDelete"
 const lowlight = createLowlight(common)
 
 export interface TiptapEditorProps {
-  content?: string
+  content?: string | JSONContent
   onChange?: (content: string) => void
   onUpdate?: (editor: Editor) => void
   placeholder?: string
