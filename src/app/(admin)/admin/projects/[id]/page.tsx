@@ -1,87 +1,52 @@
-'use client'
+import { notFound } from 'next/navigation'
+import { getProjectById, updateProject, deleteProject } from '@/lib/actions/projects'
+import { getTags } from '@/lib/actions/tags'
+import { uploadFile } from '@/lib/actions/storage'
+import { ProjectEditorClient } from '@/components/admin/ProjectEditorClient'
+import type { ProjectFormValues } from '@/components/admin/ProjectForm'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
-import { ProjectForm, type ProjectFormValues } from '@/components/admin/ProjectForm'
-import { getProjectById, updateProject } from '@/lib/actions/projects'
-import type { ProjectWithTags } from '@/types/database'
-
-interface PageProps {
-  params: {
-    id: string
-  }
+interface EditProjectPageProps {
+  params: { id: string }
 }
 
-export default function EditProjectPage({ params }: PageProps) {
-  const router = useRouter()
-  const [project, setProject] = useState<ProjectWithTags | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  // params.id を安全に取得するために useEffect 内で使用するか、
-  // あるいは Next.js のバージョンによっては params を await する必要があるが、
-  // 基本的な Client Component の実装として props から取得する。
-  const projectId = params.id
-
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const data = await getProjectById(projectId)
-        if (data) {
-          setProject(data)
-        } else {
-          toast.error('プロジェクトが見つかりません')
-          router.push('/admin/projects')
-        }
-      } catch (error) {
-        console.error(error)
-        toast.error('エラーが発生しました')
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    if (projectId) {
-      fetchProject()
-    }
-  }, [projectId, router])
-
-  const handleSubmit = async (data: ProjectFormValues) => {
-    try {
-      // updateProject は Partial<CreateProjectInput> を取るが、
-      // ProjectFormValues はほぼ互換性があるため any でキャストして渡す
-      const result = await updateProject(projectId, data)
-
-      if (result) {
-        toast.success('プロジェクトを更新しました')
-        router.push('/admin/projects')
-        router.refresh()
-      } else {
-        toast.error('プロジェクトの更新に失敗しました')
-      }
-    } catch (error) {
-      console.error(error)
-      toast.error('エラーが発生しました')
-    }
+export default async function EditProjectPage({ params }: EditProjectPageProps) {
+  const project = await getProjectById(params.id)
+  if (!project) {
+    notFound()
   }
 
-  if (loading) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+  const tags = await getTags()
+
+  async function submitAction(data: ProjectFormValues) {
+    'use server'
+    const result = await updateProject(params.id, data)
+    return result ? { success: true } : { success: false, error: 'プロジェクトの更新に失敗しました' }
   }
 
-  if (!project) return null
+  async function uploadAction(formData: FormData) {
+    'use server'
+    return uploadFile(formData)
+  }
+
+  async function deleteAction(id: string) {
+    'use server'
+    return deleteProject(id)
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">プロジェクト編集</h1>
       </div>
-      <ProjectForm initialData={project} onSubmit={handleSubmit} />
+      <ProjectEditorClient
+        initialData={project}
+        availableTags={tags}
+        submitAction={submitAction}
+        uploadAction={uploadAction}
+        deleteAction={deleteAction}
+        successMessage="プロジェクトを更新しました"
+        redirectTo="/admin/projects"
+      />
     </div>
   )
 }

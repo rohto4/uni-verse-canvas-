@@ -208,9 +208,9 @@ img.onload = () => {
 
 ## 🔗 関連ドキュメント
 
-- [コンポーネント仕様](../lv3/component-spec.md) - Tiptapエディタ詳細仕様
+- [コンポーネント仕様](../specs/component-spec.md) - Tiptapエディタ詳細仕様
 - [全体概要](./00-overview.md)
-- [エディタ実装状況（詳細）](../lv3/editor-implementation-status.md)
+- [エディタ実装状況（詳細）](./_archive/editor-implementation-status.md)
 
 ---
 

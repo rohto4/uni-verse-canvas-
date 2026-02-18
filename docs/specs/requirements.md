@@ -1,6 +1,6 @@
 # UniVerse Canvas — 要件定義 (Lv1)
 
-※ 本ファイルは Lv4 の実装状況に合わせて最新化されています。詳細な実装ステータスは `docs/lv4/implementation-status.md`、実装計画は `docs/lv4/IMPLEMENTATION_PLAN_DETAILED.md` を参照してください。
+※ 本ファイルは実装状況に合わせて最新化されています。詳細な実装ステータスは `docs/implementation/00-overview.md`、実装計画は `docs/implementation/_archive/IMPLEMENTATION_PLAN_DETAILED.md` を参照してください。
 
 # docs/requirements.md
 
@@ -45,12 +45,14 @@
 | **進行中のこと（in_progress）** | 現在進行中プロジェクト | ステータス（未着手/中断中/進行中/完了）、ロードマップ |
 
 **B. 固定ページ**
-ホーム / 自己紹介 / 作ったもの / 読み物 / 進行中のこと / 関連リンク
+ホーム / 自己紹介 / 関連リンク
+（自己紹介・関連リンクは管理画面から編集可能）
 
 #### 2.1.3 コンテンツ管理機能
 
 **Tiptap エディタ機能**
-基本編集 / リスト / コードブロック（Shiki） / 画像（WebP変換・横並び） / テーブル / YouTube埋め込み / KaTeX数式 / 装飾（蛍光ペン・文字色・背景色） / 文字数カウント
+基本編集 / リスト / コードブロック（Lowlight） / 画像 / テーブル / YouTube埋め込み / 装飾（蛍光ペン・文字色・背景色） / 文字数カウント
+（KaTeX数式・WebP変換は将来対応）
 
 **メタデータ管理**
 タイトル（最大200文字） / スラッグ（自動生成） / 説明文（OGP用、最大300文字） / カバー画像（WebP、最大5MB） / タグ（複数選択可） / 公開日時 / OGP画像
@@ -63,9 +65,8 @@
 | published | 公開済み | 一般ユーザー閲覧可能 |
 
 #### 2.1.4 画像処理
-- アップロード前: クライアント側WebP変換（browser-image-compression）
-- 設定: 最大幅1920px、品質80%、WebP形式
-- ストレージ: Supabase Storage `/posts/images/{post_id}/{timestamp}_{filename}.webp`
+- ストレージ: Supabase Storage（`images` バケットを共通利用）
+- クライアント側圧縮・WebP変換は将来対応
 
 #### 2.1.5 時限投稿
 - 判定基準: サーバーサイド時刻のみ
@@ -77,7 +78,7 @@
 - 複数タグ: AND検索
 - UI: PC: サイドバー / スマホ: ドロワーメニュー
 
-#### 2.1.7 Qiita連携
+#### 2.1.7 Qiita連携（将来）
 - API: Qiita API v2（Read-only）
 - 取得情報: タイトル、URL、いいね数、公開日
 - キャッシュ: Supabase `qiita_cache` テーブル
@@ -90,7 +91,8 @@
 
 #### 2.1.9 検索機能
 - タグフィルタ: メイン検索方法（複数タグ対応）
-- 全文検索: Postgres Full-Text Search（`pg_trgm` + `to_tsvector`）
+- キーワード検索: `ilike` ベース（タイトル/抜粋/本文）
+- Full-Text Search（`pg_trgm` + `to_tsvector`）は将来対応
 
 #### 2.1.10 コメント機能（将来実装）
 BOT対策（reCAPTCHA v3） / Rate Limiting（5 req/min） / 管理者承認制
@@ -118,7 +120,7 @@ BOT対策（reCAPTCHA v3） / Rate Limiting（5 req/min） / 管理者承認制
 ## 3. UI/UX要件
 
 ### 3.1 デザイン方針
-シンプル・モダン・読みやすさ重視 / ライト・ダークモード対応 / レスポンシブ（Mobile First）
+シンプル・モダン・読みやすさ重視 / ライトモードのみ / レスポンシブ（Mobile First）
 
 ### 3.2 ページ別UI仕様
 - **ホーム**: ヒーロー、最新記事3件、最新プロジェクト3件、進行中、SNSリンク
@@ -135,6 +137,13 @@ BOT対策（reCAPTCHA v3） / Rate Limiting（5 req/min） / 管理者承認制
 | タブレット | 641px〜1024px |
 | PC | 1025px〜 |
 
+### 3.4 リンク／クリック挙動
+- **カード／リスト項目は全面クリック可能**: 記事・プロジェクト・管理一覧などの“詳細へ遷移する単位”はカード全体または行全体をリンク対象にする。
+- **タイトルのみリンクは避ける**: 視覚的にカードで表示される場合は、タイトルだけでなく余白もクリック対象に含める。
+- **ネストした `<a>` を禁止**: カード内に外部リンクやボタンがある場合は、外側は `onClick + useRouter` で遷移し、内側は `stopPropagation` で競合を防止する。
+- **キーボード操作必須**: クリック可能領域には `tabIndex=0` と `role="link"` を付与し、Enter / Space で遷移できるようにする。
+- **アクセシブルなフォーカス表示**: フォーカスリングを必ず表示し、視覚的に“リンク領域”が分かるようにする。
+
 ---
 
 ## 4. データ要件
@@ -142,7 +151,7 @@ BOT対策（reCAPTCHA v3） / Rate Limiting（5 req/min） / 管理者承認制
 ### 4.1 データベーステーブル（概要）
 posts / projects / in_progress / tags / post_tags / project_tags / post_links / post_project_links / pages / qiita_cache
 
-詳細は `docs/lv2/data-schema.md` を参照。
+詳細は `docs/specs/data-schema.md` を参照。
 
 ---
 

@@ -1,9 +1,9 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Tags table
 CREATE TABLE IF NOT EXISTS tags (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(50) UNIQUE NOT NULL,
   slug VARCHAR(50) UNIQUE NOT NULL,
   description TEXT,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS tags (
 
 -- Posts table
 CREATE TABLE IF NOT EXISTS posts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(200) NOT NULL,
   slug VARCHAR(200) UNIQUE NOT NULL,
   content JSONB NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS posts (
 
 -- Projects table
 CREATE TABLE IF NOT EXISTS projects (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(200) NOT NULL,
   slug VARCHAR(200) UNIQUE NOT NULL,
   description TEXT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS projects (
 
 -- In Progress table
 CREATE TABLE IF NOT EXISTS in_progress (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(200) NOT NULL,
   description TEXT NOT NULL,
   status VARCHAR(20) DEFAULT 'not_started' CHECK (status IN ('not_started', 'paused', 'in_progress', 'completed')),

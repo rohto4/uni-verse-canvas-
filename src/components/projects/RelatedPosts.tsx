@@ -2,12 +2,13 @@ import Link from 'next/link'
 import { Calendar } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getRelatedPostsByTagsWithRandom } from '@/lib/actions/posts'
+import { getRelatedPostsByTagsWithRandom, getRelatedPostsForProject } from '@/lib/actions/posts'
 import type { Tag } from '@/types/database'
 
 interface RelatedPostsProps {
   tags: Tag[]
   limit?: number
+  projectId?: string
 }
 
 function formatDate(dateString: string | null): string {
@@ -16,9 +17,12 @@ function formatDate(dateString: string | null): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-export async function RelatedPosts({ tags, limit = 3 }: RelatedPostsProps) {
+export async function RelatedPosts({ tags, limit = 3, projectId }: RelatedPostsProps) {
   const tagIds = tags.map(tag => tag.id)
-  const relatedPosts = await getRelatedPostsByTagsWithRandom(tagIds, limit)
+  const manualRelated = projectId ? await getRelatedPostsForProject(projectId, limit) : []
+  const relatedPosts = manualRelated.length > 0
+    ? manualRelated
+    : await getRelatedPostsByTagsWithRandom(tagIds, limit)
 
   if (relatedPosts.length === 0) {
     return null

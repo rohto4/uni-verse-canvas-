@@ -1,495 +1,985 @@
--- Clear existing data (for development only)
+-- Reset and seed dummy data (development only)
+BEGIN;
+
 TRUNCATE TABLE post_project_links, post_links, project_tags, post_tags, in_progress, projects, posts, tags, pages CASCADE;
 
--- Insert Tags
+-- Tags (28)
 INSERT INTO tags (id, name, slug, description, color) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Next.js', 'nextjs', 'The React Framework for Production', '#000000'),
-  ('22222222-2222-2222-2222-222222222222', 'React', 'react', 'A JavaScript library for building user interfaces', '#61DAFB'),
-  ('33333333-3333-3333-3333-333333333333', 'TypeScript', 'typescript', 'TypeScript is JavaScript with syntax for types', '#3178C6'),
-  ('44444444-4444-4444-4444-444444444444', 'Supabase', 'supabase', 'The Open Source Firebase Alternative', '#3ECF8E'),
-  ('55555555-5555-5555-5555-555555555555', 'Tailwind CSS', 'tailwindcss', 'A utility-first CSS framework', '#06B6D4'),
-  ('66666666-6666-6666-6666-666666666666', 'Tiptap', 'tiptap', 'The headless editor framework for web artisans', '#000000'),
-  ('77777777-7777-7777-7777-777777777777', 'Firebase', 'firebase', 'Google Firebase Platform', '#FFCA28'),
-  ('88888888-8888-8888-8888-888888888888', 'Redux', 'redux', 'A Predictable State Container for JS Apps', '#764ABC'),
-  ('99999999-9999-9999-9999-999999999999', 'Node.js', 'nodejs', 'Node.js JavaScript runtime', '#339933'),
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Vue.js', 'vuejs', 'The Progressive JavaScript Framework', '#4FC08D'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'PostgreSQL', 'postgresql', 'The World''s Most Advanced Open Source Relational Database', '#4169E1'),
-  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Docker', 'docker', 'Containerization Platform', '#2496ED'),
-  ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Astro', 'astro', 'The web framework for content-driven websites', '#FF5D01'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'NestJS', 'nestjs', 'A progressive Node.js framework', '#E0234E');
+  ('11111111-aaaa-4aaa-8aaa-111111111111', 'DTM', 'dtm', 'Music production and DAW workflows', '#1E88E5'),
+  ('22222222-bbbb-4bbb-8bbb-222222222222', '合唱', 'choral', 'Choral performance and arrangement', '#7B1FA2'),
+  ('33333333-cccc-4ccc-8ccc-333333333333', '花の写真', 'flower-photo', 'Flower photography and botanical studies', '#E91E63'),
+  ('44444444-dddd-4ddd-8ddd-444444444444', '写真撮影', 'photography', 'Photography techniques and gear notes', '#5D4037'),
+  ('55555555-eeee-4eee-8eee-555555555555', 'フィールドレコーディング', 'field-recording', 'Outdoor and ambient recording sessions', '#00897B'),
+  ('66666666-ffff-4fff-8fff-666666666666', 'ミキシング', 'mixing', 'Mixing practices for clarity and balance', '#3949AB'),
+  ('77777777-0000-4000-8000-777777777777', 'マスタリング', 'mastering', 'Mastering chains and loudness targets', '#546E7A'),
+  ('88888888-1111-4111-8111-888888888888', 'AI開発', 'ai-development', 'AI-assisted development and workflows', '#00ACC1'),
+  ('99999999-2222-4222-8222-999999999999', 'LLM', 'llm', 'Large language model tips and prompts', '#43A047'),
+  ('aaaaaaaa-3333-4333-8333-aaaaaaaaaaaa', 'Next.js', 'nextjs', 'Next.js and App Router practices', '#000000'),
+  ('bbbbbbbb-4444-4444-8444-bbbbbbbbbbbb', 'Supabase', 'supabase', 'Supabase backend and storage', '#3ECF8E'),
+  ('cccccccc-5555-4555-8555-cccccccccccc', 'TypeScript', 'typescript', 'Type safety and clean types', '#3178C6'),
+  ('dddddddd-6666-4666-8666-dddddddddddd', 'Creative Coding', 'creative-coding', 'Generative visuals and sound', '#F9A825'),
+  ('eeeeeeee-7777-4777-8777-eeeeeeeeeeee', 'Audio Plugin', 'audio-plugin', 'Plugin design and DSP notes', '#6D4C41'),
+  ('f1111111-aaaa-4aaa-8aaa-111111111111', '作曲', 'composition', 'Songwriting and harmony', '#6A1B9A'),
+  ('f2222222-bbbb-4bbb-8bbb-222222222222', 'アレンジ', 'arrangement', 'Arrangement and orchestration', '#00838F'),
+  ('f3333333-cccc-4ccc-8ccc-333333333333', 'レコーディング', 'recording', 'Recording techniques and setup', '#455A64'),
+  ('f4444444-dddd-4ddd-8ddd-444444444444', 'ボーカル', 'vocal', 'Vocal practice and control', '#D81B60'),
+  ('f5555555-eeee-4eee-8eee-555555555555', 'ピアノ', 'piano', 'Piano practice and studies', '#6D4C41'),
+  ('f6666666-ffff-4fff-8fff-666666666666', 'ギター', 'guitar', 'Guitar practice and tones', '#5E35B1'),
+  ('f7777777-0000-4000-8000-777777777777', '植物観察', 'botany', 'Botanical observations', '#2E7D32'),
+  ('f8888888-1111-4111-8111-888888888888', 'カメラ機材', 'camera-gear', 'Camera and lens notes', '#37474F'),
+  ('f9999999-2222-4222-8222-999999999999', '生成AI', 'generative-ai', 'Generative AI experiments', '#039BE5'),
+  ('faaaaaaa-3333-4333-8333-aaaaaaaaaaaa', 'プロンプト', 'prompting', 'Prompt design and evaluation', '#7CB342'),
+  ('fbbbbbbb-4444-4444-8444-bbbbbbbbbbbb', 'サウンドデザイン', 'sound-design', 'Sound design and synthesis', '#8E24AA'),
+  ('fccccccc-5555-4555-8555-cccccccccccc', 'ステージ運用', 'stage-ops', 'Live performance operations', '#5D4037'),
+  ('fddddddd-6666-4666-8666-dddddddddddd', 'フォトブック', 'photo-book', 'Photo book curation', '#00897B'),
+  ('feeeeeee-7777-4777-8777-eeeeeeeeeeee', 'AIツール', 'ai-tools', 'AI tooling and automation', '#0277BD');
 
--- Insert Projects
-INSERT INTO projects (id, title, slug, description, content, demo_url, github_url, cover_image, start_date, end_date, status, steps_count, used_ai, gallery_images, tech_stack) VALUES
+-- Projects (16)
+INSERT INTO projects (
+  id,
+  title,
+  slug,
+  description,
+  content,
+  demo_url,
+  github_url,
+  cover_image,
+  start_date,
+  end_date,
+  status,
+  steps_count,
+  used_ai,
+  gallery_images,
+  tech_stack,
+  public_link_type,
+  public_link_url
+) VALUES
   (
-    'a1111111-1111-1111-1111-111111111111',
-    'UniVerse Canvas',
-    'universe-canvas',
-    '個人用ポートフォリオ＆ブログシステム。Next.js 15、Supabase、Tiptapを使用した高機能CMS。',
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ドキュメント駆動開発で構築された、モダンなポートフォリオ＆ブログシステムです。"}]}]}'::jsonb,
-    'https://example.com',
-    'https://github.com/example/universe-canvas',
+    'a1111111-0000-4000-8000-111111111111',
+    'Bloom Atlas',
+    'bloom-atlas',
+    '花の写真を季節と色彩で整理するデジタル標本帳。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"季節・場所・花名でフィルタできる写真カタログ。撮影メモやレンズ情報も記録。"}]}]}'::jsonb,
+    'https://example.com/bloom-atlas',
     null,
-    '2024-01-01',
+    'https://placehold.co/1200x900?text=Bloom+Atlas',
+    '2024-03-01',
     null,
-    'completed',
-    100000,
-    '["Claude Sonnet 4.5", "GitHub Copilot"]'::jsonb,
-    ARRAY['https://placehold.co/800x600?text=Screenshot+1', 'https://placehold.co/800x600?text=Screenshot+2', 'https://placehold.co/800x600?text=Screenshot+3'],
-    '{"TypeScript": 45.2, "CSS": 25.3, "JavaScript": 20.1, "HTML": 9.4}'::jsonb
+    'registered',
+    2400,
+    '["ChatGPT", "Claude"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Bloom+01', 'https://placehold.co/1200x900?text=Bloom+02'],
+    '{"TypeScript": 42, "CSS": 20, "HTML": 10, "SQL": 8, "Next.js": 20}'::jsonb,
+    'website',
+    'https://example.com/bloom-atlas'
   ),
   (
-    'a2222222-2222-2222-2222-222222222222',
-    'Task Manager Pro',
-    'task-manager-pro',
-    'チーム向けのタスク管理アプリケーション。リアルタイム同期、カンバンボード、Slack連携機能付き。',
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"React + Firebaseで構築されたタスク管理アプリケーションです。"}]}]}'::jsonb,
-    'https://example.com',
-    'https://github.com/example/task-manager',
-    null,
-    '2023-08-01',
-    '2023-12-31',
+    'a2222222-0000-4000-8000-222222222222',
+    'Choir Score Companion',
+    'choir-score-companion',
+    '合唱練習用のスコア管理と練習録音の比較ツール。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"パートごとの音源、テンポメモ、練習ログを一括管理。"}]}]}'::jsonb,
+    'https://example.com/choir-score',
+    'https://github.com/example/choir-score-companion',
+    'https://placehold.co/1200x900?text=Choir+Score',
+    '2023-10-01',
+    '2024-02-15',
     'completed',
-    35000,
-    '["GitHub Copilot"]'::jsonb,
-    ARRAY['https://placehold.co/800x600?text=Dashboard', 'https://placehold.co/800x600?text=Kanban'],
-    '{"TypeScript": 52.8, "CSS": 28.5, "JavaScript": 18.7}'::jsonb
-  ),
-  (
-    'a3333333-3333-3333-3333-333333333333',
-    'CLI Toolkit',
-    'cli-toolkit',
-    '開発効率化のためのCLIツールキット。プロジェクト生成、コードスニペット管理、デプロイ自動化機能。',
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Node.jsベースのCLIツールキットです。"}]}]}'::jsonb,
-    null,
-    'https://github.com/example/cli-toolkit',
-    null,
-    '2023-05-01',
-    '2023-07-31',
-    'archived',
-    8000,
-    null,
-    ARRAY[]::text[],
-    '{"TypeScript": 85.2, "JavaScript": 14.8}'::jsonb
-  ),
-  (
-    'a4444444-4444-4444-4444-444444444444',
-    'Weather Dashboard',
-    'weather-dashboard',
-    '天気情報を可視化するダッシュボード。複数地域の天気予報、グラフ表示、アラート機能。',
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Vue.jsで構築された天気ダッシュボードです。"}]}]}'::jsonb,
-    'https://example.com',
-    null,
-    null,
-    '2023-02-01',
-    '2023-04-30',
-    'completed',
-    12000,
+    1800,
     '["ChatGPT"]'::jsonb,
-    ARRAY['https://placehold.co/800x600?text=Weather+View'],
-    '{"JavaScript": 48.3, "Vue": 32.1, "CSS": 19.6}'::jsonb
+    ARRAY['https://placehold.co/1200x900?text=Score+01'],
+    '{"TypeScript": 50, "Next.js": 20, "CSS": 15, "Supabase": 15}'::jsonb,
+    null,
+    null
   ),
   (
-    'a5555555-5555-5555-5555-555555555555',
-    'Portfolio Template',
-    'portfolio-template',
-    '開発者向けのポートフォリオテンプレート。カスタマイズ可能なデザイン、ダークモード対応。',
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Astroで構築されたポートフォリオテンプレートです。"}]}]}'::jsonb,
-    'https://example.com',
-    'https://github.com/example/portfolio-template',
+    'a3333333-0000-4000-8000-333333333333',
+    'DTM Session Notebook',
+    'dtm-session-notebook',
+    '楽曲制作のセッションメモとプリセット履歴をまとめる。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"テンプレート、使用音源、ミックスメモを1画面で確認。"}]}]}'::jsonb,
     null,
-    '2022-11-01',
-    '2023-01-31',
-    'completed',
-    5000,
-    null,
-    ARRAY['https://placehold.co/800x600?text=Template+1', 'https://placehold.co/800x600?text=Template+2'],
-    '{"TypeScript": 40.5, "Astro": 35.2, "CSS": 24.3}'::jsonb
-  ),
-  (
-    'a6666666-6666-6666-6666-666666666666',
-    'E-commerce API',
-    'ecommerce-api',
-    'REST API for e-commerce platform. 商品管理、注文処理、決済連携、在庫管理機能。',
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"NestJSで構築されたEコマースAPIです。"}]}]}'::jsonb,
-    null,
-    'https://github.com/example/ecommerce-api',
-    null,
-    '2022-06-01',
-    '2022-10-31',
-    'completed',
-    25000,
-    '["GitHub Copilot"]'::jsonb,
-    ARRAY[]::text[],
-    '{"TypeScript": 92.4, "JavaScript": 7.6}'::jsonb
-  );
-
--- Insert Project Tags
-INSERT INTO project_tags (project_id, tag_id) VALUES
-  ('a1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111'), -- UniVerse Canvas - Next.js
-  ('a1111111-1111-1111-1111-111111111111', '44444444-4444-4444-4444-444444444444'), -- UniVerse Canvas - Supabase
-  ('a1111111-1111-1111-1111-111111111111', '66666666-6666-6666-6666-666666666666'), -- UniVerse Canvas - Tiptap
-  ('a1111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333333'), -- UniVerse Canvas - TypeScript
-  ('a1111111-1111-1111-1111-111111111111', '55555555-5555-5555-5555-555555555555'), -- UniVerse Canvas - Tailwind CSS
-  ('a2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222'), -- Task Manager - React
-  ('a2222222-2222-2222-2222-222222222222', '77777777-7777-7777-7777-777777777777'), -- Task Manager - Firebase
-  ('a2222222-2222-2222-2222-222222222222', '88888888-8888-8888-8888-888888888888'), -- Task Manager - Redux
-  ('a3333333-3333-3333-3333-333333333333', '99999999-9999-9999-9999-999999999999'), -- CLI Toolkit - Node.js
-  ('a3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333'), -- CLI Toolkit - TypeScript
-  ('a4444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'), -- Weather - Vue.js
-  ('a5555555-5555-5555-5555-555555555555', 'dddddddd-dddd-dddd-dddd-dddddddddddd'), -- Portfolio - Astro
-  ('a5555555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555'), -- Portfolio - Tailwind CSS
-  ('a6666666-6666-6666-6666-666666666666', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'), -- E-commerce - NestJS
-  ('a6666666-6666-6666-6666-666666666666', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'), -- E-commerce - PostgreSQL
-  ('a6666666-6666-6666-6666-666666666666', 'cccccccc-cccc-cccc-cccc-cccccccccccc'); -- E-commerce - Docker
-
--- Insert In Progress items
-INSERT INTO in_progress (id, title, description, status, progress_rate, started_at, completed_at, notes) VALUES
-  (
-    'c1111111-1111-1111-1111-111111111111',
-    'AI チャットボット開発',
-    'OpenAI APIを活用したカスタムチャットボットの開発。RAG（Retrieval-Augmented Generation）を実装予定。',
-    'in_progress',
-    65,
+    'https://github.com/example/dtm-session-notebook',
+    'https://placehold.co/1200x900?text=DTM+Notebook',
     '2024-01-10',
     null,
-    '現在、ベクトルデータベースの選定中。Pinecone vs Weaviate で検討中。'
+    'registered',
+    900,
+    '["Claude", "GitHub Copilot"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Session+01', 'https://placehold.co/1200x900?text=Session+02'],
+    '{"TypeScript": 55, "Next.js": 25, "CSS": 10, "Supabase": 10}'::jsonb,
+    'download',
+    'https://example.com/dtm-notebook-download'
   ),
   (
-    'c2222222-2222-2222-2222-222222222222',
-    'モバイルアプリ（Flutter）',
-    'クロスプラットフォームのモバイルアプリ開発。iOS/Android両対応のタスク管理アプリ。',
-    'paused',
-    30,
-    '2023-12-01',
+    'a4444444-0000-4000-8000-444444444444',
+    'AI Mix Assistant',
+    'ai-mix-assistant',
+    'ミックスの要点をAIで提案するチェックリスト型ツール。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"音源の特徴を入力すると、帯域バランスの改善案を提示。"}]}]}'::jsonb,
+    'https://example.com/ai-mix',
     null,
-    '他のプロジェクトを優先中。2月に再開予定。'
+    'https://placehold.co/1200x900?text=AI+Mix',
+    '2023-05-01',
+    '2023-12-20',
+    'completed',
+    1500,
+    '["Claude", "ChatGPT"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Mix+01'],
+    '{"TypeScript": 45, "Python": 20, "Next.js": 20, "CSS": 15}'::jsonb,
+    null,
+    null
   ),
   (
-    'c3333333-3333-3333-3333-333333333333',
-    'Rust入門',
-    'システムプログラミング言語Rustの学習。The Rust Programming Language を読み進め中。',
+    'a5555555-0000-4000-8000-555555555555',
+    'Field Recording Map',
+    'field-recording-map',
+    '環境音を地図で整理するフィールド録音ログ。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"録音ポイントの天候・機材・感想を保存。"}]}]}'::jsonb,
+    'https://example.com/field-recording-map',
+    null,
+    'https://placehold.co/1200x900?text=Field+Map',
+    '2022-08-01',
+    '2023-03-15',
+    'completed',
+    1100,
+    '["ChatGPT"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Field+01', 'https://placehold.co/1200x900?text=Field+02'],
+    '{"TypeScript": 40, "Next.js": 25, "CSS": 15, "Supabase": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'a6666666-0000-4000-8000-666666666666',
+    'Harmony Trainer',
+    'harmony-trainer',
+    '合唱向けのハーモニー練習アプリ。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"パートごとの練習音源とスコア同期機能。"}]}]}'::jsonb,
+    null,
+    null,
+    'https://placehold.co/1200x900?text=Harmony',
+    '2021-11-01',
+    '2022-04-01',
+    'archived',
+    700,
+    null,
+    ARRAY['https://placehold.co/1200x900?text=Harmony+01'],
+    '{"TypeScript": 35, "React": 30, "CSS": 20, "Audio": 15}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'a7777777-0000-4000-8000-777777777777',
+    'Prompt-to-Plugin Playground',
+    'prompt-to-plugin',
+    'AIで音作りプロトタイプを生成する実験場。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"サンプル設定の共有や比較ができる実験プロジェクト。"}]}]}'::jsonb,
+    null,
+    'https://github.com/example/prompt-to-plugin',
+    'https://placehold.co/1200x900?text=Plugin+Lab',
+    '2022-01-15',
+    '2022-06-30',
+    'archived',
+    500,
+    '["Claude"]'::jsonb,
+    ARRAY[]::text[],
+    '{"TypeScript": 30, "Python": 25, "Audio": 25, "CSS": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'a8888888-0000-4000-8000-888888888888',
+    'Garden Light Study',
+    'garden-light-study',
+    '花の光の当たり方を比較する撮影ログ。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"時間帯別の光の変化を撮影し、撮影条件を整理。"}]}]}'::jsonb,
+    'https://example.com/garden-light',
+    null,
+    'https://placehold.co/1200x900?text=Garden+Light',
+    '2024-04-01',
+    null,
+    'registered',
+    620,
+    '["ChatGPT"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Garden+01', 'https://placehold.co/1200x900?text=Garden+02'],
+    '{"TypeScript": 38, "Next.js": 22, "CSS": 20, "Supabase": 20}'::jsonb,
+    'website',
+    'https://example.com/garden-light'
+  ),
+  (
+    'a9999999-0000-4000-8000-999999999999',
+    'Chorus Scheduling Board',
+    'chorus-schedule-board',
+    '合唱練習のスケジュールと譜面管理ボード。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"練習日程と課題曲の進捗を整理。"}]}]}'::jsonb,
+    'https://example.com/chorus-board',
+    null,
+    'https://placehold.co/1200x900?text=Chorus+Board',
+    '2024-05-01',
+    null,
+    'registered',
+    420,
+    '["ChatGPT"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Chorus+01'],
+    '{"TypeScript": 40, "Next.js": 25, "CSS": 20, "Supabase": 15}'::jsonb,
+    'website',
+    'https://example.com/chorus-board'
+  ),
+  (
+    'b1010101-0000-4000-8000-101010101010',
+    'Flora Color Grid',
+    'flora-color-grid',
+    '花の色味をパレットで並べる写真グリッド。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"色相別に写真を整理して比較。"}]}]}'::jsonb,
+    'https://example.com/flora-grid',
+    null,
+    'https://placehold.co/1200x900?text=Flora+Grid',
+    '2023-09-01',
+    '2024-01-20',
+    'completed',
+    560,
+    null,
+    ARRAY['https://placehold.co/1200x900?text=Flora+01'],
+    '{"TypeScript": 32, "Next.js": 20, "CSS": 28, "Supabase": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'b2020202-0000-4000-8000-202020202020',
+    'Mix Recall Vault',
+    'mix-recall-vault',
+    'ミックス設定のリコールとノートを保存する。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"セッションごとのEQ/Comp設定を記録。"}]}]}'::jsonb,
+    null,
+    null,
+    'https://placehold.co/1200x900?text=Mix+Vault',
+    '2022-05-15',
+    '2022-12-01',
+    'completed',
+    780,
+    '["Claude"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Mix+Vault+01'],
+    '{"TypeScript": 35, "Next.js": 20, "CSS": 25, "Supabase": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'b3030303-0000-4000-8000-303030303030',
+    'Prompt Library for Music',
+    'prompt-library-music',
+    '音楽制作向けのプロンプト集。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"歌詞生成やミックス評価のプロンプトを整理。"}]}]}'::jsonb,
+    'https://example.com/prompt-library',
+    'https://github.com/example/prompt-library-music',
+    'https://placehold.co/1200x900?text=Prompt+Library',
+    '2024-02-01',
+    null,
+    'registered',
+    300,
+    '["ChatGPT", "Claude"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Prompt+01'],
+    '{"TypeScript": 45, "Next.js": 30, "CSS": 15, "Supabase": 10}'::jsonb,
+    'website',
+    'https://example.com/prompt-library'
+  ),
+  (
+    'b4040404-0000-4000-8000-404040404040',
+    'Live Set Planner',
+    'live-set-planner',
+    '合唱/ライブ向けのセットリストと進行管理。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"曲順と転換時間を管理し、共有。"}]}]}'::jsonb,
+    null,
+    null,
+    'https://placehold.co/1200x900?text=Live+Set',
+    '2023-01-10',
+    '2023-04-10',
+    'completed',
+    260,
+    null,
+    ARRAY['https://placehold.co/1200x900?text=Live+Set+01'],
+    '{"TypeScript": 30, "Next.js": 20, "CSS": 30, "Supabase": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'b5050505-0000-4000-8000-505050505050',
+    'Petal Focus Lab',
+    'petal-focus-lab',
+    '花のマクロ撮影の練習ログ。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ピント位置と絞りの比較表を記録。"}]}]}'::jsonb,
+    null,
+    null,
+    'https://placehold.co/1200x900?text=Petal+Lab',
+    '2024-06-01',
+    null,
+    'registered',
+    180,
+    null,
+    ARRAY['https://placehold.co/1200x900?text=Petal+01', 'https://placehold.co/1200x900?text=Petal+02'],
+    '{"TypeScript": 28, "Next.js": 22, "CSS": 30, "Supabase": 20}'::jsonb,
+    'website',
+    'https://example.com/petal-lab'
+  ),
+  (
+    'b6060606-0000-4000-8000-606060606060',
+    'Choir Rehearsal Diary',
+    'choir-rehearsal-diary',
+    '合唱リハの記録と課題整理。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"録音メモとフィードバックを蓄積。"}]}]}'::jsonb,
+    null,
+    null,
+    'https://placehold.co/1200x900?text=Rehearsal',
+    '2022-02-01',
+    '2022-09-01',
+    'archived',
+    350,
+    null,
+    ARRAY['https://placehold.co/1200x900?text=Rehearsal+01'],
+    '{"TypeScript": 25, "React": 25, "CSS": 30, "Supabase": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'b7070707-0000-4000-8000-707070707070',
+    'Synth Patch Cards',
+    'synth-patch-cards',
+    'シンセのパッチをカード化して共有。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"オシレーター設定とモジュレーションを記録。"}]}]}'::jsonb,
+    null,
+    'https://github.com/example/synth-patch-cards',
+    'https://placehold.co/1200x900?text=Synth+Cards',
+    '2023-07-01',
+    '2023-12-01',
+    'completed',
+    620,
+    '["Claude"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=Synth+01'],
+    '{"TypeScript": 30, "Next.js": 25, "CSS": 25, "Supabase": 20}'::jsonb,
+    null,
+    null
+  ),
+  (
+    'b8080808-0000-4000-8000-808080808080',
+    'AI Dev Journal',
+    'ai-dev-journal',
+    'AI開発の学びを時系列でまとめる。',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"LLMの検証結果とプロンプトの差分を残す。"}]}]}'::jsonb,
+    'https://example.com/ai-dev-journal',
+    null,
+    'https://placehold.co/1200x900?text=AI+Journal',
+    '2024-08-01',
+    null,
+    'registered',
+    210,
+    '["Claude", "ChatGPT"]'::jsonb,
+    ARRAY['https://placehold.co/1200x900?text=AI+01'],
+    '{"TypeScript": 35, "Next.js": 25, "CSS": 20, "Supabase": 20}'::jsonb,
+    'website',
+    'https://example.com/ai-dev-journal'
+  );
+
+-- Project Tags
+INSERT INTO project_tags (project_id, tag_id) VALUES
+  ('a1111111-0000-4000-8000-111111111111', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('a1111111-0000-4000-8000-111111111111', '44444444-dddd-4ddd-8ddd-444444444444'),
+  ('a2222222-0000-4000-8000-222222222222', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('a2222222-0000-4000-8000-222222222222', '66666666-ffff-4fff-8fff-666666666666'),
+  ('a3333333-0000-4000-8000-333333333333', '11111111-aaaa-4aaa-8aaa-111111111111'),
+  ('a3333333-0000-4000-8000-333333333333', '66666666-ffff-4fff-8fff-666666666666'),
+  ('a4444444-0000-4000-8000-444444444444', '66666666-ffff-4fff-8fff-666666666666'),
+  ('a4444444-0000-4000-8000-444444444444', '88888888-1111-4111-8111-888888888888'),
+  ('a5555555-0000-4000-8000-555555555555', '55555555-eeee-4eee-8eee-555555555555'),
+  ('a5555555-0000-4000-8000-555555555555', '44444444-dddd-4ddd-8ddd-444444444444'),
+  ('a6666666-0000-4000-8000-666666666666', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('a7777777-0000-4000-8000-777777777777', '88888888-1111-4111-8111-888888888888'),
+  ('a7777777-0000-4000-8000-777777777777', 'eeeeeeee-7777-4777-8777-eeeeeeeeeeee'),
+  ('a8888888-0000-4000-8000-888888888888', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('a9999999-0000-4000-8000-999999999999', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('a9999999-0000-4000-8000-999999999999', 'f2222222-bbbb-4bbb-8bbb-222222222222'),
+  ('b1010101-0000-4000-8000-101010101010', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('b1010101-0000-4000-8000-101010101010', 'fddddddd-6666-4666-8666-dddddddddddd'),
+  ('b2020202-0000-4000-8000-202020202020', '66666666-ffff-4fff-8fff-666666666666'),
+  ('b2020202-0000-4000-8000-202020202020', '77777777-0000-4000-8000-777777777777'),
+  ('b3030303-0000-4000-8000-303030303030', 'faaaaaaa-3333-4333-8333-aaaaaaaaaaaa'),
+  ('b3030303-0000-4000-8000-303030303030', '99999999-2222-4222-8222-999999999999'),
+  ('b4040404-0000-4000-8000-404040404040', 'fccccccc-5555-4555-8555-cccccccccccc'),
+  ('b5050505-0000-4000-8000-505050505050', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('b6060606-0000-4000-8000-606060606060', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('b7070707-0000-4000-8000-707070707070', 'fbbbbbbb-4444-4444-8444-bbbbbbbbbbbb'),
+  ('b8080808-0000-4000-8000-808080808080', '88888888-1111-4111-8111-888888888888'),
+  ('b8080808-0000-4000-8000-808080808080', 'feeeeeee-7777-4777-8777-eeeeeeeeeeee');
+
+-- Posts (24)
+INSERT INTO posts (id, title, slug, content, excerpt, status, published_at, cover_image, ogp_image, view_count) VALUES
+  (
+    'b1111111-0000-4000-8000-111111111111',
+    '合唱のハーモニーを録音で整える小技',
+    'choral-harmony-recording',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"パートの距離感と反響の取り方をメモしました。"}]}]}'::jsonb,
+    '合唱録音の距離感とハーモニー調整のコツをまとめました。',
+    'published',
+    '2025-01-05 09:00:00+00',
+    'https://placehold.co/1200x630?text=Choral',
+    'https://placehold.co/1200x630?text=Choral+OGP',
+    680
+  ),
+  (
+    'b2222222-0000-4000-8000-222222222222',
+    '花の撮影メモ: 朝露と逆光',
+    'flower-photo-backlight',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"逆光の時は露出補正とリフレクターが有効。"}]}]}'::jsonb,
+    '花の撮影で逆光を柔らかく捉える方法を紹介します。',
+    'published',
+    '2025-01-12 10:00:00+00',
+    'https://placehold.co/1200x630?text=Flower',
+    'https://placehold.co/1200x630?text=Flower+OGP',
+    520
+  ),
+  (
+    'b3333333-0000-4000-8000-333333333333',
+    'DTMで作業が早くなるテンプレ整理術',
+    'dtm-template-workflow',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"制作フェーズ別にテンプレを分けると迷いが減ります。"}]}]}'::jsonb,
+    'DTMテンプレの整理と運用ルールをまとめました。',
+    'published',
+    '2025-01-20 12:00:00+00',
+    'https://placehold.co/1200x630?text=DTM',
+    'https://placehold.co/1200x630?text=DTM+OGP',
+    910
+  ),
+  (
+    'b4444444-0000-4000-8000-444444444444',
+    'フィールドレコーディングのマイク選び',
+    'field-recording-mic',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"風対策と低ノイズが重要。"}]}]}'::jsonb,
+    '屋外録音に向いたマイクとアクセサリのメモ。',
+    'published',
+    '2025-01-28 08:30:00+00',
+    'https://placehold.co/1200x630?text=Field',
+    'https://placehold.co/1200x630?text=Field+OGP',
+    430
+  ),
+  (
+    'b5555555-0000-4000-8000-555555555555',
+    'AIでミックスの課題を洗い出す',
+    'ai-mix-review',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"帯域バランスの可視化と改善メモ。"}]}]}'::jsonb,
+    'AIを使ったミックスレビューのプロセスを紹介。',
+    'published',
+    '2025-02-02 11:00:00+00',
+    'https://placehold.co/1200x630?text=AI+Mix',
+    'https://placehold.co/1200x630?text=AI+Mix+OGP',
+    780
+  ),
+  (
+    'b6666666-0000-4000-8000-666666666666',
+    'Next.jsで写真ポートフォリオを作る',
+    'nextjs-photo-portfolio',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ギャラリーの表示速度を優先。"}]}]}'::jsonb,
+    '写真を高速に見せるNext.js構成のメモ。',
+    'published',
+    '2025-02-10 09:40:00+00',
+    'https://placehold.co/1200x630?text=Next+Photo',
+    'https://placehold.co/1200x630?text=Next+Photo+OGP',
+    640
+  ),
+  (
+    'b7777777-0000-4000-8000-777777777777',
+    '合唱の発声練習に使えるAI伴奏',
+    'ai-choral-backing',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"テンポ固定の伴奏を作ると練習が安定します。"}]}]}'::jsonb,
+    'AI伴奏を使った合唱練習のメモ。',
+    'published',
+    '2025-02-14 08:10:00+00',
+    'https://placehold.co/1200x630?text=Choral+AI',
+    'https://placehold.co/1200x630?text=Choral+AI+OGP',
+    390
+  ),
+  (
+    'b8888888-0000-4000-8000-888888888888',
+    '花の写真を分類するタグ設計',
+    'flower-photo-tags',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"色相と季節で絞るのが管理しやすい。"}]}]}'::jsonb,
+    '花写真のタグ分類と検索UIの考え方。',
+    'published',
+    '2025-02-20 13:20:00+00',
+    'https://placehold.co/1200x630?text=Flower+Tags',
+    'https://placehold.co/1200x630?text=Flower+Tags+OGP',
+    450
+  ),
+  (
+    'b9999999-0000-4000-8000-999999999999',
+    'ミックス前の録音チェックリスト',
+    'recording-checklist',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ゲイン、位相、ノイズを先に潰す。"}]}]}'::jsonb,
+    '録音時に気を付けるポイントを整理。',
+    'draft',
+    null,
+    'https://placehold.co/1200x630?text=Recording',
+    'https://placehold.co/1200x630?text=Recording+OGP',
+    0
+  ),
+  (
+    'baaaaaaa-0000-4000-8000-aaaaaaaaaaaa',
+    'LLMで作業ログをまとめる方法',
+    'llm-worklog',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"作業ログを入力して要点を抽出。"}]}]}'::jsonb,
+    'LLMで日々の作業を整理するコツ。',
+    'scheduled',
+    '2025-03-01 07:00:00+00',
+    'https://placehold.co/1200x630?text=LLM',
+    'https://placehold.co/1200x630?text=LLM+OGP',
+    0
+  ),
+  (
+    'bbbbbbbb-0000-4000-8000-bbbbbbbbbbbb',
+    'フィールド録音の風対策メモ',
+    'field-recording-wind',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ウインドジャマーと配置の工夫。"}]}]}'::jsonb,
+    '風対策の機材と設置の注意点。',
+    'published',
+    '2025-02-24 09:00:00+00',
+    'https://placehold.co/1200x630?text=Wind',
+    'https://placehold.co/1200x630?text=Wind+OGP',
+    260
+  ),
+  (
+    'cccccccc-0000-4000-8000-cccccccccccc',
+    '音作りのための簡易スペクトラム分析',
+    'spectrum-check',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"帯域の混み具合を見るだけでも改善点が見える。"}]}]}'::jsonb,
+    '簡易分析で音作りを改善する方法。',
+    'published',
+    '2025-02-26 10:30:00+00',
+    'https://placehold.co/1200x630?text=Spectrum',
+    'https://placehold.co/1200x630?text=Spectrum+OGP',
+    310
+  ),
+  (
+    'c1010101-0000-4000-8000-101010101010',
+    '合唱のリハ録音を整えるEQメモ',
+    'choral-eq-notes',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"2kHz付近の張りと低域の濁りに注意。"}]}]}'::jsonb,
+    '合唱録音のEQバランスのメモ。',
+    'published',
+    '2025-03-03 09:00:00+00',
+    'https://placehold.co/1200x630?text=Choral+EQ',
+    'https://placehold.co/1200x630?text=Choral+EQ+OGP',
+    240
+  ),
+  (
+    'c2020202-0000-4000-8000-202020202020',
+    '春の花の撮影ルート計画',
+    'spring-flower-route',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"朝の光が綺麗な場所を優先。"}]}]}'::jsonb,
+    '春に撮影する花のルート計画。',
+    'draft',
+    null,
+    'https://placehold.co/1200x630?text=Spring+Route',
+    'https://placehold.co/1200x630?text=Spring+Route+OGP',
+    0
+  ),
+  (
+    'c3030303-0000-4000-8000-303030303030',
+    'DTMのバウンス設定メモ',
+    'dtm-bounce-notes',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ヘッドルームとノーマライズ設定を確認。"}]}]}'::jsonb,
+    '書き出し設定の再確認リスト。',
+    'published',
+    '2025-03-06 08:00:00+00',
+    'https://placehold.co/1200x630?text=DTM+Bounce',
+    'https://placehold.co/1200x630?text=DTM+Bounce+OGP',
+    150
+  ),
+  (
+    'c4040404-0000-4000-8000-404040404040',
+    'AIで歌詞の方向性を検討する',
+    'ai-lyrics-direction',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"複数案を比較して方向性を絞る。"}]}]}'::jsonb,
+    'AIを使った歌詞検討フロー。',
+    'published',
+    '2025-03-08 12:30:00+00',
+    'https://placehold.co/1200x630?text=AI+Lyrics',
+    'https://placehold.co/1200x630?text=AI+Lyrics+OGP',
+    220
+  ),
+  (
+    'c5050505-0000-4000-8000-505050505050',
+    '花の写真集のページ構成',
+    'flower-photo-book',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"色味と季節で章を分ける。"}]}]}'::jsonb,
+    'フォトブックの章立てと構成。',
+    'scheduled',
+    '2025-03-15 09:00:00+00',
+    'https://placehold.co/1200x630?text=Photo+Book',
+    'https://placehold.co/1200x630?text=Photo+Book+OGP',
+    0
+  ),
+  (
+    'c6060606-0000-4000-8000-606060606060',
+    '合唱の譜読みを効率化するアプリ案',
+    'choral-score-app',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"弱点パートの繰り返し再生を重視。"}]}]}'::jsonb,
+    '譜読み効率化の機能メモ。',
+    'draft',
+    null,
+    'https://placehold.co/1200x630?text=Score+App',
+    'https://placehold.co/1200x630?text=Score+App+OGP',
+    0
+  ),
+  (
+    'c7070707-0000-4000-8000-707070707070',
+    'AIで混声合唱のパート練習',
+    'ai-choral-practice',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"パートごとのテンポ設定が鍵。"}]}]}'::jsonb,
+    'AI伴奏の活用と注意点。',
+    'published',
+    '2025-03-18 10:00:00+00',
+    'https://placehold.co/1200x630?text=AI+Choral',
+    'https://placehold.co/1200x630?text=AI+Choral+OGP',
+    180
+  ),
+  (
+    'c8080808-0000-4000-8000-808080808080',
+    '花の撮影で使うレンズ比較',
+    'flower-lens-comparison',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"マクロと中望遠の比較メモ。"}]}]}'::jsonb,
+    '花撮影向けレンズの比較ログ。',
+    'published',
+    '2025-03-20 11:30:00+00',
+    'https://placehold.co/1200x630?text=Lens',
+    'https://placehold.co/1200x630?text=Lens+OGP',
+    260
+  ),
+  (
+    'c9090909-0000-4000-8000-909090909090',
+    'AI開発の週次レビュー',
+    'ai-dev-weekly',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"今週の学びと次の検証。"}]}]}'::jsonb,
+    '週次のAI開発レビュー。',
+    'published',
+    '2025-03-22 08:45:00+00',
+    'https://placehold.co/1200x630?text=AI+Weekly',
+    'https://placehold.co/1200x630?text=AI+Weekly+OGP',
+    140
+  ),
+  (
+    'c0101010-0000-4000-8000-101010101010',
+    'DTM配信用の音量チェック',
+    'dtm-loudness-check',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"配信先ごとのラウドネスを確認。"}]}]}'::jsonb,
+    '配信用の音量指標まとめ。',
+    'published',
+    '2025-03-24 09:20:00+00',
+    'https://placehold.co/1200x630?text=Loudness',
+    'https://placehold.co/1200x630?text=Loudness+OGP',
+    170
+  ),
+  (
+    'c1111112-0000-4000-8000-111111111112',
+    '合唱の本番前ルーティン',
+    'choral-prep-routine',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ウォームアップと呼吸の流れ。"}]}]}'::jsonb,
+    '本番前の準備メモ。',
+    'published',
+    '2025-03-26 08:00:00+00',
+    'https://placehold.co/1200x630?text=Routine',
+    'https://placehold.co/1200x630?text=Routine+OGP',
+    120
+  ),
+  (
+    'c1212121-0000-4000-8000-121212121212',
+    '花の色味補正の基準',
+    'flower-color-correction',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"ホワイトバランスの基準点を作る。"}]}]}'::jsonb,
+    '花の色味補正の基準をまとめた。',
+    'published',
+    '2025-03-28 10:10:00+00',
+    'https://placehold.co/1200x630?text=Color',
+    'https://placehold.co/1200x630?text=Color+OGP',
+    200
+  ),
+  (
+    'c1313131-0000-4000-8000-131313131313',
+    'AIで作曲アイデアを増やす',
+    'ai-composition-ideas',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"構成のバリエーションを増やす。"}]}]}'::jsonb,
+    'AIで作曲アイデアを増やす試行。',
+    'scheduled',
+    '2025-04-02 08:30:00+00',
+    'https://placehold.co/1200x630?text=AI+Compose',
+    'https://placehold.co/1200x630?text=AI+Compose+OGP',
+    0
+  ),
+  (
+    'c1414141-0000-4000-8000-141414141414',
+    '録音セッションの準備チェック',
+    'recording-session-check',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"機材とセッションテンプレを先に確認。"}]}]}'::jsonb,
+    '録音前の準備チェック。',
+    'draft',
+    null,
+    'https://placehold.co/1200x630?text=Session+Check',
+    'https://placehold.co/1200x630?text=Session+Check+OGP',
+    0
+  );
+
+-- Post Tags
+INSERT INTO post_tags (post_id, tag_id) VALUES
+  ('b1111111-0000-4000-8000-111111111111', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('b1111111-0000-4000-8000-111111111111', '66666666-ffff-4fff-8fff-666666666666'),
+  ('b2222222-0000-4000-8000-222222222222', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('b2222222-0000-4000-8000-222222222222', '44444444-dddd-4ddd-8ddd-444444444444'),
+  ('b3333333-0000-4000-8000-333333333333', '11111111-aaaa-4aaa-8aaa-111111111111'),
+  ('b3333333-0000-4000-8000-333333333333', '66666666-ffff-4fff-8fff-666666666666'),
+  ('b4444444-0000-4000-8000-444444444444', '55555555-eeee-4eee-8eee-555555555555'),
+  ('b5555555-0000-4000-8000-555555555555', '88888888-1111-4111-8111-888888888888'),
+  ('b5555555-0000-4000-8000-555555555555', '77777777-0000-4000-8000-777777777777'),
+  ('b6666666-0000-4000-8000-666666666666', 'aaaaaaaa-3333-4333-8333-aaaaaaaaaaaa'),
+  ('b6666666-0000-4000-8000-666666666666', '44444444-dddd-4ddd-8ddd-444444444444'),
+  ('b7777777-0000-4000-8000-777777777777', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('b7777777-0000-4000-8000-777777777777', '88888888-1111-4111-8111-888888888888'),
+  ('b8888888-0000-4000-8000-888888888888', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('b8888888-0000-4000-8000-888888888888', '44444444-dddd-4ddd-8ddd-444444444444'),
+  ('b9999999-0000-4000-8000-999999999999', '66666666-ffff-4fff-8fff-666666666666'),
+  ('baaaaaaa-0000-4000-8000-aaaaaaaaaaaa', '99999999-2222-4222-8222-999999999999'),
+  ('baaaaaaa-0000-4000-8000-aaaaaaaaaaaa', '88888888-1111-4111-8111-888888888888'),
+  ('bbbbbbbb-0000-4000-8000-bbbbbbbbbbbb', '55555555-eeee-4eee-8eee-555555555555'),
+  ('cccccccc-0000-4000-8000-cccccccccccc', '66666666-ffff-4fff-8fff-666666666666'),
+  ('c1010101-0000-4000-8000-101010101010', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('c1010101-0000-4000-8000-101010101010', '66666666-ffff-4fff-8fff-666666666666'),
+  ('c2020202-0000-4000-8000-202020202020', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('c3030303-0000-4000-8000-303030303030', '11111111-aaaa-4aaa-8aaa-111111111111'),
+  ('c3030303-0000-4000-8000-303030303030', 'f3333333-cccc-4ccc-8ccc-333333333333'),
+  ('c4040404-0000-4000-8000-404040404040', 'f9999999-2222-4222-8222-999999999999'),
+  ('c4040404-0000-4000-8000-404040404040', '88888888-1111-4111-8111-888888888888'),
+  ('c5050505-0000-4000-8000-505050505050', 'fddddddd-6666-4666-8666-dddddddddddd'),
+  ('c6060606-0000-4000-8000-606060606060', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('c7070707-0000-4000-8000-707070707070', '88888888-1111-4111-8111-888888888888'),
+  ('c8080808-0000-4000-8000-808080808080', 'f8888888-1111-4111-8111-888888888888'),
+  ('c9090909-0000-4000-8000-909090909090', 'feeeeeee-7777-4777-8777-eeeeeeeeeeee'),
+  ('c0101010-0000-4000-8000-101010101010', '66666666-ffff-4fff-8fff-666666666666'),
+  ('c1111112-0000-4000-8000-111111111112', '22222222-bbbb-4bbb-8bbb-222222222222'),
+  ('c1212121-0000-4000-8000-121212121212', '33333333-cccc-4ccc-8ccc-333333333333'),
+  ('c1313131-0000-4000-8000-131313131313', 'f1111111-aaaa-4aaa-8aaa-111111111111'),
+  ('c1313131-0000-4000-8000-131313131313', 'faaaaaaa-3333-4333-8333-aaaaaaaaaaaa'),
+  ('c1414141-0000-4000-8000-141414141414', 'f3333333-cccc-4ccc-8ccc-333333333333');
+
+-- Post Links (related posts)
+INSERT INTO post_links (from_post_id, to_post_id) VALUES
+  ('b3333333-0000-4000-8000-333333333333', 'b5555555-0000-4000-8000-555555555555'),
+  ('b2222222-0000-4000-8000-222222222222', 'b8888888-0000-4000-8000-888888888888'),
+  ('b4444444-0000-4000-8000-444444444444', 'bbbbbbbb-0000-4000-8000-bbbbbbbbbbbb'),
+  ('c3030303-0000-4000-8000-303030303030', 'c0101010-0000-4000-8000-101010101010'),
+  ('c4040404-0000-4000-8000-404040404040', 'c9090909-0000-4000-8000-909090909090'),
+  ('c1111112-0000-4000-8000-111111111112', 'b1111111-0000-4000-8000-111111111111');
+
+-- Post Project Links
+INSERT INTO post_project_links (post_id, project_id) VALUES
+  ('b2222222-0000-4000-8000-222222222222', 'a1111111-0000-4000-8000-111111111111'),
+  ('b3333333-0000-4000-8000-333333333333', 'a3333333-0000-4000-8000-333333333333'),
+  ('b4444444-0000-4000-8000-444444444444', 'a5555555-0000-4000-8000-555555555555'),
+  ('b5555555-0000-4000-8000-555555555555', 'a4444444-0000-4000-8000-444444444444'),
+  ('c2020202-0000-4000-8000-202020202020', 'a1111111-0000-4000-8000-111111111111'),
+  ('c7070707-0000-4000-8000-707070707070', 'a2222222-0000-4000-8000-222222222222');
+
+-- In Progress (12)
+INSERT INTO in_progress (id, title, description, status, progress_rate, started_at, completed_at, notes, completed_project_id) VALUES
+  (
+    'c1111111-0000-4000-8000-111111111111',
+    '合唱練習用の練習音源整理',
+    'パート別の練習音源を整理して共有する。',
+    'in_progress',
+    45,
+    '2025-01-10',
+    null,
+    '新しい録音フォーマットを検討中。',
+    null
+  ),
+  (
+    'c2222222-0000-4000-8000-222222222222',
+    '花の撮影シリーズ春編',
+    '春の花を定期的に撮影して比較。',
+    'in_progress',
+    60,
+    '2025-01-05',
+    null,
+    '朝の光で撮影を増やす。',
+    'a1111111-0000-4000-8000-111111111111'
+  ),
+  (
+    'c3333333-0000-4000-8000-333333333333',
+    'DTMテンプレの整理',
+    'ジャンル別テンプレを作成する。',
+    'paused',
+    25,
+    '2024-12-15',
+    null,
+    'ライブ案件が落ち着いたら再開。',
+    null
+  ),
+  (
+    'c4444444-0000-4000-8000-444444444444',
+    'AIと音作りの研究',
+    'AIミックス提案の精度検証。',
+    'in_progress',
+    70,
+    '2024-11-01',
+    null,
+    'バンド編成の検証中。',
+    'a4444444-0000-4000-8000-444444444444'
+  ),
+  (
+    'c5555555-0000-4000-8000-555555555555',
+    'フィールド録音機材のアップデート',
+    '新しいウインドジャマーの評価。',
+    'not_started',
+    0,
+    null,
+    null,
+    '春に試験予定。',
+    null
+  ),
+  (
+    'c6666666-0000-4000-8000-666666666666',
+    '写真ギャラリーのUI改善',
+    'Bloom Atlasの見せ方を更新。',
+    'in_progress',
+    35,
+    '2025-01-20',
+    null,
+    'ライトボックスのUX調整。',
+    'a1111111-0000-4000-8000-111111111111'
+  ),
+  (
+    'c7777777-0000-4000-8000-777777777777',
+    '合唱の発声練習ルーチン整備',
+    'ウォームアップのテンプレ化。',
     'in_progress',
     40,
-    '2024-01-05',
+    '2025-02-01',
     null,
-    '所有権の概念に苦戦中。CLIツールを作りながら学習予定。'
+    '全体練習の前に共有予定。',
+    null
   ),
   (
-    'c4444444-4444-4444-4444-444444444444',
-    'ブログシステム刷新',
-    'UniVerse Canvasの本格実装。ドキュメント駆動開発で進行中。',
+    'c8888888-0000-4000-8000-888888888888',
+    '花の撮影に使うレンズ比較',
+    'マクロと中望遠の比較記録。',
     'in_progress',
-    25,
-    '2024-01-15',
+    55,
+    '2025-02-05',
     null,
-    '設計フェーズ完了。実装フェーズに突入。'
+    '光量とボケの差分を整理。',
+    null
   ),
   (
-    'c5555555-5555-5555-5555-555555555555',
-    '技術書執筆',
-    'Next.js + Supabaseで作るフルスタックアプリ開発の技術書執筆プロジェクト。',
+    'c9999999-0000-4000-8000-999999999999',
+    'DTMのミックステンプレ改善',
+    'ミックスの下準備テンプレを更新。',
+    'paused',
+    20,
+    '2024-10-10',
+    null,
+    '新しいプラグインを検証後に再開。',
+    null
+  ),
+  (
+    'd1111111-0000-4000-8000-111111111111',
+    'AI開発の検証ログ整理',
+    'プロンプト実験を記録する。',
+    'in_progress',
+    50,
+    '2025-01-25',
+    null,
+    '毎週レビューの形式を試行。',
+    'b8080808-0000-4000-8000-808080808080'
+  ),
+  (
+    'd2222222-0000-4000-8000-222222222222',
+    '合唱の録音環境改善',
+    '録音場所の反響を改善する。',
     'not_started',
     0,
     null,
     null,
-    'アウトライン作成中。3月から本格執筆開始予定。'
+    '会場リハで再計測予定。',
+    null
   ),
   (
-    'c6666666-6666-6666-6666-666666666666',
-    'OSS貢献',
-    'お気に入りのOSSプロジェクトへのコントリビュート。ドキュメント改善から始める予定。',
-    'not_started',
-    0,
+    'd3333333-0000-4000-8000-333333333333',
+    'フィールド録音のロケーション更新',
+    '新しい撮音ポイントを調査。',
+    'in_progress',
+    30,
+    '2025-02-10',
     null,
-    null,
-    '対象プロジェクトを選定中。'
+    '春先に再調査。',
+    'a5555555-0000-4000-8000-555555555555'
   );
 
--- Insert Posts
-INSERT INTO posts (id, title, slug, content, excerpt, status, published_at, cover_image, view_count) VALUES
-  (
-    'b0011111-1111-1111-1111-111111111111',
-    'Next.js 15の新機能を試してみた',
-    'nextjs-15-features',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"はじめに"}]},{"type":"paragraph","content":[{"type":"text","text":"Next.js 15がリリースされたので、主要な新機能を実際に試してみました。"}]}]}'::jsonb,
-    'Next.js 15がリリースされたので、主要な新機能を実際に試してみました。App RouterやServer Actionsの改善点など、実践的な内容をまとめています。',
-    'published',
-    '2024-01-15 10:00:00+00',
-    null,
-    1234
-  ),
-  (
-    'b0022222-2222-2222-2222-222222222222',
-    'TypeScriptの型パズルを解いてみる',
-    'typescript-type-puzzle',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"型パズルとは"}]},{"type":"paragraph","content":[{"type":"text","text":"TypeScriptの高度な型機能を使った型パズルに挑戦してみました。"}]}]}'::jsonb,
-    'TypeScriptの高度な型機能を使った型パズルに挑戦してみました。Conditional Types、Template Literal Types、Mapped Typesを駆使しています。',
-    'published',
-    '2024-01-12 09:00:00+00',
-    null,
-    856
-  ),
-  (
-    'b0033333-3333-3333-3333-333333333333',
-    'Supabaseで認証機能を実装する',
-    'supabase-auth-guide',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Supabase Authとは"}]},{"type":"paragraph","content":[{"type":"text","text":"Supabase Authを使った認証機能の実装方法を解説します。"}]}]}'::jsonb,
-    'Supabase Authを使った認証機能の実装方法を解説します。Google OAuth、メール認証、Row Level Securityの設定まで網羅しています。',
-    'published',
-    '2024-01-10 14:00:00+00',
-    null,
-    2341
-  ),
-  (
-    'b0044444-4444-4444-4444-444444444444',
-    'Tiptapでリッチテキストエディタを作る',
-    'tiptap-rich-editor',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Tiptapの基本"}]},{"type":"paragraph","content":[{"type":"text","text":"Tiptapを使ってカスタマイズ可能なリッチテキストエディタを作成する方法を紹介します。"}]}]}'::jsonb,
-    'Tiptapを使ってカスタマイズ可能なリッチテキストエディタを作成する方法を紹介します。拡張機能の作り方も解説しています。',
-    'published',
-    '2024-01-08 11:00:00+00',
-    null,
-    1567
-  ),
-  (
-    'b0055555-5555-5555-5555-555555555555',
-    'Tailwind CSSのベストプラクティス',
-    'tailwind-best-practices',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"効率的なスタイリング"}]},{"type":"paragraph","content":[{"type":"text","text":"Tailwind CSSを使った効率的なスタイリング方法とベストプラクティスをまとめました。"}]}]}'::jsonb,
-    'Tailwind CSSを使った効率的なスタイリング方法とベストプラクティスをまとめました。コンポーネント設計からパフォーマンス最適化まで。',
-    'published',
-    '2024-01-05 13:00:00+00',
-    null,
-    3456
-  ),
-  (
-    'b0066666-6666-6666-6666-666666666666',
-    'GraphQL vs REST API の選び方',
-    'graphql-vs-rest',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"APIの選択基準"}]},{"type":"paragraph","content":[{"type":"text","text":"GraphQLとREST APIの違いと、プロジェクトに応じた選び方を解説します。"}]}]}'::jsonb,
-    'GraphQLとREST APIの違いと、プロジェクトに応じた選び方を解説します。それぞれのメリット・デメリットを実例を交えて紹介。',
-    'published',
-    '2024-01-03 15:00:00+00',
-    null,
-    1890
-  ),
-  (
-    'b0077777-7777-7777-7777-777777777777',
-    'Docker ComposeでローカルDB環境構築',
-    'docker-compose-database',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Docker Composeとは"}]},{"type":"paragraph","content":[{"type":"text","text":"Docker Composeを使ってローカル開発環境にデータベースを構築する方法を紹介します。"}]}]}'::jsonb,
-    'Docker Composeを使ってローカル開発環境にデータベースを構築する方法を紹介します。PostgreSQL、MySQL、Redisの設定例付き。',
-    'published',
-    '2024-01-01 10:00:00+00',
-    null,
-    2123
-  ),
-  (
-    'b0088888-8888-8888-8888-888888888888',
-    'React Hooksの使い方完全ガイド',
-    'react-hooks-guide',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Hooksの基本"}]},{"type":"paragraph","content":[{"type":"text","text":"React Hooksの基本から応用まで、実践的な使い方を解説します。"}]}]}'::jsonb,
-    'React Hooksの基本から応用まで、実践的な使い方を解説します。useState、useEffect、useContextなど全てのHooksを網羅。',
-    'published',
-    '2023-12-28 12:00:00+00',
-    null,
-    4567
-  ),
-  (
-    'b0099999-9999-9999-9999-999999999999',
-    'Webアクセシビリティのチェックリスト',
-    'web-accessibility-checklist',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"アクセシビリティの重要性"}]},{"type":"paragraph","content":[{"type":"text","text":"Webサイトのアクセシビリティを向上させるためのチェックリストをまとめました。"}]}]}'::jsonb,
-    'Webサイトのアクセシビリティを向上させるためのチェックリストをまとめました。WCAG 2.1準拠のための具体的な実装方法。',
-    'published',
-    '2023-12-25 09:00:00+00',
-    null,
-    1678
-  ),
-  (
-    'b00a0a0a-0a0a-0a0a-0a0a-0a0a0a0a0a0a',
-    'GitHubActionsでCI/CDパイプライン構築',
-    'github-actions-cicd',
-    '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"CI/CDとは"}]},{"type":"paragraph","content":[{"type":"text","text":"GitHub Actionsを使ったCI/CDパイプラインの構築方法を解説します。"}]}]}'::jsonb,
-    'GitHub Actionsを使ったCI/CDパイプラインの構築方法を解説します。自動テスト、ビルド、デプロイまでの完全自動化。',
-    'published',
-    '2023-12-20 14:00:00+00',
-    null,
-    2890
-  );
-
--- Insert Post Tags
-INSERT INTO post_tags (post_id, tag_id) VALUES
-  -- Next.js 15の新機能
-  ('b0011111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111'), -- Next.js
-  ('b0011111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222'), -- React
-  -- TypeScriptの型パズル
-  ('b0022222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333'), -- TypeScript
-  -- Supabase認証
-  ('b0033333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444'), -- Supabase
-  -- Tiptapエディタ
-  ('b0044444-4444-4444-4444-444444444444', '66666666-6666-6666-6666-666666666666'), -- Tiptap
-  ('b0044444-4444-4444-4444-444444444444', '22222222-2222-2222-2222-222222222222'), -- React
-  -- Tailwind CSS
-  ('b0055555-5555-5555-5555-555555555555', '55555555-5555-5555-5555-555555555555'), -- Tailwind CSS
-  -- GraphQL vs REST
-  ('b0066666-6666-6666-6666-666666666666', '99999999-9999-9999-9999-999999999999'), -- Node.js
-  -- Docker Compose
-  ('b0077777-7777-7777-7777-777777777777', 'cccccccc-cccc-cccc-cccc-cccccccccccc'), -- Docker
-  ('b0077777-7777-7777-7777-777777777777', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'), -- PostgreSQL
-  -- React Hooks
-  ('b0088888-8888-8888-8888-888888888888', '22222222-2222-2222-2222-222222222222'), -- React
-  -- Webアクセシビリティ
-  ('b0099999-9999-9999-9999-999999999999', '11111111-1111-1111-1111-111111111111'), -- Next.js
-  -- GitHub Actions
-  ('b00a0a0a-0a0a-0a0a-0a0a-0a0a0a0a0a0a', 'cccccccc-cccc-cccc-cccc-cccccccccccc'); -- Docker
-
--- Insert Pages
+-- Pages
 INSERT INTO pages (page_type, title, content, metadata) VALUES
   (
-    'about',
-    '自己紹介',
+    'home',
+    'home',
+    '{"type":"doc","content":[]}'::jsonb,
     '{
-      "type": "doc",
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "はじめまして。Webアプリケーション開発を専門とするエンジニアです。"
-            }
-          ]
-        },
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "フロントエンドからバックエンドまで幅広く対応できるフルスタックエンジニアとして、使いやすく美しいプロダクトを作ることを目指しています。"
-            }
-          ]
-        },
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "特に Next.js と Supabase を使ったモダンなWebアプリケーション開発が得意です。新しい技術を学ぶことが好きで、常にスキルアップを心がけています。"
-            }
-          ]
-        }
-      ]
-    }'::jsonb,
+      "heroBadge": "Sound & Bloom",
+      "heroTitle": "音と花の記録\nAI開発メモ",
+      "heroSubtitle": "DTM・合唱・花の写真と、AIによる開発の試行錯誤をまとめています。",
+      "primaryCtaLabel": "制作記録を見る",
+      "primaryCtaHref": "/posts",
+      "secondaryCtaLabel": "プロジェクト",
+      "secondaryCtaHref": "/works",
+      "sections": {
+        "postsTitle": "記事",
+        "projectsTitle": "制作",
+        "inProgressTitle": "進行中"
+      }
+    }'::jsonb
+  ),
+  (
+    'about',
+    'about',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"音楽制作と合唱が好きなエンジニア。花の写真を撮りながら、AIでの開発を試しています。"}]}]}'::jsonb,
     '{
       "name": "Your Name",
-      "role": "Web Developer",
+      "role": "Creative Engineer",
       "location": "Tokyo, Japan",
       "employment": "Freelance",
       "skills": {
-        "frontend": ["React", "Next.js", "TypeScript", "Tailwind CSS", "Vue.js"],
-        "backend": ["Node.js", "NestJS", "Python", "Go"],
-        "database": ["PostgreSQL", "MongoDB", "Redis", "Supabase"],
-        "devops": ["Docker", "AWS", "Vercel", "GitHub Actions"],
-        "other": ["Git", "Figma", "Notion", "Tiptap"]
+        "core": ["Next.js", "TypeScript", "Supabase"],
+        "infra": ["Vercel", "PostgreSQL"],
+        "ai": ["Claude", "ChatGPT"],
+        "method": "ドキュメント駆動開発",
+        "workflow": ["Figma", "Notion", "Linear"]
       },
       "timeline": [
-        {
-          "year": "2024",
-          "title": "フリーランスエンジニア",
-          "description": "Webアプリケーション開発を中心に活動中。",
-          "type": "work"
-        },
-        {
-          "year": "2022",
-          "title": "スタートアップ入社",
-          "description": "フルスタックエンジニアとしてプロダクト開発に従事。",
-          "type": "work"
-        },
-        {
-          "year": "2020",
-          "title": "Web開発を始める",
-          "description": "独学でプログラミングを学習開始。",
-          "type": "education"
-        },
-        {
-          "year": "2018",
-          "title": "大学卒業",
-          "description": "情報工学を専攻。",
-          "type": "education"
-        }
-      ]
+        { "year": "2025", "title": "AIと音作りの研究", "description": "ミックス支援の検証を継続中。" },
+        { "year": "2024", "title": "Bloom Atlas開始", "description": "花の写真と記録を整理。" },
+        { "year": "2022", "title": "合唱活動とDTM強化", "description": "録音と制作の両立を継続。" }
+      ],
+      "avatarUrl": "https://placehold.co/400x400?text=Avatar"
     }'::jsonb
   ),
   (
     'links',
-    '関連リンク',
+    'links',
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"SNSや制作記録へのリンク集です。"}]}]}'::jsonb,
     '{
-      "type": "doc",
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "各種SNSや外部サービスへのリンクです"
-            }
-          ]
-        }
-      ]
-    }'::jsonb,
-    '{
+      "contactEmail": "hello@example.com",
       "socialLinks": [
-        {
-          "name": "GitHub",
-          "description": "ソースコードやOSS活動",
-          "url": "https://github.com/username",
-          "icon": "Github"
-        },
-        {
-          "name": "Twitter / X",
-          "description": "日々のつぶやきや技術情報",
-          "url": "https://twitter.com/username",
-          "icon": "Twitter"
-        },
-        {
-          "name": "LinkedIn",
-          "description": "ビジネス関連のつながり",
-          "url": "https://linkedin.com/in/username",
-          "icon": "Linkedin"
-        },
-        {
-          "name": "メール",
-          "description": "お問い合わせ・仕事のご相談",
-          "url": "mailto:example@example.com",
-          "icon": "Mail"
-        }
+        { "name": "Misskey", "description": "制作ログと短文メモ", "url": "https://misskey.io/@yourname", "icon": "Misskey", "iconImageUrl": "" },
+        { "name": "note", "description": "制作の振り返り", "url": "https://note.com/yourname", "icon": "note", "iconImageUrl": "" },
+        { "name": "Zenn", "description": "技術記事", "url": "https://zenn.dev/yourname", "icon": "Zenn", "iconImageUrl": "" },
+        { "name": "Qiita", "description": "開発メモ", "url": "https://qiita.com/yourname", "icon": "Qiita", "iconImageUrl": "" }
       ],
       "otherLinks": [
-        {
-          "name": "Qiita",
-          "description": "技術記事を投稿しています",
-          "url": "https://qiita.com/username",
-          "icon": "BookOpen"
-        },
-        {
-          "name": "Zenn",
-          "description": "技術記事・本を書いています",
-          "url": "https://zenn.dev/username",
-          "icon": "BookOpen"
-        },
-        {
-          "name": "個人ブログ",
-          "description": "このサイトです",
-          "url": "/",
-          "icon": "Globe"
-        },
-        {
-          "name": "Discord",
-          "description": "技術コミュニティ参加中",
-          "url": "https://discord.com",
-          "icon": "MessageCircle"
-        }
+        { "name": "音源デモ", "description": "DTMサンプル", "url": "https://example.com/sounds", "icon": "Globe", "iconImageUrl": "" },
+        { "name": "写真ギャラリー", "description": "花の写真", "url": "https://example.com/gallery", "icon": "Globe", "iconImageUrl": "" }
       ]
     }'::jsonb
   );
+
+COMMIT;

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getUserServer, isAdminByUid } from '@/lib/supabase/auth'
+import { getUserServer, isAdminByUid } from '@/lib/supabase/auth.server'
 import { AdminClientLayout } from './AdminClientLayout'
 import type { ReactNode } from 'react'
 

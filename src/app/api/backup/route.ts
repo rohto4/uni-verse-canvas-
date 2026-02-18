@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
     // For markdown, only support posts export as simple conversion
     if (format === 'markdown' && (type === 'posts' || type === 'full')) {
-      const posts = result.posts || []
+      const posts = result.posts as Post[]
       const md = posts.map((p: Post) => `# ${p.title}\n\n${p.excerpt || ''}\n\n---\n`).join('\n')
       const filename = `posts_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.md`
       return new Response(md, {

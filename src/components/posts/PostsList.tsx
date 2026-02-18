@@ -31,34 +31,36 @@ export function PostsList({ posts }: PostsListProps) {
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <Card key={post.id} className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {post.tags.map((tag) => (
-                <Badge key={tag.id} variant="secondary" className="text-xs">
-                  {tag.name}
-                </Badge>
-              ))}
-            </div>
-            <CardTitle>
-              <Link
-                href={`/posts/${post.slug}`}
-                className="hover:text-primary transition-colors"
-              >
+        <Link
+          key={post.id}
+          href={`/posts/${post.slug}`}
+          className="group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={`${post.title}を読む`}
+        >
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {post.tags.map((tag) => (
+                  <Badge key={tag.id} variant="secondary" className="text-xs">
+                    {tag.name}
+                  </Badge>
+                ))}
+              </div>
+              <CardTitle className="group-hover:text-primary transition-colors">
                 {post.title}
-              </Link>
-            </CardTitle>
-            <CardDescription className="flex items-center gap-4 text-sm">
-              <span>{formatDate(post.published_at || post.created_at)}</span>
-              <span>{post.view_count.toLocaleString()} views</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground line-clamp-2">
-              {post.excerpt}
-            </p>
-          </CardContent>
-        </Card>
+              </CardTitle>
+              <CardDescription className="flex items-center gap-4 text-sm">
+                <span>{formatDate(post.published_at || post.created_at)}</span>
+                <span>{post.view_count.toLocaleString()} views</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground line-clamp-2">
+                {post.excerpt}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
     </div>
   )

@@ -72,7 +72,7 @@
 | Hosting | Vercel | - |
 | Testing | Jest + React Testing Library | Latest |
 
-詳細は `docs/lv1/tech-stack.md` 参照。
+詳細は `docs/config/tech-stack.md` 参照。
 
 ---
 
@@ -96,7 +96,7 @@ universe-canvas/
 │   │   ├── admin/           # AdminNav, DashboardStats, PostList, BackupPanel
 │   │   └── common/          # ThemeToggle, TagFilter, SearchBox, Pagination
 │   ├── lib/
-│   │   ├── supabase/        # client.ts, server.ts, middleware.ts, types.ts
+│   │   ├── supabase/        # client.ts, server.ts, proxy.ts, types.ts
 │   │   ├── utils/           # slug, date, image, backup, markdown, sanitize
 │   │   ├── validations/     # Zod: post, project, inProgress, page
 │   │   └── api/             # posts, projects, inProgress, tags, qiita
@@ -114,7 +114,7 @@ universe-canvas/
 
 ### 4.1 認証・権限管理
 - 管理者認証: Supabase Auth + Google OAuth
-- 認証チェック: `(admin)` グループでMiddleware適用
+- 認証チェック: `(admin)` グループでProxy適用
 - RLS: PostgreSQL Row Level Security（管理者のみ全権限）
 
 ### 4.2 コンテンツ管理
@@ -171,7 +171,7 @@ in_progress → projects (1:N via completed_project_id)
 
 | Layer | Implementation |
 |-------|----------------|
-| 管理画面認証 | Supabase Auth Middleware |
+| 管理画面認証 | Supabase Auth Proxy |
 | RLS | PostgreSQL Row Level Security |
 | CSRF | Next.js標準保護 |
 | XSS | DOMPurify + Tiptapサニタイズ |

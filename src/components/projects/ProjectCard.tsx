@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from "next/navigation"
-import { ExternalLink, Github, Calendar } from "lucide-react"
+import type { KeyboardEvent } from "react"
+import { ExternalLink, Github, Calendar, Download } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -24,8 +25,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
     router.push(`/works/${project.slug}`)
   }
 
+  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      handleCardClick()
+    }
+  }
+
   return (
-    <div onClick={handleCardClick} className="cursor-pointer">
+    <div
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      className="cursor-pointer rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      role="link"
+      tabIndex={0}
+      aria-label={`${project.title}の詳細を見る`}
+    >
       <Card className="flex flex-col h-full hover:shadow-lg transition-shadow" id={project.slug}>
         <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg flex items-center justify-center">
           <span className="text-muted-foreground text-sm">プロジェクト画像</span>
@@ -57,6 +72,24 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
 
           <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            {project.status === 'registered' && project.public_link_url && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex-1"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  window.open(project.public_link_url!, '_blank', 'noopener,noreferrer')
+                }}
+              >
+                {project.public_link_type === 'download' ? (
+                  <Download className="h-4 w-4 mr-1" />
+                ) : (
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                )}
+                {project.public_link_type === 'download' ? 'Download' : 'Website'}
+              </Button>
+            )}
             {project.demo_url && (
               <Button
                 variant="default"

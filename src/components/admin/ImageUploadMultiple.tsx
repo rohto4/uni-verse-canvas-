@@ -1,26 +1,31 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useId } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { uploadFile } from '@/lib/actions/storage'
+type UploadAction = (formData: FormData) => Promise<{ url: string | null; error?: string }>
 
 interface ImageUploadMultipleProps {
   images: string[]
   onChange: (images: string[]) => void
+  uploadAction: UploadAction
   maxImages?: number
+  label?: string
 }
 
 export function ImageUploadMultiple({
   images,
   onChange,
+  uploadAction,
   maxImages = 10,
+  label,
 }: ImageUploadMultipleProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const inputId = useId()
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
@@ -53,7 +58,7 @@ export function ImageUploadMultiple({
         const uploadPromises = validFiles.map(async (file) => {
           const formData = new FormData()
           formData.append('file', file)
-          const result = await uploadFile(formData)
+          const result = await uploadAction(formData)
           
           if (result.error) {
             console.error(`Upload failed for ${file.name}:`, result.error)
@@ -76,7 +81,7 @@ export function ImageUploadMultiple({
         setIsUploading(false)
       }
     },
-    [images, maxImages, onChange]
+    [images, maxImages, onChange, uploadAction]
   )
 
   const handleDrop = useCallback(
@@ -120,10 +125,12 @@ export function ImageUploadMultiple({
     [images, onChange]
   )
 
+  const displayLabel = label || `ギャラリー画像（最大${maxImages}枚）`
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label>ギャラリー画像（最大{maxImages}枚）</Label>
+        <Label>{displayLabel}</Label>
         <span className="text-sm text-muted-foreground">
           {images.length} / {maxImages}
         </span>
@@ -158,10 +165,10 @@ export function ImageUploadMultiple({
                 disabled={isUploading}
                 onChange={(e) => handleFiles(e.target.files)}
                 className="hidden"
-                id="image-upload"
+                id={inputId}
               />
               <Button type="button" variant="outline" size="sm" asChild disabled={isUploading}>
-                <label htmlFor="image-upload" className="cursor-pointer">
+                <label htmlFor={inputId} className="cursor-pointer">
                   ファイルを選択
                 </label>
               </Button>

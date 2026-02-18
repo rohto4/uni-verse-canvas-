@@ -588,22 +588,22 @@ npm install browser-image-compression
 
 ### 更新対象ドキュメント
 
-1. **`docs/lv2/data-schema.md`**
+1. **`docs/specs/data-schema.md`**
    - `projects` テーブル定義に新規カラム追加
    - `Project` 型定義更新
 
-2. **`docs/lv2/api-spec.md`**
+2. **`docs/specs/api-spec.md`**
    - `createProject()`, `updateProject()`, `deleteProject()` 追加
    - `getRelatedPostsByTags()` 追加
 
-3. **`docs/lv3/component-spec.md`**
+3. **`docs/specs/component-spec.md`**
    - `ProjectGallery`, `TechStackChart`, `ProjectContent`, `RelatedPosts` 追加
 
-4. **`docs/lv3/pages-implementation.md`**
+4. **`docs/implementation/_archive/pages-implementation.md`**
    - `/works/[slug]` ページ追加
    - `/admin/projects/*` ページ更新
 
-5. **`docs/lv3/implementation-status.md`**
+5. **`docs/implementation/_archive/implementation-status.md`**
    - プロジェクト管理機能の実装状況更新
 
 ---

@@ -12,20 +12,24 @@ interface WorksPageProps {
   searchParams: Promise<{
     tags?: string
     status?: string
+    visibility?: string
   }>
 }
 
 export default async function WorksPage({ searchParams }: WorksPageProps) {
   const params = await searchParams
   const tags = params.tags?.split(',').filter(Boolean) || []
-  const statusParam = params.status
+  const visibilityParam = params.visibility
+    ?? (params.status === 'registered' ? 'public' : null)
 
-  const statusFilter = statusParam === 'registered' 
-    ? ['registered'] 
-    : ['completed', 'registered'];
+  const statusFilter = visibilityParam === 'public'
+    ? ['registered']
+    : visibilityParam === 'private'
+      ? ['completed', 'archived']
+      : ['completed', 'archived', 'registered']
 
   const [projectsResult, allTags] = await Promise.all([
-    getProjects({ status: statusFilter as ('completed' | 'registered')[], tags }),
+    getProjects({ status: statusFilter as ('completed' | 'archived' | 'registered')[], tags }),
     getTagsWithCount(),
   ])
   const projects = projectsResult.projects;

@@ -1,11 +1,17 @@
-# State Management (Claude Reference)
+# State Management
 
-## 1. 基本方針
+## 1. 現状（実装済み）
+
+- UI状態はコンポーネント内`useState`中心
+- Server StateはServer Components + Server Actionsで取得
+- カスタムHooks/Contextは未実装
+
+## 2. 基本方針（目標）
 - ローカル優先: コンポーネント固有はuseState
 - Context最小化: 本当に必要な場合のみ
 - Server State分離: Supabase + ISRで管理
 
-## 2. 状態分類
+## 3. 状態分類
 
 | 分類 | 管理方法 | 例 |
 |-----|---------|---|
@@ -15,7 +21,7 @@
 | 認証 | Supabase Auth | ユーザー、セッション |
 | フォーム | Controlled + Zod | 入力値、バリデーション |
 
-## 3. Context一覧
+## 4. Context一覧（計画）
 
 ### ThemeContext
 ```typescript
@@ -48,7 +54,7 @@ interface ToastContextType {
 // 自動削除: duration || 3000ms
 ```
 
-## 4. Server State パターン
+## 5. Server State パターン
 
 ### サーバーコンポーネント (ISR)
 ```typescript
@@ -63,7 +69,7 @@ export const revalidate = 3600 // 1時間
 // fetch → useState → return { data, loading, error, refetch }
 ```
 
-## 5. フォームバリデーション
+## 6. フォームバリデーション
 ```typescript
 // hooks/useFormValidation.ts
 function useFormValidation<T extends z.ZodType>(schema: T) {
@@ -72,7 +78,7 @@ function useFormValidation<T extends z.ZodType>(schema: T) {
 }
 ```
 
-## 6. 永続化
+## 7. 永続化
 
 | 対象 | ストレージ | 用途 |
 |-----|----------|------|
@@ -80,7 +86,7 @@ function useFormValidation<T extends z.ZodType>(schema: T) {
 | 下書き | LocalStorage | エディタ自動保存(5秒間隔) |
 | 検索条件 | SessionStorage | 一時的なフィルタ状態 |
 
-## 7. パフォーマンス
+## 8. パフォーマンス
 - useMemo: 検索結果フィルタリング等
 - useCallback: イベントハンドラ
 - React.memo: PostCard等の繰り返しコンポーネント

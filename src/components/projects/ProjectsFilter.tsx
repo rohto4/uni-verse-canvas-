@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import type { TagWithCount } from '@/types/database'
 import { useCallback, useTransition } from 'react'
 
@@ -16,7 +17,8 @@ export function ProjectsFilter({ tags }: ProjectsFilterProps) {
   const [, startTransition] = useTransition()
 
   const selectedTags = searchParams.get('tags')?.split(',').filter(Boolean) || []
-  const currentStatus = searchParams.get('status')
+  const currentVisibility = searchParams.get('visibility')
+    ?? (searchParams.get('status') === 'registered' ? 'public' : null)
 
   const createQueryString = useCallback(
     (updates: Record<string, string | null>) => {
@@ -35,12 +37,15 @@ export function ProjectsFilter({ tags }: ProjectsFilterProps) {
     [searchParams]
   )
 
-  const handleStatusClick = (status: string | null) => {
-    const queryString = createQueryString({ status });
+  const handleVisibilityClick = (visibility: string | null) => {
+    const queryString = createQueryString({
+      visibility,
+      status: null,
+    })
     startTransition(() => {
-      router.push(`${pathname}?${queryString}`);
-    });
-  };
+      router.push(`${pathname}?${queryString}`)
+    })
+  }
 
   const handleTagClick = (tagSlug: string) => {
     let newTags: string[]
@@ -66,40 +71,68 @@ export function ProjectsFilter({ tags }: ProjectsFilterProps) {
     })
   }
 
-  const hasActiveFilters = selectedTags.length > 0 || currentStatus
+  const hasActiveFilters = selectedTags.length > 0 || Boolean(currentVisibility)
 
   return (
-    <div className="mb-8 space-y-4">
-      {/* Status Filter */}
-      <div className="flex flex-wrap gap-2">
-        <h3 className="text-sm font-semibold mr-2 text-muted-foreground">表示:</h3>
-        <Badge
-          variant={!currentStatus ? "default" : "outline"}
-          className="cursor-pointer hover:bg-primary/10 transition-colors"
-          onClick={() => handleStatusClick(null)}
-        >
-          すべて
-        </Badge>
-        <Badge
-          variant={currentStatus === 'registered' ? "default" : "outline"}
-          className="cursor-pointer hover:bg-primary/10 transition-colors"
-          onClick={() => handleStatusClick('registered')}
-        >
-          公開済み
-        </Badge>
+    <div className="mb-8 space-y-5">
+      <div className="rounded-2xl border bg-card/60 p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold">公開ステータス</p>
+            <p className="text-xs text-muted-foreground">公開/非公開の切り替えはここから行います</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={!currentVisibility ? 'default' : 'outline'}
+              className={!currentVisibility ? 'shadow-md shadow-primary/20' : ''}
+              onClick={() => handleVisibilityClick(null)}
+            >
+              すべて
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentVisibility === 'public' ? 'default' : 'outline'}
+              className={currentVisibility === 'public' ? 'shadow-md shadow-primary/20' : ''}
+              onClick={() => handleVisibilityClick('public')}
+            >
+              公開
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={currentVisibility === 'private' ? 'default' : 'outline'}
+              className={currentVisibility === 'private' ? 'shadow-md shadow-primary/20' : ''}
+              onClick={() => handleVisibilityClick('private')}
+            >
+              非公開
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Active Filters */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-sm text-muted-foreground">フィルタ:</span>
-          {currentStatus === 'registered' && (
+          {currentVisibility === 'public' && (
             <Badge
               variant="default"
               className="cursor-pointer"
-              onClick={() => handleStatusClick(null)}
+              onClick={() => handleVisibilityClick(null)}
             >
-              公開済み ×
+              公開 ×
+            </Badge>
+          )}
+          {currentVisibility === 'private' && (
+            <Badge
+              variant="default"
+              className="cursor-pointer"
+              onClick={() => handleVisibilityClick(null)}
+            >
+              非公開 ×
             </Badge>
           )}
           {selectedTags.map((tagSlug) => {

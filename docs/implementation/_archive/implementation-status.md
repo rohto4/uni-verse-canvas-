@@ -97,7 +97,7 @@
 1.  **認証機能**
     - Supabase Auth（Google OAuth）を使用したログイン・ログアウト機能の実装
     - 管理画面へのアクセス制御（認証必須化）
-    - 関連ファイル: `src/lib/supabase/auth.ts`, `src/app/login/page.tsx`, `src/app/(admin)/layout.tsx`
+    - 関連ファイル: `src/lib/supabase/auth.client.ts`, `src/lib/supabase/auth.server.ts`, `src/app/login/page.tsx`, `src/app/(admin)/layout.tsx`
 
 2.  **公開側 記事詳細ページ**
     - Tiptapで作成された記事コンテンツの表示

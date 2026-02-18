@@ -7,6 +7,7 @@ import { GradientAccent } from "@/components/common"
 import { getPosts } from "@/lib/actions/posts"
 import { getProjects } from "@/lib/actions/projects"
 import { getInProgressItems } from "@/lib/actions/in-progress"
+import { getPage } from "@/lib/actions/pages"
 
 const statusLabels: Record<string, { label: string, className: string }> = { 
   not_started: { label: "未着手", className: "bg-muted text-muted-foreground" }, 
@@ -24,12 +25,59 @@ function formatDate(dateString: string | null): string {
   })
 }
 
+type HomeMetadata = {
+  heroBadge?: string
+  heroTitle?: string
+  heroSubtitle?: string
+  primaryCtaLabel?: string
+  primaryCtaHref?: string
+  secondaryCtaLabel?: string
+  secondaryCtaHref?: string
+  sections?: {
+    postsTitle?: string
+    projectsTitle?: string
+    inProgressTitle?: string
+  }
+}
+
+const defaultMetadata = {
+  heroBadge: "Your Universe, Your Canvas",
+  heroTitle: "自分だけの宇宙を\n自由に描く",
+  heroSubtitle: "技術記事、プロジェクト、日々の学びを記録する場所。\n思考を整理し、成長の軌跡を残していきます。",
+  primaryCtaLabel: "読み物を見る",
+  primaryCtaHref: "/posts",
+  secondaryCtaLabel: "作ったものを見る",
+  secondaryCtaHref: "/works",
+  sections: {
+    postsTitle: "最新の読み物",
+    projectsTitle: "最近の作ったもの",
+    inProgressTitle: "進行中のこと",
+  },
+}
+
 export default async function HomePage() {
-  const [{ posts: recentPosts }, { projects: recentProjects }, inProgressItems] = await Promise.all([
+  const [homePage, { posts: recentPosts }, { projects: recentProjects }, inProgressItems] = await Promise.all([
+    getPage('home'),
     getPosts({ limit: 3, status: 'published' }),
     getProjects({ limit: 3 }),
-    getInProgressItems('in_progress').then(items => items.slice(0, 2))
+    getInProgressItems('in_progress').then(items => items.slice(0, 2)),
   ])
+
+  const metadata = (homePage?.metadata || {}) as HomeMetadata
+  const heroBadge = metadata.heroBadge || defaultMetadata.heroBadge
+  const heroTitle = metadata.heroTitle || defaultMetadata.heroTitle
+  const heroSubtitle = metadata.heroSubtitle || defaultMetadata.heroSubtitle
+  const primaryCtaLabel = metadata.primaryCtaLabel || defaultMetadata.primaryCtaLabel
+  const primaryCtaHref = metadata.primaryCtaHref || defaultMetadata.primaryCtaHref
+  const secondaryCtaLabel = metadata.secondaryCtaLabel || defaultMetadata.secondaryCtaLabel
+  const secondaryCtaHref = metadata.secondaryCtaHref || defaultMetadata.secondaryCtaHref
+  const sectionTitles = {
+    posts: metadata.sections?.postsTitle || defaultMetadata.sections.postsTitle,
+    projects: metadata.sections?.projectsTitle || defaultMetadata.sections.projectsTitle,
+    inProgress: metadata.sections?.inProgressTitle || defaultMetadata.sections.inProgressTitle,
+  }
+  const heroTitleLines = heroTitle.split("\n")
+  const heroSubtitleLines = heroSubtitle.split("\n")
 
   return (
     <div className="min-h-screen">
@@ -39,29 +87,39 @@ export default async function HomePage() {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
               <Sparkles className="h-4 w-4" />
-              <span className="text-sm font-medium">Your Universe, Your Canvas</span>
+              <span className="text-sm font-medium">{heroBadge}</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              自分だけの宇宙を
-              <br />
-              <span className="text-primary">自由に描く</span>
+              {heroTitleLines.map((line, index, arr) => (
+                <span key={`${line}-${index}`}>
+                  {index === arr.length - 1 ? (
+                    <span className="text-primary">{line}</span>
+                  ) : (
+                    line
+                  )}
+                  {index < arr.length - 1 && <br />}
+                </span>
+              ))}
             </h1>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              技術記事、プロジェクト、日々の学びを記録する場所。
-              <br className="hidden sm:block" />
-              思考を整理し、成長の軌跡を残していきます。
+              {heroSubtitleLines.map((line, index) => (
+                <span key={`${line}-${index}`}>
+                  {line}
+                  {index < heroSubtitleLines.length - 1 && <br className="hidden sm:block" />}
+                </span>
+              ))}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="gap-2">
-                <Link href="/posts">
+                <Link href={primaryCtaHref}>
                   < BookOpen className="h-5 w-5" />
-                  読み物を見る
+                  {primaryCtaLabel}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link href="/works">
+                <Link href={secondaryCtaHref}>
                   <Folder className="h-5 w-5" />
-                  作ったものを見る
+                  {secondaryCtaLabel}
                 </Link>
               </Button>
             </div>
@@ -73,7 +131,7 @@ export default async function HomePage() {
         <section className="cloud-section py-12 max-w-7xl mx-auto">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold">最新の読み物</h2>
+            <h2 className="text-2xl font-bold">{sectionTitles.posts}</h2>
             <Button asChild variant="outline" size="sm" className="gap-1">
               <Link href="/posts">
                 すべて見る
@@ -83,30 +141,35 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentPosts.map((post) => (
-              <Card key={post.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {post.tags.map((tag) => (
-                      <Badge key={tag.id} variant="secondary" className="text-xs" style={{ backgroundColor: tag.color, color: '#fff' }}>
-                        {tag.name}
-                      </Badge>
-                    ))}
-                  </div>
-                  <CardTitle className="line-clamp-2">
-                    <Link href={`/posts/${post.slug}`} className="hover:text-primary transition-colors">
+              <Link
+                key={post.id}
+                href={`/posts/${post.slug}`}
+                className="group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label={`${post.title}を読む`}
+              >
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {post.tags.map((tag) => (
+                        <Badge key={tag.id} variant="secondary" className="text-xs" style={{ backgroundColor: tag.color, color: '#fff' }}>
+                          {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                    <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
                       {post.title}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    {formatDate(post.published_at)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                </CardContent>
-              </Card>
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      {formatDate(post.published_at)}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground text-sm line-clamp-2">
+                      {post.excerpt}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
@@ -115,7 +178,7 @@ export default async function HomePage() {
         <section className="cloud-section py-12 max-w-7xl mx-auto">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold">最近の作ったもの</h2>
+              <h2 className="text-2xl font-bold">{sectionTitles.projects}</h2>
               <Button asChild variant="outline" size="sm" className="gap-1">
                 <Link href="/works">
                   すべて見る
@@ -124,13 +187,17 @@ export default async function HomePage() {
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentProjects.map((project) => (
-                <Card key={project.id} className="hover:shadow-lg transition-shadow">
+            {recentProjects.map((project) => (
+              <Link
+                key={project.id}
+                href={`/works/${project.slug}`}
+                className="group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label={`${project.title}の詳細を見る`}
+              >
+                <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
-                    <CardTitle className="line-clamp-1">
-                      <Link href={`/works/${project.slug}`} className="hover:text-primary transition-colors">
-                        {project.title}
-                      </Link>
+                    <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors">
+                      {project.title}
                     </CardTitle>
                     <CardDescription className="line-clamp-2">
                       {project.description}
@@ -146,9 +213,10 @@ export default async function HomePage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              </Link>
+            ))}
           </div>
+        </div>
         </section>
 
         <section className="cloud-section py-12 max-w-7xl mx-auto">
@@ -156,7 +224,7 @@ export default async function HomePage() {
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Clock className="h-6 w-6 text-primary" />
-                進行中のこと
+                {sectionTitles.inProgress}
               </h2>
               <Button asChild variant="outline" size="sm" className="gap-1">
                 <Link href="/progress">
@@ -182,13 +250,16 @@ export default async function HomePage() {
                         <span className="text-muted-foreground">進捗</span>
                         <span className="font-medium">{item.progress_rate}%</span>
                       </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden relative">
                         <div
-                          className="h-full transition-all duration-300"
+                          className="h-full w-full"
                           style={{
-                            width: `${item.progress_rate}%`,
                             background: "var(--card-accent-gradient)",
                           }}
+                        />
+                        <div
+                          className="absolute inset-y-0 right-0 bg-muted"
+                          style={{ width: `${Math.max(0, 100 - item.progress_rate)}%` }}
                         />
                       </div>
                     </div>

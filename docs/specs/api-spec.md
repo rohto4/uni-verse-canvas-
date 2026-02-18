@@ -13,6 +13,12 @@
 - クライアントバンドルサイズの削減
 - セキュアなデータベースアクセス
 
+### 1.1 Client Component からの利用ルール
+
+- `"use client"` コンポーネントで Server Actions を直接 import しない。
+- Server Component でデータ取得・Server Action を定義し、Client Component には `props` で渡す。
+- リッチエディタや管理UIは Client Component 側で操作し、送信時に Server Action を呼ぶ。
+
 ---
 
 ## 2. Server Actions一覧
@@ -124,6 +130,26 @@ const related = await getRelatedPosts('post-id-123', 5)
 
 ---
 
+#### `getPostRelations(postId: string): Promise<{ relatedPostIds: string[]; relatedProjectIds: string[] }>`
+
+手動で設定された関連記事/関連プロジェクトのID一覧を取得。
+
+**戻り値**:
+```typescript
+{
+  relatedPostIds: string[]
+  relatedProjectIds: string[]
+}
+```
+
+---
+
+#### `getRelatedPostsForProject(projectId: string, limit?: number): Promise<PostWithTags[]>`
+
+プロジェクトに紐づく関連記事を取得（post_project_links）。
+
+---
+
 #### `getRelatedPostsByTagsWithRandom(tagIds: string[], limit?: number, candidateLimit?: number): Promise<PostWithTags[]>`
 
 タグIDから関連記事を取得。関連性評価 + ランダマイズ機能付き。
@@ -164,17 +190,21 @@ const related = await getRelatedPostsByTagsWithRandom(tagIds, 3, 10)
 
 新規記事を作成。
 
-- ✅ Zodバリデーション
-- ✅ タグ紐付け
-- ✅ トランザクション補償
+ - ✅ Zodバリデーション
+ - ✅ タグ紐付け
+ - ✅ 画像メタデータ（cover_image / ogp_image）保存
+ - ✅ 関連リンク（post_links / post_project_links）保存
+ - ✅ トランザクション補償
 
 #### `updatePost(id: string, input: UpdatePostInput): Promise<ActionResponse<PostWithTags>>`
 
 既存記事を更新。
 
-- ✅ 部分更新対応
-- ✅ タグの再設定
-- ✅ ロールバック処理
+ - ✅ 部分更新対応
+ - ✅ タグの再設定
+ - ✅ 画像メタデータ（cover_image / ogp_image）更新
+ - ✅ 関連リンク（post_links / post_project_links）更新
+ - ✅ ロールバック処理
 
 #### `deletePost(id: string): Promise<ActionResponse<void>>`
 
@@ -186,30 +216,45 @@ const related = await getRelatedPostsByTagsWithRandom(tagIds, 3, 10)
 
 **ファイル**: `src/lib/actions/projects.ts`
 
-#### `getProjects(params?: GetProjectsParams): Promise<ProjectWithTags[]>`
+#### `getProjects(params?: GetProjectsParams): Promise<PaginatedProjects>`
 
 プロジェクト一覧を取得。
 
 **パラメータ**:
 ```typescript
 interface GetProjectsParams {
-  status?: 'completed' | 'archived'  // ステータスフィルタ（デフォルト: 'completed'）
+  status?: 'completed' | 'archived' | 'registered'  // ステータスフィルタ（デフォルト: 'completed'）
   tags?: string[]                     // タグスラッグの配列（AND検索）
+  limit?: number                      // 1ページあたりの件数（デフォルト: 20）
+  page?: number                       // ページ番号（デフォルト: 1）
 }
 ```
 
 **戻り値**:
-- `ProjectWithTags[]`: プロジェクトの配列
+```typescript
+interface PaginatedProjects {
+  projects: ProjectWithTags[]
+  pagination: {
+    currentPage: number
+    totalPages: number
+    totalCount: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+```
 
 **機能**:
 - ✅ ステータスフィルタ（完了済み・アーカイブ）
+- ✅ 登録中ステータス（registered）に対応
 - ✅ タグフィルタリング（AND検索）
 - ✅ 作成日降順でソート
 
 **使用例**:
 ```typescript
 // 完了済みプロジェクトを全取得
-const projects = await getProjects()
+const result = await getProjects({ page: 1, limit: 20 })
+const projects = result.projects
 
 // タグでフィルタ
 const filtered = await getProjects({
@@ -246,10 +291,12 @@ interface CreateProjectInput {
   content: JSONContent | null
   demo_url: string | null
   github_url: string | null
+  public_link_type: 'download' | 'website' | null
+  public_link_url: string | null
   cover_image: string | null
   start_date: string | null
   end_date: string | null
-  status: 'completed' | 'archived'
+  status: 'completed' | 'archived' | 'registered'
   steps_count: number | null
   used_ai: string[] | null
   gallery_images: string[] | null
@@ -266,6 +313,7 @@ interface CreateProjectInput {
 - ✅ プロジェクトデータの挿入
 - ✅ タグの紐付け（project_tagsテーブル）
 - ✅ JSONBフィールドの自動変換（used_ai, tech_stack）
+- ✅ 公開リンク設定（public_link_type/public_link_url）
 
 ---
 
@@ -406,6 +454,56 @@ tags.forEach(tag => {
 
 ---
 
+#### `createTag(input: CreateTagInput): Promise<ActionResponse<Tag>>`
+
+タグを新規作成。
+
+**パラメータ**:
+```typescript
+interface CreateTagInput {
+  name: string
+  slug: string
+  description?: string | null
+  color?: string
+}
+```
+
+**戻り値**:
+```typescript
+{ success: true, data: Tag }
+{ success: false, error: string }
+```
+
+---
+
+#### `updateTag(id: string, input: UpdateTagInput): Promise<ActionResponse<Tag>>`
+
+タグを更新。
+
+**パラメータ**:
+```typescript
+interface UpdateTagInput {
+  name?: string
+  slug?: string
+  description?: string | null
+  color?: string
+}
+```
+
+**戻り値**:
+```typescript
+{ success: true, data: Tag }
+{ success: false, error: string }
+```
+
+---
+
+#### `deleteTag(id: string): Promise<ActionResponse<void>>`
+
+タグを削除（post_tags / project_tags を先に整理）。
+
+---
+
 ### 2.5 固定ページ（Pages）
 
 **ファイル**: `src/lib/actions/pages.ts`
@@ -431,6 +529,32 @@ if (about) {
   console.log(about.title, about.content, about.metadata)
 }
 ```
+
+---
+
+#### `upsertPage(input: UpsertPageInput): Promise<Page | null>`
+
+固定ページを作成または更新（`page_type`でUPSERT）。
+
+**パラメータ**:
+```typescript
+type PageType = 'home' | 'about' | 'links'
+
+interface UpsertPageInput {
+  page_type: PageType
+  title: string
+  content: Record<string, unknown>
+  metadata: Record<string, unknown>
+}
+```
+
+**戻り値**:
+- `Page`: 保存されたページ
+- `null`: 保存失敗時
+
+**機能**:
+- ✅ `page_type` でUPSERT
+- ✅ `/about`, `/links` のrevalidate
 
 ---
 
@@ -464,6 +588,27 @@ JSONデータから全テーブルを復元（UPSERT）。
 #### `getDashboardStats(): Promise<DashboardStats>`
 
 総数（記事・プロジェクト・進行中・タグ）、累計閲覧数、最近のアクティビティを取得。
+
+---
+
+### 2.8 ストレージ（Storage）
+
+**ファイル**: `src/lib/actions/storage.ts`
+
+#### `uploadFile(formData: FormData): Promise<{ url: string | null; error?: string }>`
+
+画像ファイルを Supabase Storage `images` バケットへアップロード。
+
+**パラメータ**:
+- `formData`: `file` を含む `FormData`
+
+**戻り値**:
+- `url`: 公開URL
+- `error`: 失敗時のメッセージ
+
+**用途**:
+- 管理画面のリンクアイコン画像
+- 自己紹介のプロフィール画像
 
 ---
 
@@ -650,49 +795,20 @@ export default async function WorksPage() {
 
 ## 8. 今後の実装予定
 
-### 8.1 CRUD操作（管理画面）
-
-**記事の作成**:
-```typescript
-// src/lib/actions/posts.ts (追加予定)
-export async function createPost(data: PostInput): Promise<Post>
-export async function updatePost(id: string, data: PostInput): Promise<Post>
-export async function deletePost(id: string): Promise<void>
-```
-
-**画像アップロード**:
-```typescript
-export async function uploadImage(file: File): Promise<string>  // URL返却
-```
-
-### 8.2 認証
-
-**Supabase Auth統合**:
-```typescript
-export async function signIn(): Promise<User>
-export async function signOut(): Promise<void>
-export async function getSession(): Promise<Session | null>
-```
-
-### 8.3 バックアップ・エクスポート
-
-```typescript
-export async function exportAllData(): Promise<Blob>
-export async function importData(file: File): Promise<{ imported: number; skipped: number }>
-```
+現時点でServer Actionsの主要機能は実装済み。追加要望が出たタイミングで追記する。
 
 ---
 
 ## 9. 関連ドキュメント
 
 - [データスキーマ](./data-schema.md) - テーブル定義・型定義
-- [実装状況](../lv3/implementation-status.md) - 実装済み機能一覧
-- [コンポーネント仕様](../lv3/component-spec.md) - UIコンポーネント
+- [実装状況](../implementation/00-overview.md) - 実装済み機能一覧
+- [コンポーネント仕様](./component-spec.md) - UIコンポーネント
 - [型定義ファイル](../../src/types/database.ts) - TypeScript型定義
 
 ---
 
-**最終更新**: 2026-02-10
+**最終更新**: 2026-02-18
 **メンテナ**: Claude Sonnet 4.5
 
-※ 注: いくつかの Server Actions（Posts, Projects, InProgress）の CUD 操作は Lv4 実装により追加・改善されています。実装済みの関数は `docs/lv4/implementation-status.md` を参照してください。
+※ 注: いくつかの Server Actions（Posts, Projects, InProgress）の CUD 操作は実装により追加・改善されています。実装済みの関数は `docs/implementation/00-overview.md` を参照してください。

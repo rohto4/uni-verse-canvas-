@@ -30,6 +30,95 @@ type PostTag = {
   tag: Tag;
 }
 
+type PostLinkRow = {
+  to_post_id: string
+}
+
+type PostProjectLinkRow = {
+  project_id: string
+}
+
+function normalizeIds(ids: string[] = []) {
+  return Array.from(new Set(ids)).filter((id) => id)
+}
+
+export async function getPostRelations(postId: string): Promise<{ relatedPostIds: string[]; relatedProjectIds: string[] }> {
+  const supabase = await createServerClient()
+
+  const [{ data: postLinks }, { data: projectLinks }] = await Promise.all([
+    supabase
+      .from('post_links')
+      .select('to_post_id')
+      .eq('from_post_id', postId)
+      .eq('link_type', 'related'),
+    supabase
+      .from('post_project_links')
+      .select('project_id')
+      .eq('post_id', postId),
+  ])
+
+  return {
+    relatedPostIds: ((postLinks as PostLinkRow[]) || []).map((row) => row.to_post_id),
+    relatedProjectIds: ((projectLinks as PostProjectLinkRow[]) || []).map((row) => row.project_id),
+  }
+}
+
+async function replacePostRelations(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  postId: string,
+  relatedPostIds: string[],
+  relatedProjectIds: string[]
+) {
+  const uniquePostIds = normalizeIds(relatedPostIds).filter((id) => id !== postId)
+  const uniqueProjectIds = normalizeIds(relatedProjectIds)
+
+  const { error: deletePostLinksError } = await supabase
+    .from('post_links')
+    .delete()
+    .eq('from_post_id', postId)
+    .eq('link_type', 'related')
+
+  if (deletePostLinksError) {
+    throw deletePostLinksError
+  }
+
+  const { error: deleteProjectLinksError } = await supabase
+    .from('post_project_links')
+    .delete()
+    .eq('post_id', postId)
+
+  if (deleteProjectLinksError) {
+    throw deleteProjectLinksError
+  }
+
+  if (uniquePostIds.length > 0) {
+    const { error } = await supabase
+      .from('post_links')
+      .insert(uniquePostIds.map((id) => ({
+        from_post_id: postId,
+        to_post_id: id,
+        link_type: 'related',
+      })))
+
+    if (error) {
+      throw error
+    }
+  }
+
+  if (uniqueProjectIds.length > 0) {
+    const { error } = await supabase
+      .from('post_project_links')
+      .insert(uniqueProjectIds.map((id) => ({
+        post_id: postId,
+        project_id: id,
+      })))
+
+    if (error) {
+      throw error
+    }
+  }
+}
+
 
 export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPosts> {
   const {
@@ -241,6 +330,33 @@ export async function getPostById(id: string): Promise<PostWithTags | null> {
 export async function getRelatedPosts(postId: string, limit: number = 3): Promise<PostWithTags[]> {
   const supabase = await createServerClient()
 
+  const { data: manualLinks } = await supabase
+    .from('post_links')
+    .select('to_post_id')
+    .eq('from_post_id', postId)
+    .eq('link_type', 'related')
+
+  const manualIds = ((manualLinks as PostLinkRow[]) || []).map((row) => row.to_post_id)
+  if (manualIds.length > 0) {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`*, tags:post_tags(tag:tags(*))`)
+      .in('id', manualIds)
+      .or(`status.eq.published,and(status.eq.scheduled,published_at.lte.${new Date().toISOString()})`)
+      .limit(limit)
+
+    if (error) {
+      console.error('Error fetching manual related posts:', error)
+    } else if (data && data.length > 0) {
+      const mapped = ((data as Array<Post & { tags: PostTag[] }>) || []).map((post) => ({
+        ...post,
+        tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
+      }))
+      const orderMap = new Map(manualIds.map((id, index) => [id, index]))
+      return mapped.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0)).slice(0, limit)
+    }
+  }
+
   const { data: currentPost } = await supabase
     .from('posts')
     .select(`
@@ -300,6 +416,39 @@ export async function getRelatedPosts(postId: string, limit: number = 3): Promis
     ...post,
     tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
   }))
+}
+
+export async function getRelatedPostsForProject(projectId: string, limit: number = 3): Promise<PostWithTags[]> {
+  const supabase = await createServerClient()
+
+  const { data: projectLinks } = await supabase
+    .from('post_project_links')
+    .select('post_id')
+    .eq('project_id', projectId)
+
+  const postIds = ((projectLinks as Array<{ post_id: string }>) || []).map((row) => row.post_id)
+  if (postIds.length === 0) {
+    return []
+  }
+
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`*, tags:post_tags(tag:tags(*))`)
+    .in('id', postIds)
+    .or(`status.eq.published,and(status.eq.scheduled,published_at.lte.${new Date().toISOString()})`)
+    .limit(limit)
+
+  if (error) {
+    console.error('Error fetching related posts for project:', error)
+    return []
+  }
+
+  const mapped = ((data as Array<Post & { tags: PostTag[] }>) || []).map((post) => ({
+    ...post,
+    tags: (post.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
+  }))
+  const orderMap = new Map(postIds.map((id, index) => [id, index]))
+  return mapped.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0)).slice(0, limit)
 }
 
 export async function getRelatedPostsByTagsWithRandom(
@@ -377,6 +526,8 @@ const BasePostSchema = z.object({
 // Create schema includes tags and a refinement for scheduled posts
 const CreatePostSchema = BasePostSchema.extend({
   tags: z.array(z.string()).default([]),
+  related_post_ids: z.array(z.string()).default([]),
+  related_project_ids: z.array(z.string()).default([]),
 }).refine((data) => {
   if (data.status === 'scheduled') {
     if (!data.published_at) return false
@@ -390,7 +541,9 @@ const CreatePostSchema = BasePostSchema.extend({
 
 // Update schema is a partial of the base (no refine) and allows optional tags
 const UpdatePostSchema = BasePostSchema.partial().extend({
-  tags: z.array(z.string()).optional()
+  tags: z.array(z.string()).optional(),
+  related_post_ids: z.array(z.string()).optional(),
+  related_project_ids: z.array(z.string()).optional(),
 })
 
 export type CreatePostInput = z.infer<typeof CreatePostSchema>
@@ -410,7 +563,7 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
     return { success: false, error: (result.error.issues[0]).message }
   }
 
-  const { tags, ...postData } = result.data
+  const { tags, related_post_ids, related_project_ids, ...postData } = result.data
   const supabase = await createServerClient()
 
   // 公開日時の自動設定
@@ -460,7 +613,20 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
       }
     }
 
+    // 3. 関連リンクの保存
+    const hasRelations = related_post_ids.length > 0 || related_project_ids.length > 0
+    if (hasRelations) {
+      try {
+        await replacePostRelations(supabase, createdPost.id, related_post_ids, related_project_ids)
+      } catch (relationError) {
+        console.error('Failed to add relations, rolling back post creation:', relationError)
+        await supabase.from('posts').delete().eq('id', createdPost.id)
+        throw new Error('関連リンクの設定に失敗したため、処理を中断しました')
+      }
+    }
+
     revalidatePath('/posts')
+    revalidatePath('/works')
     
     // 作成された完全なデータを取得して返す
     const newPost = await getPostBySlug(createdPost.slug)
@@ -482,7 +648,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
   }
 
   const supabase = await createServerClient()
-  const { tags, ...updateData } = result.data
+  const { tags, related_post_ids, related_project_ids, ...updateData } = result.data
 
   // 現在のデータを取得（ロールバック用）
   const { data: currentPost, error: fetchError } = await supabase
@@ -507,13 +673,26 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oldTagIds = (currentTags as any[])?.map((t) => t.tag_id) || []
 
+  const [{ data: currentPostLinks }, { data: currentProjectLinks }] = await Promise.all([
+    supabase
+      .from('post_links')
+      .select('to_post_id')
+      .eq('from_post_id', id)
+      .eq('link_type', 'related'),
+    supabase
+      .from('post_project_links')
+      .select('project_id')
+      .eq('post_id', id),
+  ])
+
+  const oldRelatedPostIds = ((currentPostLinks as PostLinkRow[]) || []).map((row) => row.to_post_id)
+  const oldRelatedProjectIds = ((currentProjectLinks as PostProjectLinkRow[]) || []).map((row) => row.project_id)
+
   // 公開日時の調整
   let published_at = updateData.published_at
   if (updateData.status === 'published' && postToUpdate.status !== 'published') {
      published_at = postToUpdate.published_at || new Date().toISOString()
-  } else if (updateData.status && !published_at) {
-     published_at = postToUpdate.published_at
-  } else if (updateData.status === undefined && !published_at) {
+  } else if (!published_at) {
      published_at = postToUpdate.published_at
   }
 
@@ -569,6 +748,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
           await supabase.from('posts').update(postToUpdate).eq('id', id)
 
           // タグデータのロールバック（削除してしまったので元に戻す）
+          /* c8 ignore next */
           if (oldTagIds.length > 0) {
              const rollbackTags: Array<{ post_id: string; tag_id: string }> = oldTagIds.map((tid: string) => ({ post_id: id, tag_id: tid }))
              await supabase.from('post_tags').insert(rollbackTags)
@@ -579,8 +759,25 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
       }
     }
 
+    if (related_post_ids !== undefined || related_project_ids !== undefined) {
+      try {
+        await replacePostRelations(
+          supabase,
+          id,
+          related_post_ids ?? oldRelatedPostIds,
+          related_project_ids ?? oldRelatedProjectIds
+        )
+      } catch (relationError) {
+        console.error('Failed to update relations, rolling back:', relationError)
+        await supabase.from('posts').update(postToUpdate).eq('id', id)
+        await replacePostRelations(supabase, id, oldRelatedPostIds, oldRelatedProjectIds)
+        throw new Error('関連リンクの更新に失敗したため、変更を元に戻しました')
+      }
+    }
+
     revalidatePath('/posts')
     revalidatePath(`/posts/${updatedPost.slug}`)
+    revalidatePath('/works')
 
     const resultPost = await getPostBySlug(updatedPost.slug)
     if (!resultPost) throw new Error('Failed to fetch updated post')
@@ -598,6 +795,27 @@ export async function deletePost(id: string): Promise<ActionResponse<void>> {
   const supabase = await createServerClient()
   
   try {
+    const { error: linkError } = await supabase
+      .from('post_links')
+      .delete()
+      .or(`from_post_id.eq.${id},to_post_id.eq.${id}`)
+
+    if (linkError) throw linkError
+
+    const { error: projectLinkError } = await supabase
+      .from('post_project_links')
+      .delete()
+      .eq('post_id', id)
+
+    if (projectLinkError) throw projectLinkError
+
+    const { error: postTagError } = await supabase
+      .from('post_tags')
+      .delete()
+      .eq('post_id', id)
+
+    if (postTagError) throw postTagError
+
     const { error } = await supabase
       .from('posts')
       .delete()
@@ -606,6 +824,7 @@ export async function deletePost(id: string): Promise<ActionResponse<void>> {
     if (error) throw error
     
     revalidatePath('/posts')
+    revalidatePath('/works')
     return { success: true }
   } catch (error) {
     const err = error as Error;

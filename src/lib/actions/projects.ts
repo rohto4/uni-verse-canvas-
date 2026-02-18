@@ -1,12 +1,19 @@
 import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { Project, ProjectWithTags, Tag, Database } from '@/types/database'
 
 type ProjectInsert = Database['public']['Tables']['projects']['Insert']
 type ProjectUpdate = Database['public']['Tables']['projects']['Update']
+type ProjectTagInsert = Database['public']['Tables']['project_tags']['Insert']
 
 type ProjectTag = {
     project_id: string;
     tag: Tag;
+}
+
+export function normalizeTagIds(tags?: string[]): string[] {
+  if (!tags) return []
+  return Array.from(new Set(tags)).filter((tagId) => tagId)
 }
 
 export interface GetProjectsParams {
@@ -14,6 +21,14 @@ export interface GetProjectsParams {
   tags?: string[];
   limit?: number;
   page?: number;
+}
+
+export interface CreateProjectInput extends ProjectInsert {
+  tags?: string[]
+}
+
+export interface UpdateProjectInput extends ProjectUpdate {
+  tags?: string[]
 }
 
 export interface PaginatedProjects {
@@ -25,6 +40,16 @@ export interface PaginatedProjects {
     hasNext: boolean;
     hasPrev: boolean;
   };
+}
+
+function stripPublicLinkFields<T extends Record<string, unknown>>(data: T) {
+  const { public_link_type, public_link_url, ...rest } = data
+  return rest as T
+}
+
+function isMissingPublicLinkColumn(error: unknown) {
+  const err = error as { code?: string; message?: string }
+  return err?.code === 'PGRST204' && err?.message?.includes('public_link_')
 }
 
 export async function getProjects(params: GetProjectsParams): Promise<PaginatedProjects> {
@@ -149,47 +174,262 @@ export async function getProjectById(id: string): Promise<ProjectWithTags | null
   }
 }
 
-export async function createProject(input: ProjectInsert): Promise<Project | null> {
+export async function createProject(input: CreateProjectInput): Promise<ProjectWithTags | null> {
   const supabase = await createServerClient()
+  const { tags = [], ...projectData } = input
 
   try {
     const { data, error } = await supabase
       .from('projects')
-      .insert(input)
+      .insert(projectData)
       .select()
       .single()
 
     if (error) {
+      if (isMissingPublicLinkColumn(error)) {
+        const retryData = stripPublicLinkFields(projectData)
+        const { data: retryDataResult, error: retryError } = await supabase
+          .from('projects')
+          .insert(retryData)
+          .select()
+          .single()
+        if (retryError) {
+          console.error('Error creating project:', retryError)
+          return null
+        }
+        const createdProject = retryDataResult as Project
+        const uniqueTagIds = normalizeTagIds(tags)
+        if (uniqueTagIds.length > 0) {
+          const projectTags: ProjectTagInsert[] = uniqueTagIds.map((tagId) => ({
+            project_id: createdProject.id,
+            tag_id: tagId,
+          }))
+          const { error: tagError } = await supabase
+            .from('project_tags')
+            .insert(projectTags)
+          if (tagError) {
+            console.error('Failed to add project tags, rolling back:', tagError)
+            await supabase.from('projects').delete().eq('id', createdProject.id)
+            return null
+          }
+        }
+        return await getProjectById(createdProject.id)
+      }
+
       console.error('Error creating project:', error)
       return null
     }
 
-    return data as Project
+    const createdProject = data as Project
+
+    const uniqueTagIds = normalizeTagIds(tags)
+    if (uniqueTagIds.length > 0) {
+      const projectTags: ProjectTagInsert[] = uniqueTagIds.map((tagId) => ({
+        project_id: createdProject.id,
+        tag_id: tagId,
+      }))
+
+      const { error: tagError } = await supabase
+        .from('project_tags')
+        .insert(projectTags)
+
+      if (tagError) {
+        console.error('Failed to add project tags, rolling back:', tagError)
+        await supabase.from('projects').delete().eq('id', createdProject.id)
+        return null
+      }
+    }
+
+    return await getProjectById(createdProject.id)
   } catch (err) {
     console.error('Error creating project:', err)
     return null
   }
 }
 
-export async function updateProject(id: string, input: ProjectUpdate): Promise<Project | null> {
+export async function updateProject(id: string, input: UpdateProjectInput): Promise<ProjectWithTags | null> {
   const supabase = await createServerClient()
+  const { tags, ...projectData } = input
+
+  const { data: currentProject, error: fetchError } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (fetchError || !currentProject) {
+    console.error('Error fetching project for update:', fetchError)
+    return null
+  }
+
+  const { data: currentTags } = await supabase
+    .from('project_tags')
+    .select('tag_id')
+    .eq('project_id', id)
+
+  const oldTagIds = (currentTags as Array<{ tag_id: string }> | null)?.map((t) => t.tag_id) || []
 
   try {
     const { data, error } = await supabase
       .from('projects')
-      .update(input)
+      .update(projectData)
       .eq('id', id)
       .select()
       .single()
 
     if (error) {
+      if (isMissingPublicLinkColumn(error)) {
+        const retryData = stripPublicLinkFields(projectData)
+        const { data: retryProject, error: retryError } = await supabase
+          .from('projects')
+          .update(retryData)
+          .eq('id', id)
+          .select()
+          .single()
+        if (retryError) {
+          console.error('Error updating project:', retryError)
+          return null
+        }
+        const updatedProject = retryProject as Project
+        if (tags !== undefined) {
+          const { error: deleteTagsError } = await supabase
+            .from('project_tags')
+            .delete()
+            .eq('project_id', id)
+
+          if (deleteTagsError) {
+            throw new Error('タグ更新の前処理に失敗しました')
+          }
+
+          const uniqueTagIds = normalizeTagIds(tags)
+          if (uniqueTagIds.length > 0) {
+            const projectTags: ProjectTagInsert[] = uniqueTagIds.map((tagId) => ({
+              project_id: id,
+              tag_id: tagId,
+            }))
+
+            const { error: insertTagsError } = await supabase
+              .from('project_tags')
+              .insert(projectTags)
+
+            if (insertTagsError) {
+              console.error('Failed to update project tags, rolling back:', insertTagsError)
+              await supabase.from('projects').update(currentProject).eq('id', id)
+
+              if (oldTagIds.length > 0) {
+                const rollbackTags: ProjectTagInsert[] = oldTagIds.map((tagId) => ({
+                  project_id: id,
+                  tag_id: tagId,
+                }))
+                await supabase.from('project_tags').insert(rollbackTags)
+              }
+
+              throw new Error('タグの更新に失敗したため、変更を元に戻しました')
+            }
+          }
+        }
+
+        return await getProjectById(updatedProject.id)
+      }
+
       console.error('Error updating project:', error)
       return null
     }
 
-    return data as Project
+    const updatedProject = data as Project
+
+    if (tags !== undefined) {
+      const { error: deleteTagsError } = await supabase
+        .from('project_tags')
+        .delete()
+        .eq('project_id', id)
+
+      if (deleteTagsError) {
+        throw new Error('タグ更新の前処理に失敗しました')
+      }
+
+      const uniqueTagIds = normalizeTagIds(tags)
+      if (uniqueTagIds.length > 0) {
+        const projectTags: ProjectTagInsert[] = uniqueTagIds.map((tagId) => ({
+          project_id: id,
+          tag_id: tagId,
+        }))
+
+        const { error: insertTagsError } = await supabase
+          .from('project_tags')
+          .insert(projectTags)
+
+        if (insertTagsError) {
+          console.error('Failed to update project tags, rolling back:', insertTagsError)
+          await supabase.from('projects').update(currentProject).eq('id', id)
+
+          if (oldTagIds.length > 0) {
+            const rollbackTags: ProjectTagInsert[] = oldTagIds.map((tagId) => ({
+              project_id: id,
+              tag_id: tagId,
+            }))
+            await supabase.from('project_tags').insert(rollbackTags)
+          }
+
+          throw new Error('タグの更新に失敗したため、変更を元に戻しました')
+        }
+      }
+    }
+
+    return await getProjectById(updatedProject.id)
   } catch (err) {
     console.error('Error updating project:', err)
     return null
+  }
+}
+
+export async function deleteProject(id: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createServerClient()
+
+  try {
+    const { error: progressError } = await supabase
+      .from('in_progress')
+      .update({ completed_project_id: null })
+      .eq('completed_project_id', id)
+
+    if (progressError) {
+      throw progressError
+    }
+
+    const { error: linkError } = await supabase
+      .from('post_project_links')
+      .delete()
+      .eq('project_id', id)
+
+    if (linkError) {
+      throw linkError
+    }
+
+    const { error: tagError } = await supabase
+      .from('project_tags')
+      .delete()
+      .eq('project_id', id)
+
+    if (tagError) {
+      throw tagError
+    }
+
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      throw error
+    }
+
+    revalidatePath('/works')
+    revalidatePath('/progress')
+    revalidatePath('/admin/projects')
+    revalidatePath('/admin/in-progress')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting project:', error)
+    return { success: false, error: 'プロジェクトの削除に失敗しました' }
   }
 }

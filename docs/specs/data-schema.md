@@ -103,10 +103,12 @@
 | content | JSONB | NULL | 詳細（Tiptap） |
 | demo_url | TEXT | NULL | デモURL |
 | github_url | TEXT | NULL | GitHubリポジトリURL |
+| public_link_type | VARCHAR(20) | NULL | 公開リンク種別（download/website） |
+| public_link_url | TEXT | NULL | 公開リンクURL |
 | cover_image | TEXT | NULL | カバー画像URL |
 | start_date | DATE | NULL | 開始日 |
 | end_date | DATE | NULL | 完了日 |
-| status | VARCHAR(20) | DEFAULT 'completed' | completed/archived |
+| status | VARCHAR(20) | DEFAULT 'completed' | completed/archived/registered |
 | steps_count | INTEGER | NULL | 開発規模（ステップ数） |
 | used_ai | JSONB | NULL | 使用した生成AI（配列） |
 | gallery_images | TEXT[] | NULL | ギャラリー画像URL配列 |
@@ -145,6 +147,9 @@
 **post_links**: from_post_id, to_post_id, link_type (複合PK)
 **post_project_links**: post_id, project_id (複合PK)
 
+**link_typeの用途（post_links）**:
+- related: 手動で指定する関連記事
+
 ### 3.6 pages（固定ページ）
 
 | カラム | 型 | 説明 |
@@ -152,7 +157,61 @@
 | page_type | VARCHAR(50) | UNIQUE: home/about/links |
 | title | VARCHAR(200) | ページタイトル |
 | content | JSONB | Tiptap JSON |
-| metadata | JSONB | OGP等 |
+| metadata | JSONB | ページ固有メタデータ |
+
+**metadataの構造（代表例）**:
+
+**about**
+```json
+{
+  "name": "Your Name",
+  "role": "Web Developer",
+  "location": "Tokyo, Japan",
+  "employment": "Freelance",
+  "avatarUrl": "https://...",
+  "skills": {
+    "core": ["Next.js", "React"],
+    "infra": ["Supabase", "PostgreSQL"],
+    "ai": ["Claude", "Gemini", "ChatGPT"],
+    "method": "ドキュメント駆動開発",
+    "workflow": ["NotebookLM", "Notion"]
+  },
+  "timeline": [
+    { "year": "2024", "title": "...", "description": "..." }
+  ]
+}
+```
+
+**links**
+```json
+{
+  "contactEmail": "example@example.com",
+  "socialLinks": [
+    { "name": "GitHub", "url": "https://...", "description": "...", "icon": "Github", "iconImageUrl": "https://..." }
+  ],
+  "otherLinks": [
+    { "name": "Blog", "url": "https://...", "description": "...", "icon": "Globe", "iconImageUrl": "" }
+  ]
+}
+```
+
+**home**
+```json
+{
+  "heroBadge": "Your Universe, Your Canvas",
+  "heroTitle": "自分だけの宇宙を\n自由に描く",
+  "heroSubtitle": "技術記事、プロジェクト、日々の学びを記録する場所。\n思考を整理し、成長の軌跡を残していきます。",
+  "primaryCtaLabel": "読み物を見る",
+  "primaryCtaHref": "/posts",
+  "secondaryCtaLabel": "作ったものを見る",
+  "secondaryCtaHref": "/works",
+  "sections": {
+    "postsTitle": "最新の読み物",
+    "projectsTitle": "最近の作ったもの",
+    "inProgressTitle": "進行中のこと"
+  }
+}
+```
 
 ### 3.7 qiita_cache（Qiitaキャッシュ）
 
@@ -210,10 +269,12 @@ export interface Project {
   content: JSONContent | null          // Tiptap JSONコンテンツ
   demo_url: string | null
   github_url: string | null
+  public_link_type: 'download' | 'website' | null
+  public_link_url: string | null
   cover_image: string | null
   start_date: string | null            // ISO 8601形式
   end_date: string | null              // ISO 8601形式
-  status: 'completed' | 'archived'
+  status: 'completed' | 'archived' | 'registered'
   steps_count: number | null           // 開発規模（ステップ数）
   used_ai: string[] | null             // 使用した生成AI（例: ["Claude Sonnet 4.5"]）
   gallery_images: string[] | null      // ギャラリー画像URL配列
@@ -265,7 +326,7 @@ export interface Page {
   page_type: 'home' | 'about' | 'links'
   title: string
   content: JSONContent                  // Tiptap JSONコンテンツ
-  metadata: Record<string, any>         // 任意のメタデータ（JSON）
+  metadata: Record<string, any>         // ページ固有メタデータ（about/linksで構造定義あり）
   created_at: string                    // ISO 8601形式
   updated_at: string                    // ISO 8601形式
 }
@@ -401,6 +462,7 @@ USING (
 ```
 
 同様のポリシーを projects, in_progress, tags, pages, qiita_cache に適用。
+加えて、`post_tags`, `project_tags`, `post_links`, `post_project_links` にも公開読取ポリシーを付与。
 
 ---
 

@@ -1,36 +1,35 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { ProjectForm, type ProjectFormValues } from '@/components/admin/ProjectForm'
 import { createProject } from '@/lib/actions/projects'
+import { getTags } from '@/lib/actions/tags'
+import { uploadFile } from '@/lib/actions/storage'
+import { ProjectEditorClient } from '@/components/admin/ProjectEditorClient'
+import type { ProjectFormValues } from '@/components/admin/ProjectForm'
 
-export default function NewProjectPage() {
-  const router = useRouter()
+export default async function NewProjectPage() {
+  const tags = await getTags()
 
-  const handleSubmit = async (data: ProjectFormValues) => {
-    try {
-      const result = await createProject(data)
+  async function submitAction(data: ProjectFormValues) {
+    'use server'
+    const result = await createProject(data)
+    return result ? { success: true } : { success: false, error: 'プロジェクトの作成に失敗しました' }
+  }
 
-      if (result) {
-        toast.success('プロジェクトを作成しました')
-        router.push('/admin/projects')
-        router.refresh()
-      } else {
-        toast.error('プロジェクトの作成に失敗しました')
-      }
-    } catch (error) {
-      console.error(error)
-      toast.error('エラーが発生しました')
-    }
+  async function uploadAction(formData: FormData) {
+    'use server'
+    return uploadFile(formData)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">新規プロジェクト作成</h1>
       </div>
-      <ProjectForm onSubmit={handleSubmit} />
+      <ProjectEditorClient
+        availableTags={tags}
+        submitAction={submitAction}
+        uploadAction={uploadAction}
+        successMessage="プロジェクトを作成しました"
+        redirectTo="/admin/projects"
+      />
     </div>
   )
 }

@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { InProgressWithProject } from "@/types/database"
-import { createInProgress, updateInProgress, deleteInProgress, CreateInProgressInput } from "@/lib/actions/in-progress"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -25,9 +24,26 @@ const statusConfig = {
 
 interface InProgressListProps {
   items: InProgressWithProject[]
+  availableProjects: Array<{ id: string; title: string }>
+  createAction: (input: CreateInProgressInput) => Promise<InProgressWithProject | null>
+  updateAction: (id: string, input: UpdateInProgressInput) => Promise<InProgressWithProject | null>
+  deleteAction: (id: string) => Promise<void>
 }
 
-export default function InProgressList({ items }: InProgressListProps) {
+type CreateInProgressInput = {
+  title: string
+  description: string
+  status: 'not_started' | 'paused' | 'in_progress' | 'completed'
+  progress_rate: number
+  started_at: string | null
+  completed_at: string | null
+  completed_project_id: string | null
+  notes: string | null
+}
+
+type UpdateInProgressInput = Partial<CreateInProgressInput>
+
+export default function InProgressList({ items, availableProjects, createAction, updateAction, deleteAction }: InProgressListProps) {
   const router = useRouter()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -67,7 +83,7 @@ export default function InProgressList({ items }: InProgressListProps) {
 
     setIsLoading(true)
     try {
-      const res = await createInProgress(formData)
+      const res = await createAction(formData)
       if (!res) {
         toast.error("作成に失敗しました")
         return
@@ -104,7 +120,7 @@ export default function InProgressList({ items }: InProgressListProps) {
 
     setIsLoading(true)
     try {
-      const res = await updateInProgress(editingItem.id, formData)
+      const res = await updateAction(editingItem.id, formData)
       if (!res) {
         toast.error("更新に失敗しました")
         return
@@ -126,7 +142,7 @@ export default function InProgressList({ items }: InProgressListProps) {
     if (!confirm("本当に削除しますか？")) return
 
     try {
-      await deleteInProgress(id)
+      await deleteAction(id)
       toast.success("削除しました")
       router.refresh()
     } catch (error) {
@@ -137,7 +153,7 @@ export default function InProgressList({ items }: InProgressListProps) {
 
   const handleStatusUpdate = async (id: string, newStatus: CreateInProgressInput['status']) => {
     try {
-      await updateInProgress(id, { status: newStatus })
+      await updateAction(id, { status: newStatus })
       toast.success("ステータスを更新しました")
       router.refresh()
     } catch (error) {
@@ -152,14 +168,14 @@ export default function InProgressList({ items }: InProgressListProps) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8 space-y-3">
         <div>
           <h1 className="text-3xl font-bold">進行中のこと</h1>
           <p className="text-muted-foreground">プロジェクトや学習の進捗管理</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setIsCreateDialogOpen(true) }}>
+            <Button onClick={() => { resetForm(); setIsCreateDialogOpen(true) }} className="w-fit">
               <Plus className="h-4 w-4 mr-2" />
               新規追加
             </Button>
@@ -172,7 +188,7 @@ export default function InProgressList({ items }: InProgressListProps) {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <ItemForm formData={formData} setFormData={setFormData} />
+              <ItemForm formData={formData} setFormData={setFormData} availableProjects={availableProjects} />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)} disabled={isLoading}>
@@ -192,7 +208,7 @@ export default function InProgressList({ items }: InProgressListProps) {
               <DialogTitle>項目を編集</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <ItemForm formData={formData} setFormData={setFormData} />
+              <ItemForm formData={formData} setFormData={setFormData} availableProjects={availableProjects} />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isLoading}>
@@ -283,9 +299,14 @@ export default function InProgressList({ items }: InProgressListProps) {
   )
 }
 
-function ItemForm({ formData, setFormData }: { 
-  formData: CreateInProgressInput, 
-  setFormData: Dispatch<SetStateAction<CreateInProgressInput>> 
+function ItemForm({
+  formData,
+  setFormData,
+  availableProjects,
+}: {
+  formData: CreateInProgressInput
+  setFormData: Dispatch<SetStateAction<CreateInProgressInput>>
+  availableProjects: Array<{ id: string; title: string }>
 }) {
   return (
     <>
@@ -313,7 +334,12 @@ function ItemForm({ formData, setFormData }: {
           <label className="text-sm font-medium">ステータス</label>
           <Select 
             value={formData.status} 
-            onValueChange={(val: CreateInProgressInput['status']) => setFormData({...formData, status: val})}
+            onValueChange={(val: CreateInProgressInput['status']) => setFormData({
+              ...formData,
+              status: val,
+              completed_at: val === "completed" ? formData.completed_at : null,
+              completed_project_id: val === "completed" ? formData.completed_project_id : null,
+            })}
           >
             <SelectTrigger className="mt-1">
               <SelectValue />
@@ -348,6 +374,44 @@ function ItemForm({ formData, setFormData }: {
           onChange={(e) => setFormData({...formData, started_at: e.target.value ? new Date(e.target.value).toISOString() : null})}
         />
       </div>
+      {formData.status === "completed" && (
+        <>
+          <div>
+            <label className="text-sm font-medium">完了日</label>
+            <Input
+              type="date"
+              className="mt-1"
+              value={formData.completed_at ? new Date(formData.completed_at).toISOString().split('T')[0] : ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                completed_at: e.target.value ? new Date(e.target.value).toISOString() : null,
+              })}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">関連プロジェクト</label>
+            <Select
+              value={formData.completed_project_id || "none"}
+              onValueChange={(val) => setFormData({
+                ...formData,
+                completed_project_id: val === "none" ? null : val,
+              })}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="プロジェクトを選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">なし</SelectItem>
+                {availableProjects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
       <div>
         <label className="text-sm font-medium">メモ</label>
         <Textarea 
@@ -430,10 +494,16 @@ function ItemCard({ item, onEdit, onDelete, onStatusUpdate }: {
             <span className="text-muted-foreground">進捗</span>
             <span className="font-medium">{item.progress_rate}%</span>
           </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <div className="h-3 bg-muted rounded-full overflow-hidden relative">
             <div
-              className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${item.progress_rate}%` }}
+              className="h-full w-full"
+              style={{
+                background: "var(--card-accent-gradient)",
+              }}
+            />
+            <div
+              className="absolute inset-y-0 right-0 bg-muted"
+              style={{ width: `${Math.max(0, 100 - item.progress_rate)}%` }}
             />
           </div>
         </div>
@@ -441,6 +511,10 @@ function ItemCard({ item, onEdit, onDelete, onStatusUpdate }: {
         {/* Info */}
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
           {item.started_at && <span>開始: {new Date(item.started_at).toLocaleDateString()}</span>}
+          {item.completed_at && <span>完了: {new Date(item.completed_at).toLocaleDateString()}</span>}
+          {item.completedProject && (
+            <span>関連: {item.completedProject.title}</span>
+          )}
         </div>
 
         {/* Notes */}

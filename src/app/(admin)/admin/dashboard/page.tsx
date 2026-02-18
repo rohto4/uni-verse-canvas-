@@ -89,17 +89,16 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {recentPosts.map((post: RecentPost) => (
-                <div
+                <Link
                   key={post.id}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors"
+                  href={`/admin/posts/${post.id}`}
+                  className="group flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  aria-label={`${post.title}を編集`}
                 >
                   <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/admin/posts/${post.id}`}
-                      className="font-medium hover:text-primary truncate block"
-                    >
+                    <span className="font-medium truncate block group-hover:text-primary transition-colors">
                       {post.title}
-                    </Link>
+                    </span>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                       {post.published_at && <span>{new Date(post.published_at).toLocaleDateString()}</span>}
                       {post.status === "published" && (
@@ -113,7 +112,7 @@ export default async function DashboardPage() {
                   <Badge className={statusConfig[post.status as keyof typeof statusConfig].className}>
                     {statusConfig[post.status as keyof typeof statusConfig].label}
                   </Badge>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>
@@ -131,15 +130,20 @@ export default async function DashboardPage() {
             {inProgressItems.length > 0 ? (
               <div className="space-y-4">
                 {inProgressItems.slice(0,5).map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 rounded-lg">
+                  <Link
+                    key={item.id}
+                    href={`/admin/in-progress`}
+                    className="group flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    aria-label={`${item.title}の進捗を見る`}
+                  >
                     <div>
-                      <Link href={`/admin/in-progress`} className="font-medium hover:text-primary">
+                      <span className="font-medium group-hover:text-primary transition-colors">
                         {item.title}
-                      </Link>
+                      </span>
                       <p className="text-xs text-muted-foreground mt-1">{item.status} · {item.progress_rate}%</p>
                     </div>
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

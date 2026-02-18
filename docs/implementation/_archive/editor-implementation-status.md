@@ -335,9 +335,9 @@ editor.chain().focus().insertContent({
 - ✅ このファイル（editor-implementation-status.md）
 
 ### 13.2 更新予定（IMP-D）
-- ⏳ docs/lv2/component-spec.md（コンポーネント仕様）
-- ⏳ docs/lv2/data-schema.md（データスキーマ）
-- ⏳ docs/lv2/api-spec.md（API仕様）
+- ⏳ docs/specs/component-spec.md（コンポーネント仕様）
+- ⏳ docs/specs/data-schema.md（データスキーマ）
+- ⏳ docs/specs/api-spec.md（API仕様）
 
 ---
 

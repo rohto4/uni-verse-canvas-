@@ -21,7 +21,7 @@
    - 管理操作を安全に行うために Supabase Auth を利用し、管理者のみが更新系操作を行えるようにする。
  - 関連ドキュメント: `docs/implementation/06-auth-feature.md`
  - 影響ファイル
-   - 新規: `src/lib/supabase/auth.ts`
+    - 新規: `src/lib/supabase/auth.client.ts`, `src/lib/supabase/auth.server.ts`
    - 更新: `src/lib/supabase/server.ts`（既に service role 優先化が入っているため参照）
    - 新規マイグレーション例: `supabase/migrations/20260210_add_admins_table.sql`
  - 実装手順（ステップ）
@@ -43,7 +43,7 @@
           USING (exists (select 1 from admins where user_id = auth.uid()));
         ```
    3. サーバー／クライアントで利用する auth ヘルパーを実装する。
-      - ファイル: `src/lib/supabase/auth.ts`
+      - ファイル: `src/lib/supabase/auth.client.ts`, `src/lib/supabase/auth.server.ts`
       - 必要関数:
         - `createClientForBrowser()` - ブラウザ用 supabase client
         - `getSessionServer()` - Server Side で session を確認するユーティリティ
@@ -51,7 +51,7 @@
    4. 管理画面のレイアウト（`src/app/(admin)/layout.tsx` など）に server-side guard を追加し、非管理者は `/admin/login` にリダイレクトする。
  - 重要コード例（抜粋）
    ```ts
-   // src/lib/supabase/auth.ts (抜粋)
+    // src/lib/supabase/auth.server.ts (抜粋)
    import { createServerClient } from './server'
 
    export async function isAdminByUid(uid: string) {

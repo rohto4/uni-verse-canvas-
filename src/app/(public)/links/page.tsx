@@ -1,4 +1,21 @@
-import { ExternalLink, Github, Twitter, Linkedin, Mail, Globe, BookOpen, MessageCircle } from "lucide-react"
+import {
+  ExternalLink,
+  Github,
+  Twitter,
+  Linkedin,
+  Mail,
+  Globe,
+  BookOpen,
+  MessageCircle,
+  Youtube,
+  Instagram,
+  Link as LinkIcon,
+  Rss,
+  Code2,
+  FileText,
+  Sparkles,
+  Bot,
+} from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getPage } from "@/lib/actions/pages"
@@ -14,6 +31,7 @@ interface LinkItem {
 interface LinksMetadata {
     socialLinks: LinkItem[];
     otherLinks: LinkItem[];
+    contactEmail?: string;
 }
 
 const iconMap: Record<string, ComponentType<{ className?: string }>> = {
@@ -24,6 +42,14 @@ const iconMap: Record<string, ComponentType<{ className?: string }>> = {
   BookOpen,
   Globe,
   MessageCircle,
+  Youtube,
+  Instagram,
+  Link: LinkIcon,
+  Rss,
+  Code2,
+  FileText,
+  Sparkles,
+  Bot,
 }
 
 const colorMap: Record<string, string> = {
@@ -31,6 +57,9 @@ const colorMap: Record<string, string> = {
   Twitter: "hover:bg-blue-500 hover:text-white",
   Linkedin: "hover:bg-blue-700 hover:text-white",
   Mail: "hover:bg-primary hover:text-primary-foreground",
+  Youtube: "hover:bg-red-600 hover:text-white",
+  Instagram: "hover:bg-pink-500 hover:text-white",
+  Rss: "hover:bg-orange-500 hover:text-white",
 }
 
 export const metadata = {
@@ -48,6 +77,7 @@ export default async function LinksPage() {
   const metadata = pageData.metadata as LinksMetadata
   const socialLinks = metadata.socialLinks || []
   const otherLinks = metadata.otherLinks || []
+  const contactEmail = metadata.contactEmail || "example@example.com"
   return (
     <div className="min-h-screen bg-universe py-8">
       <div className="cloud-section max-w-2xl mx-auto py-8 px-4">
@@ -131,7 +161,7 @@ export default async function LinksPage() {
           </CardHeader>
           <CardContent className="text-center">
             <Button asChild size="lg">
-              <a href="mailto:example@example.com">
+              <a href={`mailto:${contactEmail}`}>
                 <Mail className="h-5 w-5 mr-2" />
                 お問い合わせ
               </a>

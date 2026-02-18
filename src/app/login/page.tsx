@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signInWithGoogle } from '@/lib/supabase/auth'
+import { signInWithGoogle, signOut } from '@/lib/supabase/auth.client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sparkles, LogIn } from 'lucide-react'
@@ -22,6 +22,18 @@ export default function LoginPage() {
       toast.error('予期せぬエラーが発生しました')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await signOut()
+      if (error) {
+        toast.error('ログアウトに失敗しました: ' + error.message)
+      }
+    } catch (error) {
+      console.error('Sign out error:', error)
+      toast.error('予期せぬエラーが発生しました')
     }
   }
 
@@ -54,6 +66,14 @@ export default function LoginPage() {
               <LogIn className="h-5 w-5" />
             )}
             Googleでログイン
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={handleSignOut}
+            className="w-full"
+          >
+            ログアウトして再ログイン
           </Button>
           
           <div className="relative">

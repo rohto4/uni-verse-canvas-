@@ -9,13 +9,12 @@
 ```
 components/
 ├── ui/          # shadcn/ui (Button, Card, Dialog, Input, Select, Tabs, Badge, Toast等)
-├── layout/      # Header, Navigation, Sidebar, Footer, MobileMenu
-├── editor/      # TiptapEditor, MenuBar, ImageUploader, extensions/
-├── post/        # PostCard, PostContent, PostMeta, TableOfContents, RelatedPosts
-├── project/     # ProjectCard, ProjectGallery, ProjectDetail
-├── progress/    # ProgressCard, ProgressTimeline, StatusBadge
-├── admin/       # AdminNav, PostList, BackupPanel, DashboardStats
-└── common/      # ThemeToggle, SearchBox, TagFilter, Pagination, LoadingSpinner
+├── layout/      # Header, Footer, AdminSidebar
+├── editor/      # TiptapEditor, EditorToolbar, extensions/
+├── posts/       # PostsList, PostsFilter, Pagination, PostContent, TableOfContents, ShareButtons
+├── projects/    # ProjectCard, ProjectGallery, ProjectContent, TechStackChart, RelatedPosts
+├── admin/       # BackupClient, PostEditorClient, ProjectEditorClient, InProgressList, AboutPageForm, LinksPageForm
+└── common/      # AccentCard, GradientAccent
 ```
 
 ## 3. 主要コンポーネントProps
@@ -30,56 +29,70 @@ interface SidebarProps { children: ReactNode; className?: string }
 ### Editor
 ```typescript
 interface TiptapEditorProps {
-  content?: JSONContent
-  onChange?: (content: JSONContent) => void
+  content?: string | JSONContent
+  onChange?: (content: string) => void
+  onUpdate?: (editor: Editor) => void
   editable?: boolean
   placeholder?: string
+  className?: string
 }
-interface MenuBarProps { editor: Editor }
-interface ImageUploaderProps { editor: Editor; onUpload?: (url: string) => void }
+interface EditorToolbarProps { editor: Editor }
 ```
 
-### Post
+### Posts
 ```typescript
-interface PostCardProps { post: PostWithTags; variant?: 'default' | 'compact' }
+interface PostsListProps { posts: PostWithTags[] }
+interface PostsFilterProps { tags: TagWithCount[] }
+interface PaginationProps { currentPage: number; totalPages: number; onPageChange?: (page: number) => void }
 interface PostContentProps { content: JSONContent }
 interface TableOfContentsProps { content: JSONContent }
 interface ShareButtonsProps { url: string; title: string }
-interface RelatedPostsProps { postId: string; limit?: number }
 ```
 
-### Project/Progress
+### Projects
 ```typescript
-interface ProjectCardProps { project: ProjectWithTags; onClick?: () => void }
+interface ProjectCardProps { project: ProjectWithTags }
 interface ProjectGalleryProps { images: string[]; alt: string }
 interface ProjectContentProps { content: JSONContent }
 interface TechStackChartProps { data: Record<string, number> }
 interface ProjectFormProps { initialData?: ProjectWithTags; onSubmit: (data: ProjectFormValues) => void }
 interface RelatedPostsProps { tags: Tag[]; limit?: number }
-interface ProgressCardProps { item: InProgressWithProject }
-interface InProgressListProps { status?: string }
-interface StatusBadgeProps { status: 'not_started' | 'paused' | 'in_progress' | 'completed' }
+interface ProjectsFilterProps { tags: TagWithCount[] }
 ```
 
 ### Layout / Admin
 ```typescript
 interface AdminSidebarProps { collapsed?: boolean; onToggle?: () => void }
 interface AdminClientLayoutProps { children: ReactNode }
+interface AboutPageFormProps {
+  initialName: string
+  initialRole: string
+  initialLocation: string
+  initialEmployment: string
+  initialIntro: string
+  initialSkills: {
+    core: string
+    infra: string
+    ai: string
+    method: string
+    workflow: string
+  }
+  initialTimeline: { year: string; title: string; description: string }[]
+  initialAvatarUrl: string
+  uploadAction: (formData: FormData) => Promise<{ url: string | null; error?: string }>
+}
+interface LinksPageFormProps {
+  initialContactEmail: string
+  initialSocialLinks: { name: string; url: string; description: string; icon: string; iconImageUrl?: string }[]
+  initialOtherLinks: { name: string; url: string; description: string; icon: string; iconImageUrl?: string }[]
+  uploadAction: (formData: FormData) => Promise<{ url: string | null; error?: string }>
+}
 ```
 
 ### Common
 ```typescript
-interface TagFilterProps {
-  tags: TagWithCount[]
-  selectedTags: string[]
-  onToggle: (tagSlug: string) => void
-  mode?: 'single' | 'multiple'
-}
-interface PaginationProps {
-  currentPage: number
-  totalPages: number
-  onPageChange: (page: number) => void
-}
+interface AccentCardProps { title: string; description: string; href?: string }
+interface GradientAccentProps { className?: string }
 ```
 
 ## 4. Tiptap エディタ詳細仕様
@@ -91,12 +104,12 @@ interface PaginationProps {
 #### Props
 ```typescript
 interface TiptapEditorProps {
-  content?: string           // 初期コンテンツ（JSON文字列）
-  onChange?: (content: string) => void  // コンテンツ変更時のコールバック
+  content?: string | JSONContent  // 初期コンテンツ（HTML文字列 or Tiptap JSON）
+  onChange?: (content: string) => void  // コンテンツ変更時のコールバック（HTML）
   onUpdate?: (editor: Editor) => void   // エディタ更新時のコールバック
-  placeholder?: string       // プレースホルダー
-  editable?: boolean         // 編集可/不可（デフォルト: true）
-  className?: string         // カスタムクラス
+  placeholder?: string              // プレースホルダー
+  editable?: boolean                // 編集可/不可（デフォルト: true）
+  className?: string                // カスタムクラス
 }
 ```
 
@@ -301,7 +314,7 @@ StarterKit, CodeBlockLowlight(Shiki), Table, TableRow, TableCell, TableHeader, L
 **カスタム拡張**:
 ResizableImage（リサイズ可能画像）, ColumnLayout（二段組レイアウト）, TableWithDelete（削除可能テーブル）
 
-## 5. Hooks
+## 5. Hooks（計画）
 ```typescript
 function useAuth(): { user: User | null; loading: boolean; isAdmin: boolean; signInWithGoogle; signOut }
 function usePosts(options?: { page?; limit?; tags?; search? }): { posts; pagination; loading; error; refetch }
@@ -512,7 +525,7 @@ interface ImageUploadMultipleProps {
 
 ---
 
-**最終更新**: 2026-02-10
-**追加内容**: プロジェクト詳細コンポーネント、管理画面コンポーネント
+**最終更新**: 2026-02-18
+**追加内容**: 固定ページ編集フォーム、リンクアイコン画像アップロード対応
 
-※ 本仕様は Lv4 実装状況を反映して更新しました。コンポーネントの実装状況は `docs/lv4/implementation-status.md` を参照してください。
+※ 本仕様は実装状況を反映して更新しました。コンポーネントの実装状況は `docs/implementation/00-overview.md` を参照してください。

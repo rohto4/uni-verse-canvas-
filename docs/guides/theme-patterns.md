@@ -7,6 +7,40 @@
 
 ---
 
+## Admin Theme Direction: Blue Archive Sky + Pink
+
+**目的**: 管理画面は Blue Archive の空色 + ピンクを主軸に、よりエネルギッシュで軽快な印象へ。
+
+**方針**:
+- ライトモード強調（暗い配色は最小限）
+- 公開UIと分離するため、`.admin-theme` のスコープ内で管理画面用トークンを上書き
+- エネルギー感: 明るいグラデーション、軽い光彩、シャープなアクセントライン
+
+**推奨トークン例（admin限定）**:
+```css
+.admin-theme {
+  --admin-gradient-from: oklch(0.74 0.14 220);
+  --admin-gradient-to: oklch(0.80 0.16 350);
+  --admin-gradient-via: oklch(0.78 0.12 280);
+
+  --admin-bg: oklch(0.985 0.015 220);
+  --admin-fg: oklch(0.24 0.04 230);
+  --admin-card: oklch(1 0 0);
+  --admin-border: oklch(0.90 0.03 220);
+
+  --admin-primary: oklch(0.66 0.16 225);
+  --admin-primary-foreground: oklch(1 0 0);
+  --admin-accent: oklch(0.78 0.16 350);
+  --admin-accent-foreground: oklch(1 0 0);
+}
+```
+
+**使い分け**:
+- 管理画面の背景、カード、ボタン、サイドバーは `.admin-theme` トークンを使用
+- 公開ページは既存 `:root` のテーマを維持
+
+---
+
 ## Pattern 1: Soft Cream（ふわふわクリーム）
 
 **コンセプト**: 柔らかいクリーム色ベース、ほんのり影でふわっと浮かぶ感じ

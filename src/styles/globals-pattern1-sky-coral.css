@@ -120,6 +120,64 @@
   --sidebar-ring: oklch(0.65 0.15 230);
 }
 
+/* ============================================
+   Admin Theme: Energetic Sky Blue + Pink
+   管理画面専用トークン（ライトモード強調）
+   ============================================ */
+
+.admin-theme {
+  --admin-gradient-from: oklch(0.74 0.14 220);
+  --admin-gradient-via: oklch(0.78 0.12 280);
+  --admin-gradient-to: oklch(0.80 0.16 350);
+
+  --background: oklch(0.985 0.015 220);
+  --foreground: oklch(0.22 0.04 230);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.04 230);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.04 230);
+
+  --primary: oklch(0.66 0.18 225);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.93 0.035 220);
+  --secondary-foreground: oklch(0.28 0.04 230);
+
+  --muted: oklch(0.95 0.02 220);
+  --muted-foreground: oklch(0.48 0.03 230);
+
+  --accent: oklch(0.78 0.17 350);
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.62 0.23 25);
+
+  --border: oklch(0.89 0.03 220);
+  --input: oklch(0.96 0.02 220);
+  --ring: oklch(0.66 0.18 225);
+
+  --sidebar: oklch(0.98 0.015 220);
+  --sidebar-foreground: oklch(0.23 0.04 230);
+  --sidebar-primary: oklch(0.72 0.18 350);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.93 0.05 220);
+  --sidebar-accent-foreground: oklch(0.25 0.04 230);
+  --sidebar-border: oklch(0.88 0.03 220);
+  --sidebar-ring: oklch(0.66 0.18 225);
+
+  --card-accent-gradient: linear-gradient(90deg, var(--admin-gradient-from), var(--admin-gradient-to));
+  --section-accent-gradient: linear-gradient(90deg, var(--admin-gradient-from), var(--admin-gradient-via), var(--admin-gradient-to));
+  --sidebar-accent-gradient: linear-gradient(180deg, var(--admin-gradient-from), var(--admin-gradient-to));
+  --button-accent-gradient: linear-gradient(135deg, var(--admin-gradient-from), var(--admin-gradient-to));
+  --admin-sidebar-accent-gradient: var(--sidebar-accent-gradient);
+
+  background-image:
+    radial-gradient(1200px 600px at -10% -20%, oklch(0.92 0.12 220 / 0.45), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, oklch(0.95 0.10 350 / 0.35), transparent 60%);
+  background-attachment: fixed;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

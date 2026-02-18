@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -44,7 +44,7 @@ export async function middleware(request: NextRequest) {
     // Optional: Check if user is admin
     // This is better done with RLS or a custom check in a layout,
     // but we can do a quick check here if we have a table.
-    // However, middleware can't easily use the service role client safely.
+    // However, proxy can't easily use the service role client safely.
     // For now, we just check if the user is authenticated.
   }
 

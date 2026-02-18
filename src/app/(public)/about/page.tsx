@@ -6,11 +6,11 @@ import { getPage } from "@/lib/actions/pages"
 import { JSONContent } from "@tiptap/core"
 
 interface Skills {
-  frontend: string[];
-  backend: string[];
-  database: string[];
-  devops: string[];
-  other: string[];
+  core?: string[];
+  infra?: string[];
+  ai?: string[];
+  method?: string;
+  workflow?: string[];
 }
 
 interface TimelineItem {
@@ -26,6 +26,7 @@ interface AboutMetadata {
   employment: string;
   skills: Skills;
   timeline: TimelineItem[];
+  avatarUrl?: string;
 }
 
 
@@ -44,12 +45,17 @@ export default async function AboutPage() {
   const metadata = pageData.metadata as AboutMetadata
   const skills = metadata.skills || {}
   const timeline = metadata.timeline || []
+  const avatarUrl = metadata.avatarUrl || ""
   return (
     <div className="min-h-screen bg-universe py-8">
       <div className="cloud-section max-w-3xl mx-auto py-8 px-4">
         <div className="text-center mb-12">
-          <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
-            <span className="text-4xl">👋</span>
+          <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={metadata.name || "profile"} className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-4xl">👋</span>
+            )}
           </div>
           <h1 className="text-3xl font-bold mb-2">{metadata.name || 'Your Name'}</h1>
           <p className="text-xl text-muted-foreground mb-4">{metadata.role || 'Web Developer'}</p>
@@ -91,12 +97,12 @@ export default async function AboutPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {skills.frontend && (
+            {skills.core && skills.core.length > 0 && (
               <>
                 <div>
-                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">Frontend</h3>
+                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">スキル</h3>
                   <div className="flex flex-wrap gap-2">
-                    {skills.frontend.map((skill: string) => (
+                    {skills.core.map((skill: string) => (
                       <Badge key={skill} variant="secondary">
                         {skill}
                       </Badge>
@@ -106,12 +112,12 @@ export default async function AboutPage() {
                 <Separator />
               </>
             )}
-            {skills.backend && (
+            {skills.infra && skills.infra.length > 0 && (
               <>
                 <div>
-                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">Backend</h3>
+                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">インフラ/データベース</h3>
                   <div className="flex flex-wrap gap-2">
-                    {skills.backend.map((skill: string) => (
+                    {skills.infra.map((skill: string) => (
                       <Badge key={skill} variant="secondary">
                         {skill}
                       </Badge>
@@ -121,13 +127,13 @@ export default async function AboutPage() {
                 <Separator />
               </>
             )}
-            {skills.database && (
+            {skills.ai && skills.ai.length > 0 && (
               <>
                 <div>
-                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">Database</h3>
+                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">生成AI</h3>
                   <div className="flex flex-wrap gap-2">
-                    {skills.database.map((skill: string) => (
-                      <Badge key={skill} variant="secondary">
+                    {skills.ai.map((skill: string) => (
+                      <Badge key={skill} variant="outline">
                         {skill}
                       </Badge>
                     ))}
@@ -136,17 +142,26 @@ export default async function AboutPage() {
                 <Separator />
               </>
             )}
-            {skills.devops && skills.other && (
+            {skills.method && (
               <div>
-                <h3 className="text-sm font-medium mb-3 text-muted-foreground">DevOps & Tools</h3>
-                <div className="flex flex-wrap gap-2">
-                  {[...skills.devops, ...skills.other].map((skill: string) => (
-                    <Badge key={skill} variant="outline">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
+                <h3 className="text-sm font-medium mb-3 text-muted-foreground">開発手法</h3>
+                <Badge variant="outline">{skills.method}</Badge>
               </div>
+            )}
+            {skills.workflow && skills.workflow.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="text-sm font-medium mb-3 text-muted-foreground">ワークフロー/ツール</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.workflow.map((skill: string) => (
+                      <Badge key={skill} variant="outline">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

@@ -1,29 +1,6 @@
-import { supabase } from './client'
-import { createServerClient, createAdminClient } from './server'
+import 'server-only'
 
-/**
- * Client-side: Sign in with Google OAuth
- */
-export async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/api/auth/callback`,
-    },
-  })
-  return { data, error }
-}
-
-/**
- * Client-side: Sign out
- */
-export async function signOut() {
-  const { error } = await supabase.auth.signOut()
-  if (!error) {
-    window.location.href = '/'
-  }
-  return { error }
-}
+import { createAdminClient, createServerClient } from './server'
 
 /**
  * Server-side: Retrieves the current session.
@@ -52,8 +29,7 @@ export async function getUserServer() {
  */
 export async function isAdminByUid(uid: string): Promise<boolean> {
   if (!uid) return false
-  
-  // Use admin client (service role) to check admins table
+
   const adminSupabase = createAdminClient()
   const { data, error } = await adminSupabase
     // @ts-expect-error - admins table not yet in schema
@@ -64,7 +40,7 @@ export async function isAdminByUid(uid: string): Promise<boolean> {
     .single()
 
   if (error) {
-    if (error.code !== 'PGRST116') { 
+    if (error.code !== 'PGRST116') {
       console.error('Error checking admin status:', error)
     }
     return false

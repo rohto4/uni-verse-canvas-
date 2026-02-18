@@ -2,7 +2,7 @@
 
 Supabase Auth + Google OAuthによる認証機能の実装状況です。
 
-**最終更新**: 2026-02-15
+**最終更新**: 2026-02-17
 **進捗率**: 100%
 
 ---
@@ -11,10 +11,10 @@ Supabase Auth + Google OAuthによる認証機能の実装状況です。
 
 | 機能 | 状況 | ファイル |
 |------|------|---------|
-| Supabase Auth統合 | ✅ 完了 | `src/lib/supabase/auth.ts`, `src/lib/supabase/server.ts`, `src/lib/supabase/client.ts` |
+| Supabase Auth統合 | ✅ 完了 | `src/lib/supabase/auth.client.ts`, `src/lib/supabase/auth.server.ts`, `src/lib/supabase/server.ts`, `src/lib/supabase/client.ts` |
 | ログイン画面 | ✅ 完了 | `src/app/login/page.tsx` |
 | ログアウト機能 | ✅ 完了 | `src/components/layout/AdminSidebar.tsx` |
-| セッション管理 | ✅ 完了 | `src/middleware.ts`, `src/app/api/auth/callback/route.ts` |
+| セッション管理 | ✅ 完了 | `src/proxy.ts`, `src/app/api/auth/callback/route.ts` |
 | RLSポリシー適用 | ✅ 完了 | `supabase/migrations/20260215_add_rls_policies.sql` |
 
 ---
@@ -25,7 +25,10 @@ Supabase Auth + Google OAuthによる認証機能の実装状況です。
 
 - ✅ **`@supabase/ssr`の導入**: Next.js App Routerでのクッキーベースの認証に対応。
 - ✅ **Server/Client Client**: `createServerClient` (async) と `createBrowserClient` を実装。
-- ✅ **Auth Helper**: `signInWithGoogle`, `signOut`, `getSessionServer`, `getUserServer`, `isAdminByUid` を実装。
+- ✅ **Auth Helper**: client/server分離。
+  - Client: `signInWithGoogle`, `signOut` (`src/lib/supabase/auth.client.ts`)
+  - Server: `getSessionServer`, `getUserServer`, `isAdminByUid` (`src/lib/supabase/auth.server.ts`)
+  - `next/headers` を使う処理は server 側に限定し、Client Component からは import しない。
 
 ### 2. ログイン画面
 
@@ -44,7 +47,7 @@ Supabase Auth + Google OAuthによる認証機能の実装状況です。
 
 ### 4. セッション管理・保護
 
-- ✅ **Middleware (`src/middleware.ts`)**: 
+- ✅ **Proxy (`src/proxy.ts`)**: 
     - セッションの自動リフレッシュ（クッキー同期）。
     - `/admin` 配下の全ルートを認証必須に。
     - ログイン済みユーザーが `/login` にアクセスした際のリダイレクト。
@@ -63,12 +66,12 @@ Supabase Auth + Google OAuthによる認証機能の実装状況です。
 
 ## 🎯 次のステップ
 
-認証機能の基盤が完成しました。今後は、管理画面のダッシュボード統計情報やバックアップ機能の実装を進めます。
+認証機能の基盤が完成しました。今後はテスト/SEO/運用準備を進めます。
 
 ---
 
 ## 🔗 関連ドキュメント
 
-- [技術スタック](../lv1/tech-stack.md) - Supabase Auth
-- [アーキテクチャ](../lv1/architecture_v2.md) - 認証設計
+- [プロジェクト設定](../PROJECT.md) - 技術スタック
+- [システムアーキテクチャ](../architecture/system-architecture.md) - 認証設計
 - [全体概要](./00-overview.md)

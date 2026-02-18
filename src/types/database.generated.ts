@@ -99,6 +99,8 @@ export interface Database {
           content: JSONContent | null
           demo_url: string | null
           github_url: string | null
+          public_link_type: 'download' | 'website' | null
+          public_link_url: string | null
           cover_image: string | null
           start_date: string | null
           end_date: string | null
@@ -118,6 +120,8 @@ export interface Database {
           content?: JSONContent | null
           demo_url?: string | null
           github_url?: string | null
+          public_link_type?: 'download' | 'website' | null
+          public_link_url?: string | null
           cover_image?: string | null
           start_date?: string | null
           end_date?: string | null
@@ -137,6 +141,8 @@ export interface Database {
           content?: JSONContent | null
           demo_url?: string | null
           github_url?: string | null
+          public_link_type?: 'download' | 'website' | null
+          public_link_url?: string | null
           cover_image?: string | null
           start_date?: string | null
           end_date?: string | null

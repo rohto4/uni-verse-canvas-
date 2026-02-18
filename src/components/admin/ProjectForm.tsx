@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, KeyboardEvent } from 'react'
+import { useState, KeyboardEvent } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -31,7 +31,6 @@ import { Separator } from '@/components/ui/separator'
 import { TechStackInput } from '@/components/admin/TechStackInput'
 import { ImageUploadMultiple } from '@/components/admin/ImageUploadMultiple'
 import { TiptapEditor } from '@/components/editor/TiptapEditor'
-import { getTags } from '@/lib/actions/tags'
 import type { Project, Tag } from '@/types/database'
 
 const projectSchema = z.object({
@@ -42,6 +41,8 @@ const projectSchema = z.object({
   status: z.enum(['completed', 'archived', 'registered']),
   demo_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   github_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
+  public_link_type: z.enum(['download', 'website']).optional().nullable(),
+  public_link_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   cover_image: z.string().nullable().optional(),
   gallery_images: z.array(z.string()),
   start_date: z.string().optional().nullable(),
@@ -50,17 +51,37 @@ const projectSchema = z.object({
   tech_stack: z.record(z.string(), z.number()),
   tags: z.array(z.string()), // Tag IDs
   used_ai: z.array(z.string()),
+}).superRefine((values, ctx) => {
+  const hasUrl = Boolean(values.public_link_url && values.public_link_url.trim())
+  const hasType = Boolean(values.public_link_type)
+
+  if (hasUrl && !hasType) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['public_link_type'],
+      message: '公開リンク種別を選択してください',
+    })
+  }
+
+  if (hasType && !hasUrl) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['public_link_url'],
+      message: '公開リンクURLを入力してください',
+    })
+  }
 })
 
 export type ProjectFormValues = z.infer<typeof projectSchema>
 
 interface ProjectFormProps {
   initialData?: Partial<Project> & { tags?: Tag[] }
+  availableTags: Tag[]
+  uploadAction: (formData: FormData) => Promise<{ url: string | null; error?: string }>
   onSubmit: (data: ProjectFormValues) => Promise<void>
 }
 
-export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
-  const [availableTags, setAvailableTags] = useState<Tag[]>([])
+export function ProjectForm({ initialData, availableTags, uploadAction, onSubmit }: ProjectFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [aiInput, setAiInput] = useState('')
 
@@ -74,6 +95,8 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
       status: initialData?.status || 'completed',
       demo_url: initialData?.demo_url || '',
       github_url: initialData?.github_url || '',
+      public_link_type: initialData?.public_link_type || null,
+      public_link_url: initialData?.public_link_url || '',
       cover_image: initialData?.cover_image || null,
       gallery_images: initialData?.gallery_images || [],
       start_date: initialData?.start_date || '',
@@ -85,18 +108,6 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
     },
   })
 
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const tags = await getTags()
-        setAvailableTags(tags)
-      } catch (error) {
-        console.error('Failed to fetch tags:', error)
-      }
-    }
-    fetchTags()
-  }, [])
-
   const handleSubmit = async (data: ProjectFormValues) => {
     try {
       setIsSubmitting(true)
@@ -107,6 +118,11 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
       setIsSubmitting(false)
     }
   }
+
+  const statusValue = form.watch('status')
+  const publicLinkUrl = form.watch('public_link_url')
+  const publicLinkType = form.watch('public_link_type')
+  const shouldShowPublicLink = statusValue === 'registered' || Boolean(publicLinkUrl || publicLinkType)
 
   const handleAiInputKeyDown = (
     e: KeyboardEvent<HTMLInputElement>,
@@ -213,6 +229,7 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
                     <ImageUploadMultiple
                       images={field.value}
                       onChange={field.onChange}
+                      uploadAction={uploadAction}
                       maxImages={10}
                     />
                   )}
@@ -267,6 +284,52 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
                 )}
               </div>
 
+              {shouldShowPublicLink && (
+                <div className="space-y-4 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">公開リンク</p>
+                    <p className="text-xs text-muted-foreground">
+                      公開済みプロジェクト向けのリンク設定です。
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>リンク種別</Label>
+                    <Controller
+                      control={form.control}
+                      name="public_link_type"
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ''}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="種別を選択" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="website">Website</SelectItem>
+                            <SelectItem value="download">Download</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {form.formState.errors.public_link_type && (
+                      <p className="text-sm text-destructive">{form.formState.errors.public_link_type.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="public_link_url">公開リンクURL</Label>
+                    <Input
+                      id="public_link_url"
+                      placeholder="https://..."
+                      {...form.register('public_link_url')}
+                    />
+                    {form.formState.errors.public_link_url && (
+                      <p className="text-sm text-destructive">{form.formState.errors.public_link_url.message}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>カバー画像</Label>
                 <Controller
@@ -276,6 +339,7 @@ export function ProjectForm({ initialData, onSubmit }: ProjectFormProps) {
                     <ImageUploadMultiple
                       images={field.value ? [field.value] : []}
                       onChange={(images) => field.onChange(images[0] || null)}
+                      uploadAction={uploadAction}
                       maxImages={1}
                     />
                   )}

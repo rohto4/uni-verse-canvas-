@@ -13,6 +13,8 @@ export async function exportData() {
     { data: tags },
     { data: postTags },
     { data: projectTags },
+    { data: postLinks },
+    { data: postProjectLinks },
     { data: pages }
   ] = await Promise.all([
     supabase.from('posts').select('*'),
@@ -21,6 +23,8 @@ export async function exportData() {
     supabase.from('tags').select('*'),
     supabase.from('post_tags').select('*'),
     supabase.from('project_tags').select('*'),
+    supabase.from('post_links').select('*'),
+    supabase.from('post_project_links').select('*'),
     supabase.from('pages').select('*')
   ])
 
@@ -34,6 +38,8 @@ export async function exportData() {
       tags: tags || [],
       post_tags: postTags || [],
       project_tags: projectTags || [],
+      post_links: postLinks || [],
+      post_project_links: postProjectLinks || [],
       pages: pages || []
     }
   }
@@ -56,6 +62,8 @@ interface BackupData {
     pages?: Tables['pages']['Insert'][]
     post_tags?: Tables['post_tags']['Insert'][]
     project_tags?: Tables['project_tags']['Insert'][]
+    post_links?: Tables['post_links']['Insert'][]
+    post_project_links?: Tables['post_project_links']['Insert'][]
   }
 }
 
@@ -77,6 +85,8 @@ export async function importData(jsonData: BackupData) {
     if (data.pages?.length) await supabase.from('pages').upsert(data.pages)
     if (data.post_tags?.length) await supabase.from('post_tags').upsert(data.post_tags)
     if (data.project_tags?.length) await supabase.from('project_tags').upsert(data.project_tags)
+    if (data.post_links?.length) await supabase.from('post_links').upsert(data.post_links)
+    if (data.post_project_links?.length) await supabase.from('post_project_links').upsert(data.post_project_links)
 
     revalidatePath('/', 'layout')
     return { success: true }

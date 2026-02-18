@@ -140,13 +140,16 @@ function ProgressCard({ item }: { item: InProgressWithProject }) {
             <span className="text-muted-foreground">進捗</span>
             <span className="font-medium">{item.progress_rate}%</span>
           </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <div className="h-3 bg-muted rounded-full overflow-hidden relative">
             <div
-              className="h-full transition-all duration-500"
+              className="h-full w-full"
               style={{
-                width: `${item.progress_rate}%`,
                 background: "var(--card-accent-gradient)",
               }}
+            />
+            <div
+              className="absolute inset-y-0 right-0 bg-muted"
+              style={{ width: `${Math.max(0, 100 - item.progress_rate)}%` }}
             />
           </div>
         </div>

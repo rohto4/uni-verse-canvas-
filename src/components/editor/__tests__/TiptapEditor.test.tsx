@@ -9,11 +9,14 @@ import { describe, it, expect, vi } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import { TiptapEditor } from "../TiptapEditor"
 
+vi.mock("../EditorToolbar", () => ({
+  EditorToolbar: () => <div data-testid="editor-toolbar" />,
+}))
+
 // Tiptapのモック（SSR環境でのテスト対応）
-vi.mock("@tiptap/react", async () => {
-  const actual = await vi.importActual("@tiptap/react")
+vi.mock("@tiptap/react", () => {
+  const editorElement = document.createElement("div")
   return {
-    ...actual,
     useEditor: vi.fn(() => ({
       getHTML: vi.fn(() => "<p>Test content</p>"),
       chain: vi.fn(() => ({
@@ -36,7 +39,20 @@ vi.mock("@tiptap/react", async () => {
           words: vi.fn(() => 20),
         },
       },
+      view: { dom: editorElement },
+      state: {
+        selection: {
+          $from: {
+            depth: 0,
+            node: () => ({ type: { name: "" }, nodeSize: 0 }),
+            before: () => 0,
+          },
+        },
+      },
     })),
+    EditorContent: ({ className }: { className?: string }) => (
+      <div data-testid="editor-content" className={className} />
+    ),
   }
 })
 

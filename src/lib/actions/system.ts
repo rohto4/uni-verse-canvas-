@@ -82,7 +82,6 @@ export async function resetDemoData(): Promise<boolean> {
 
   for (const t of tables) {
     // Delete all rows. Service role key required for this operation.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // @ts-expect-error - Dynamic table name from array
     const { error } = await supabase.from(t).delete().neq('id', '00000000-0000-0000-0000-000000000000')
 

@@ -1,6 +1,15 @@
-# Error Handling (Claude Reference)
+# Error Handling
 
-## 1. エラー分類
+## 1. 現状（実装済み）
+
+- Server Actions内で`try/catch`し、`null`/空配列/`{ success: false }`で返却
+- エラーは`console.error`でログ出力
+- クライアント側はトースト通知中心（詳細なエラーコードは未整備）
+- `app/error.tsx`/`app/not-found.tsx` は未実装
+
+## 2. 目標（設計案）
+
+### 2.1 エラー分類
 
 | 種類 | クラス | HTTPステータス |
 |-----|-------|--------------|
@@ -10,7 +19,7 @@
 | Business | BusinessError | 409/422 |
 | Database | DatabaseError | 404/500 |
 
-## 2. エラーコード体系
+### 2.2 エラーコード体系
 
 ### AUTH_*
 - `AUTH_REQUIRED` (401): 認証が必要
@@ -41,7 +50,7 @@
 - `SYSTEM_RATE_LIMIT_EXCEEDED` (429): Rate Limit超過
 - `SYSTEM_INTERNAL_ERROR` (500): 内部エラー
 
-## 3. API レスポンス形式
+### 2.3 API レスポンス形式
 ```typescript
 // 成功
 { success: true, data: T }
@@ -50,7 +59,7 @@
 { success: false, error: { code: string, message: string, details?: any, timestamp: string } }
 ```
 
-## 4. API エラーハンドラ
+### 2.4 API エラーハンドラ
 ```typescript
 // lib/api/errorHandler.ts
 function handleApiError(error: unknown): NextResponse {
@@ -63,7 +72,7 @@ function handleApiError(error: unknown): NextResponse {
 }
 ```
 
-## 5. クライアントAPIクライアント
+### 2.5 クライアントAPIクライアント
 ```typescript
 // lib/api/client.ts
 class ApiClient {
@@ -73,23 +82,23 @@ class ApiClient {
 }
 ```
 
-## 6. Global Error Boundary
+### 2.6 Global Error Boundary
 - `app/error.tsx`: 予期しないエラー表示 + 再試行ボタン
 - `app/not-found.tsx`: 404ページ
 
-## 7. ログ戦略
+### 2.7 ログ戦略
 - ERROR: Console + Sentry(本番)
 - WARN: Console
 - INFO/DEBUG: 開発環境のみ
 
-## 8. リトライ戦略
+### 2.8 リトライ戦略
 ```typescript
 // lib/retry.ts
 async function withRetry<T>(fn, options: { maxRetries: 3, delayMs: 1000, backoff: 'exponential' })
 // 対象: NetworkError, DB_CONNECTION_ERROR
 ```
 
-## 9. ユーザーメッセージ
+### 2.9 ユーザーメッセージ
 - 具体的 + 実行可能 + 丁寧 + 簡潔
 - `lib/errors/messages.ts` でコード→メッセージマッピング
 - プレースホルダー対応: `{field}`, `{max}`, `{seconds}`

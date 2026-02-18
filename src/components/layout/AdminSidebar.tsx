@@ -9,20 +9,30 @@ import {
   Clock,
   Database,
   Sparkles,
+  BookOpen,
+  Tag,
   LogOut,
   ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-import { signOut } from "@/lib/supabase/auth"
+import { signOut } from "@/lib/supabase/auth.client"
 
 const adminNavItems = [
   { label: "ダッシュボード", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "記事管理", href: "/admin/posts", icon: FileText },
   { label: "プロジェクト", href: "/admin/projects", icon: Folder },
   { label: "進行中", href: "/admin/in-progress", icon: Clock },
+  { label: "タグ管理", href: "/admin/tags", icon: Tag },
+  { label: "固定ページ", href: "/admin/pages", icon: BookOpen },
   { label: "バックアップ", href: "/admin/backup", icon: Database },
+]
+
+const fixedPageLinks = [
+  { label: "ホーム", href: "/admin/pages/home" },
+  { label: "自己紹介", href: "/admin/pages/about" },
+  { label: "リンク", href: "/admin/pages/links" },
 ]
 
 interface AdminSidebarProps {
@@ -45,7 +55,7 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
       <div
         className="absolute top-0 bottom-0 right-0 w-1 pointer-events-none z-10"
         style={{
-          background: "linear-gradient(180deg, oklch(0.72 0.14 220), oklch(0.78 0.14 350))"
+          background: "var(--admin-sidebar-accent-gradient, var(--sidebar-accent-gradient))"
         }}
       />
 
@@ -66,11 +76,32 @@ export function AdminSidebar({ collapsed = false, onToggle }: AdminSidebarProps)
         {adminNavItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname.startsWith(item.href)
+          const isFixedPages = item.href === "/admin/pages"
           return (
-            <Link key={item.href} href={item.href} className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors", isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", collapsed && "justify-center px-2")} title={collapsed ? item.label : undefined}>
-              <Icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+            <div key={item.href} className="space-y-1">
+              <Link href={item.href} className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors", isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", collapsed && "justify-center px-2")} title={collapsed ? item.label : undefined}>
+                <Icon className="h-5 w-5 shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+              {!collapsed && isFixedPages && (
+                <div className="ml-9 space-y-1">
+                  {fixedPageLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "block rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                        pathname === link.href
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           )
         })}
       </nav>

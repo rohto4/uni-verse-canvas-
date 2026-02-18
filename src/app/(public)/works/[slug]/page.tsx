@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, ExternalLink, Github, Zap, Bot } from 'lucide-react'
+import { Calendar, ExternalLink, Github, Zap, Bot, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -110,6 +110,18 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               )}
 
               <div className="flex gap-2">
+                {project.status === 'registered' && project.public_link_url && (
+                  <Button asChild variant="secondary" size="sm" className="flex-1">
+                    <a href={project.public_link_url} target="_blank" rel="noopener noreferrer">
+                      {project.public_link_type === 'download' ? (
+                        <Download className="h-4 w-4 mr-1" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                      )}
+                      {project.public_link_type === 'download' ? 'Download' : 'Website'}
+                    </a>
+                  </Button>
+                )}
                 {project.demo_url && (
                   <Button asChild size="sm" className="flex-1">
                     <a href={project.demo_url} target="_blank" rel="noopener noreferrer">
@@ -164,7 +176,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         <Separator className="my-12" />
 
-        <RelatedPosts tags={project.tags} limit={3} />
+        <RelatedPosts tags={project.tags} limit={3} projectId={project.id} />
       </div>
     </div>
   )
