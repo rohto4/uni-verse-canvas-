@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient, createServerClient } from '@/lib/supabase/server'
 import type { Post, PostWithTags, Tag } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 
@@ -267,21 +267,65 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
 
   const { data, error } = await supabase
     .from('posts')
-    .select(`
-      *,
-      tags:post_tags(
-        tag:tags(*)
-      )
-    `)
+    .select('*')
     .eq('slug', slug)
     .single()
 
-  if (error) {
-    console.error('Error fetching post:', error)
+  let postData = data as Post | null
+
+  if (error || !postData) {
+    if (error) {
+      console.error('Error fetching post:', error)
+    }
+    const adminClient = createAdminClient()
+    const { data: adminData, error: adminError } = await adminClient
+      .from('posts')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+
+    if (adminError || !adminData) {
+      if (adminError) {
+        console.error('Error fetching post (admin):', adminError)
+      }
+      return null
+    }
+
+    postData = adminData as Post
+  }
+
+  const isPublished = postData.status === 'published'
+  const isScheduledAndVisible =
+    postData.status === 'scheduled' &&
+    postData.published_at &&
+    new Date(postData.published_at) <= new Date()
+
+  if (!isPublished && !isScheduledAndVisible) {
     return null
   }
 
-  const postData = data as Post & { tags: PostTag[] }
+  const { data: tagData, error: tagError } = await supabase
+    .from('post_tags')
+    .select('tag:tags(*)')
+    .eq('post_id', postData.id)
+
+  let tags = (tagData || []).map((tag) => tag.tag as Tag)
+
+  if (tagError) {
+    console.error('Error fetching post tags:', tagError)
+    const adminClient = createAdminClient()
+    const { data: adminTags, error: adminTagError } = await adminClient
+      .from('post_tags')
+      .select('tag:tags(*)')
+      .eq('post_id', postData.id)
+
+    if (adminTagError) {
+      console.error('Error fetching post tags (admin):', adminTagError)
+      tags = []
+    } else {
+      tags = (adminTags || []).map((tag) => tag.tag as Tag)
+    }
+  }
 
   // Increment view count in background
   try {
@@ -295,7 +339,7 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
 
   return {
     ...postData,
-    tags: (postData.tags as PostTag[]).map((pt) => pt.tag).filter(Boolean),
+    tags,
   }
 }
 

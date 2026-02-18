@@ -6,11 +6,12 @@ import { uploadFile } from '@/lib/actions/storage'
 import { PostEditorClient } from '@/components/admin/PostEditorClient'
 
 interface EditPostPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
-  const post = await getPostById(params.id)
+  const resolvedParams = await params
+  const post = await getPostById(resolvedParams.id)
   if (!post) {
     notFound()
   }
@@ -21,7 +22,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     getPosts({ status: 'scheduled', limit: 200 }),
     getPosts({ status: 'published', limit: 200 }),
     getProjects({ status: ['completed', 'archived', 'registered'], limit: 200 }),
-    getPostRelations(params.id),
+    getPostRelations(resolvedParams.id),
   ])
 
   const availablePosts = Array.from(
@@ -45,10 +46,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     slug: project.slug,
   }))
 
-  async function updatePostAction(id: string, input: Parameters<typeof updatePost>[1]) {
-    'use server'
-    return updatePost(id, input)
-  }
+   async function updatePostAction(id: string, input: Parameters<typeof updatePost>[1]) {
+     'use server'
+     return updatePost(id, input)
+   }
 
   async function deletePostAction(id: string) {
     'use server'

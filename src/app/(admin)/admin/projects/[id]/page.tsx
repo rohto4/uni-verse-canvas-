@@ -6,11 +6,12 @@ import { ProjectEditorClient } from '@/components/admin/ProjectEditorClient'
 import type { ProjectFormValues } from '@/components/admin/ProjectForm'
 
 interface EditProjectPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditProjectPage({ params }: EditProjectPageProps) {
-  const project = await getProjectById(params.id)
+  const resolvedParams = await params
+  const project = await getProjectById(resolvedParams.id)
   if (!project) {
     notFound()
   }
@@ -19,7 +20,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
 
   async function submitAction(data: ProjectFormValues) {
     'use server'
-    const result = await updateProject(params.id, data)
+    const result = await updateProject(resolvedParams.id, data)
     return result ? { success: true } : { success: false, error: 'プロジェクトの更新に失敗しました' }
   }
 

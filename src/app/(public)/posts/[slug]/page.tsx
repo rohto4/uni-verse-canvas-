@@ -23,8 +23,9 @@ function formatDate(dateString: string | null): string {
 }
 
 // Generate dynamic metadata
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params
+  const post = await getPostBySlug(resolvedParams.slug)
   if (!post) {
     return {
       title: '記事が見つかりません',
@@ -62,8 +63,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function PostDetailPage({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug)
+export default async function PostDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params
+  const post = await getPostBySlug(resolvedParams.slug)
 
   if (!post) {
     notFound()
@@ -110,11 +112,18 @@ export default async function PostDetailPage({ params }: { params: { slug: strin
               </div>
             </header>
 
-            {post.cover_image && (
-                <div className="aspect-video bg-muted rounded-lg mb-8 overflow-hidden relative">
-                    <Image src={post.cover_image} alt={post.title} fill className="object-cover" priority />
-                </div>
-            )}
+             {post.cover_image && (
+                 <div className="aspect-video bg-muted rounded-lg mb-8 overflow-hidden relative">
+                     <Image
+                       src={post.cover_image}
+                       alt={post.title}
+                       fill
+                       className="object-cover"
+                       priority
+                       unoptimized={post.cover_image.includes('placehold.co')}
+                     />
+                 </div>
+             )}
 
             {post.excerpt && (
               <div className="mb-8 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
