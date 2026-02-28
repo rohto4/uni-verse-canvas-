@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signInWithGoogle, signOut } from '@/lib/supabase/auth.client'
+import { signInWithGoogle } from '@/lib/supabase/auth.client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sparkles, LogIn } from 'lucide-react'
@@ -25,18 +25,6 @@ export default function LoginPage() {
     }
   }
 
-  const handleSignOut = async () => {
-    try {
-      const { error } = await signOut()
-      if (error) {
-        toast.error('ログアウトに失敗しました: ' + error.message)
-      }
-    } catch (error) {
-      console.error('Sign out error:', error)
-      toast.error('予期せぬエラーが発生しました')
-    }
-  }
-
   return (
     <div className="min-h-screen bg-sky flex items-center justify-center p-4">
       <Card className="max-w-md w-full shadow-2xl border-primary/20">
@@ -54,10 +42,10 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-4">
-          <Button 
-            onClick={handleSignIn} 
+          <Button
+            onClick={handleSignIn}
             disabled={isLoading}
-            size="lg" 
+            size="lg"
             className="w-full gap-3 text-lg font-medium"
           >
             {isLoading ? (
@@ -68,14 +56,6 @@ export default function LoginPage() {
             Googleでログイン
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={handleSignOut}
-            className="w-full"
-          >
-            ログアウトして再ログイン
-          </Button>
-          
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
