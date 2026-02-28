@@ -24,7 +24,9 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
     setHasNativeShare(typeof navigator !== 'undefined' && 'share' in navigator)
   }, [])
 
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url
+  // Validate url is a relative path (starts with /) to prevent protocol injection
+  const safePath = url.startsWith('/') ? url : '/'
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${safePath}` : safePath
   const encodedUrl = encodeURIComponent(shareUrl)
   const encodedTitle = encodeURIComponent(title)
 

@@ -5,7 +5,16 @@ type TrackViewPayload = {
   postId?: string
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(request: Request) {
+  // CSRF: reject requests from external origins
+  const host = request.headers.get('host')
+  const origin = request.headers.get('origin')
+  if (origin && host && !origin.includes(host)) {
+    return NextResponse.json({ success: false }, { status: 403 })
+  }
+
   let payload: TrackViewPayload
 
   try {
@@ -17,6 +26,11 @@ export async function POST(request: Request) {
   const postId = payload.postId
   if (!postId || typeof postId !== 'string') {
     return NextResponse.json({ success: false, error: 'postId is required' }, { status: 400 })
+  }
+
+  // Validate postId is a proper UUID to prevent injection/DoS
+  if (!UUID_REGEX.test(postId)) {
+    return NextResponse.json({ success: false, error: 'Invalid postId' }, { status: 400 })
   }
 
   const supabase = await createServerClient()

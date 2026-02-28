@@ -201,9 +201,18 @@ export async function getPosts(params: GetPostsParams = {}): Promise<PaginatedPo
 
   // Search filter (title, excerpt, and content)
   if (search) {
-    // Limit search length to prevent performance issues
-    const searchTerm = search.slice(0, 20)
-    query = query.or(`title.ilike.*${searchTerm}*,excerpt.ilike.*${searchTerm}*,content::text.ilike.*${searchTerm}*`)
+    // Limit length and strip characters that break PostgREST .or() filter syntax
+    const searchTerm = search
+      .slice(0, 20)
+      .replace(/[,()]/g, '')  // Remove PostgREST OR-syntax special chars
+      .trim()
+    if (searchTerm) {
+      query = query.or(
+        `title.ilike.*${searchTerm}*,` +
+        `excerpt.ilike.*${searchTerm}*,` +
+        `content::text.ilike.*${searchTerm}*`
+      )
+    }
   }
 
   // Sorting
