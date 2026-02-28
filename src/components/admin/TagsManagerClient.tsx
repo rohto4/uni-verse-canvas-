@@ -106,7 +106,7 @@ export default function TagsManagerClient({
       name: tag.name,
       slug: tag.slug,
       description: tag.description || "",
-      color: tag.color,
+      color: tag.color ?? undefined,
     })
   }
 
@@ -215,7 +215,7 @@ export default function TagsManagerClient({
             <div key={tag.id} className="flex flex-col gap-3 border rounded-lg p-4 md:flex-row md:items-center md:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge style={{ backgroundColor: tag.color, color: "#fff" }}>{tag.name}</Badge>
+                  <Badge style={{ backgroundColor: tag.color ?? undefined, color: "#fff" }}>{tag.name}</Badge>
                   <span className="text-sm text-muted-foreground">/{tag.slug}</span>
                 </div>
                 {tag.description && (

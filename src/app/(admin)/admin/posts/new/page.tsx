@@ -20,12 +20,12 @@ export default async function NewPostPage() {
       ...publishedPosts.posts,
     ].map((post) => [post.id, post])).values()
   )
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .sort((a, b) => new Date(b.updated_at ?? 0).getTime() - new Date(a.updated_at ?? 0).getTime())
     .map((post) => ({
       id: post.id,
       title: post.title,
       slug: post.slug,
-      status: post.status,
+      status: (post.status ?? 'draft') as 'draft' | 'scheduled' | 'published',
     }))
 
   const availableProjects = projects.projects.map((project: { id: string; title: string; slug: string }) => ({

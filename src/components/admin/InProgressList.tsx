@@ -105,8 +105,8 @@ export default function InProgressList({ items, availableProjects, createAction,
     setFormData({
       title: item.title,
       description: item.description,
-      status: item.status,
-      progress_rate: item.progress_rate,
+      status: (item.status ?? 'not_started') as 'completed' | 'in_progress' | 'not_started' | 'paused',
+      progress_rate: item.progress_rate ?? 0,
       started_at: item.started_at,
       completed_at: item.completed_at,
       completed_project_id: item.completed_project_id,
@@ -432,7 +432,7 @@ function ItemCard({ item, onEdit, onDelete, onStatusUpdate }: {
   onDelete: () => void,
   onStatusUpdate: (id: string, status: CreateInProgressInput['status']) => void
 }) {
-  const config = statusConfig[item.status]
+  const config = statusConfig[item.status as keyof typeof statusConfig]
   const Icon = config.icon
 
   return (
@@ -503,7 +503,7 @@ function ItemCard({ item, onEdit, onDelete, onStatusUpdate }: {
             />
             <div
               className="absolute inset-y-0 right-0 bg-muted"
-              style={{ width: `${Math.max(0, 100 - item.progress_rate)}%` }}
+              style={{ width: `${Math.max(0, 100 - (item.progress_rate ?? 0))}%` }}
             />
           </div>
         </div>

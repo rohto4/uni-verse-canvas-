@@ -118,7 +118,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
             <header className="mb-8">
               <div className="flex flex-wrap gap-2 mb-4">
                 {post.tags.map((tag) => (
-                  <Badge key={tag.id} variant="secondary" style={{ backgroundColor: tag.color, color: '#fff' }}>
+                  <Badge key={tag.id} variant="secondary" style={{ backgroundColor: tag.color ?? undefined, color: '#fff' }}>
                     {tag.name}
                   </Badge>
                 ))}
@@ -156,7 +156,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
               </div>
             )}
             
-            <PostContent content={post.content} />
+            <PostContent content={post.content as import('@tiptap/core').JSONContent} />
 
             <Separator className="my-8" />
 
@@ -192,7 +192,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
 
           <aside className="hidden lg:block lg:w-72">
             <div className="sticky top-24">
-              <TableOfContents content={post.content} />
+              <TableOfContents content={post.content as import('@tiptap/core').JSONContent} />
             </div>
           </aside>
         </div>

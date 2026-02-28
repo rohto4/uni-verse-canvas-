@@ -50,6 +50,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound()
   }
 
+  // Cast Json fields to their actual runtime types
+  const usedAi = (project.used_ai ?? []) as string[]
+  const galleryImages = (project.gallery_images ?? []) as string[]
+  const techStack = (project.tech_stack ?? {}) as Record<string, number>
+
   return (
     <div className="min-h-screen bg-universe py-8">
       <div className="cloud-section max-w-7xl mx-auto py-8 px-4">
@@ -68,7 +73,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
           <div className="flex flex-wrap gap-2 mb-6">
             {project.tags.map((tag) => (
-              <Badge key={tag.id} variant="outline" style={{ color: tag.color }}>
+              <Badge key={tag.id} variant="outline" style={{ color: tag.color ?? undefined }}>
                 {tag.name}
               </Badge>
             ))}
@@ -97,14 +102,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div className="font-semibold">{formatSteps(project.steps_count)}</div>
               </div>
 
-              {project.used_ai && project.used_ai.length > 0 && (
+              {usedAi.length > 0 && (
                 <div>
                   <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                     <Bot className="h-3 w-3" />
                     使用した生成AI
                   </div>
                   <div className="font-semibold text-sm">
-                    {project.used_ai.join(', ')}
+                    {usedAi.join(', ')}
                   </div>
                 </div>
               )}
@@ -143,10 +148,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           </Card>
         </div>
 
-        {project.gallery_images && project.gallery_images.length > 0 && (
+        {galleryImages.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-bold mb-6">スクリーンショット</h2>
-            <ProjectGallery images={project.gallery_images} alt={project.title} />
+            <ProjectGallery images={galleryImages} alt={project.title} />
           </section>
         )}
 
@@ -154,20 +159,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold mb-6">詳細説明</h2>
             {project.content ? (
-              <ProjectContent content={project.content} />
+              <ProjectContent content={project.content as import('@tiptap/core').JSONContent} />
             ) : (
               <p className="text-muted-foreground">詳細説明はまだ記載されていません。</p>
             )}
           </div>
 
-          {project.tech_stack && Object.keys(project.tech_stack).length > 0 && (
+          {Object.keys(techStack).length > 0 && (
             <div>
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">技術スタック</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <TechStackChart data={project.tech_stack} />
+                  <TechStackChart data={techStack} />
                 </CardContent>
               </Card>
             </div>

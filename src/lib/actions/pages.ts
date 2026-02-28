@@ -53,7 +53,8 @@ export async function upsertPage(input: UpsertPageInput): Promise<Page | null> {
 
   const { data, error } = await supabase
     .from('pages')
-    .upsert(input, { onConflict: 'page_type' })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .upsert(input as any, { onConflict: 'page_type' })
     .select()
     .single()
 

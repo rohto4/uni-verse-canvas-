@@ -32,12 +32,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       ...publishedPosts.posts,
     ].map((item) => [item.id, item])).values()
   )
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+    .sort((a, b) => new Date(b.updated_at ?? 0).getTime() - new Date(a.updated_at ?? 0).getTime())
     .map((item) => ({
       id: item.id,
       title: item.title,
       slug: item.slug,
-      status: item.status,
+      status: (item.status ?? 'draft') as 'draft' | 'scheduled' | 'published',
     }))
 
   const availableProjects = projects.projects.map((project: { id: string; title: string; slug: string }) => ({

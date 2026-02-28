@@ -42,7 +42,7 @@ export default async function AboutPage() {
     return <div>ページが見つかりません</div>
   }
 
-  const metadata = pageData.metadata as AboutMetadata
+  const metadata = pageData.metadata as unknown as AboutMetadata
   const skills = metadata.skills || {}
   const timeline = metadata.timeline || []
   const avatarUrl = metadata.avatarUrl || ""
@@ -79,7 +79,7 @@ export default async function AboutPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="prose dark:prose-invert">
-            {pageData.content.content?.map((node: JSONContent, index: number) => (
+            {(pageData.content as JSONContent | null)?.content?.map((node: JSONContent, index: number) => (
               <p key={index}>
                 {node.content?.map((textNode, textIndex: number) => (
                   <span key={textIndex}>{textNode.text}</span>

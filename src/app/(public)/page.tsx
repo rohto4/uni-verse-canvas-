@@ -151,7 +151,7 @@ export default async function HomePage() {
                   <CardHeader>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {post.tags.map((tag) => (
-                        <Badge key={tag.id} variant="secondary" className="text-xs" style={{ backgroundColor: tag.color, color: '#fff' }}>
+                        <Badge key={tag.id} variant="secondary" className="text-xs" style={{ backgroundColor: tag.color ?? undefined, color: '#fff' }}>
                           {tag.name}
                         </Badge>
                       ))}
@@ -239,8 +239,8 @@ export default async function HomePage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <Badge className={statusLabels[item.status]?.className || ""}>
-                        {statusLabels[item.status]?.label || item.status}
+                      <Badge className={statusLabels[item.status as keyof typeof statusLabels]?.className || ""}>
+                        {statusLabels[item.status as keyof typeof statusLabels]?.label || item.status}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -259,7 +259,7 @@ export default async function HomePage() {
                         />
                         <div
                           className="absolute inset-y-0 right-0 bg-muted"
-                          style={{ width: `${Math.max(0, 100 - item.progress_rate)}%` }}
+                          style={{ width: `${Math.max(0, 100 - (item.progress_rate ?? 0))}%` }}
                         />
                       </div>
                     </div>

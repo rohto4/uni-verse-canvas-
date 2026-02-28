@@ -16,13 +16,13 @@ export default function PostsPage() {
 
       merged.forEach((post) => {
         const existing = uniqueById.get(post.id)
-        if (!existing || new Date(post.updated_at).getTime() > new Date(existing.updated_at).getTime()) {
+        if (!existing || new Date(post.updated_at ?? 0).getTime() > new Date(existing.updated_at ?? 0).getTime()) {
           uniqueById.set(post.id, post)
         }
       })
 
       const uniquePosts = Array.from(uniqueById.values())
-      uniquePosts.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      uniquePosts.sort((a, b) => new Date(b.updated_at ?? 0).getTime() - new Date(a.updated_at ?? 0).getTime())
       return { posts: uniquePosts }
     }
 

@@ -236,7 +236,7 @@ function PostList({
                       {post.view_count}
                     </span>
                   )}
-                  <span>更新: {new Date(post.updated_at).toLocaleDateString()}</span>
+                  <span>更新: {new Date(post.updated_at ?? 0).toLocaleDateString()}</span>
                 </div>
                 <div className="flex gap-1 mt-2">
                   {post.tags?.map((tag) => (

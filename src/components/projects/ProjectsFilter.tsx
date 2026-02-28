@@ -173,7 +173,7 @@ export function ProjectsFilter({ tags }: ProjectsFilterProps) {
           すべて
         </Badge>
         {tags
-          .filter(tag => tag.projectCount > 0)
+          .filter(tag => (tag.projectCount ?? 0) > 0)
           .map((tag) => {
             const isSelected = selectedTags.includes(tag.slug)
             return (

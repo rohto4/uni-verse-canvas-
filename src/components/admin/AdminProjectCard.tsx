@@ -18,7 +18,7 @@ function formatDate(dateString: string | null): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
-const statusLabel: Record<ProjectWithTags['status'], { label: string; className: string }> = {
+const statusLabel: Record<string, { label: string; className: string }> = {
   completed: { label: "Completed", className: "bg-accent text-accent-foreground" },
   archived: { label: "Archived", className: "bg-muted text-muted-foreground" },
   registered: { label: "Registered", className: "bg-primary/20 text-primary" },
@@ -51,8 +51,8 @@ export function AdminProjectCard({ project }: AdminProjectCardProps) {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <CardTitle className="text-xl">{project.title}</CardTitle>
-            <Badge className={statusLabel[project.status].className}>
-              {statusLabel[project.status].label}
+            <Badge className={statusLabel[project.status ?? ''].className}>
+              {statusLabel[project.status ?? ''].label}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mb-3">{project.description}</p>

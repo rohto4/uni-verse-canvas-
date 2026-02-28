@@ -535,3 +535,31 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+// ─── Convenience type aliases ────────────────────────────────────────────────
+// Row types for each table
+export type Post = Tables<'posts'>
+export type Project = Tables<'projects'>
+export type Tag = Tables<'tags'>
+export type InProgress = Tables<'in_progress'>
+export type Page = Tables<'pages'>
+export type Admin = Tables<'admins'>
+
+// Join types used across the app
+export type PostWithTags = Post & {
+  tags: Tag[]
+}
+
+export type ProjectWithTags = Project & {
+  tags: Tag[]
+}
+
+export type TagWithCount = Tag & {
+  postCount: number
+  projectCount?: number
+}
+
+export type InProgressWithProject = InProgress & {
+  project?: Project | null
+  completedProject?: Project | null
+}

@@ -78,8 +78,8 @@ export function PostEditorClient({
   const [title, setTitle] = useState(initialPost?.title || '')
   const [slug, setSlug] = useState(initialPost?.slug || '')
   const [excerpt, setExcerpt] = useState(initialPost?.excerpt || '')
-  const [content, setContent] = useState<JSONContent>(initialPost?.content || {})
-  const [status, setStatus] = useState<PostStatus>(initialPost?.status || 'draft')
+  const [content, setContent] = useState<JSONContent>((initialPost?.content as JSONContent) || {})
+  const [status, setStatus] = useState<PostStatus>((initialPost?.status as PostStatus) || 'draft')
   const [publishedAt, setPublishedAt] = useState<string>(
     initialPost?.published_at ? new Date(initialPost.published_at).toISOString().slice(0, 16) : ''
   )

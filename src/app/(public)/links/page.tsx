@@ -74,7 +74,7 @@ export default async function LinksPage() {
     return <div>ページが見つかりません</div>
   }
 
-  const metadata = pageData.metadata as LinksMetadata
+  const metadata = pageData.metadata as unknown as LinksMetadata
   const socialLinks = metadata.socialLinks || []
   const otherLinks = metadata.otherLinks || []
   const contactEmail = metadata.contactEmail || "example@example.com"

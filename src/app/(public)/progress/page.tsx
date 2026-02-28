@@ -119,7 +119,7 @@ export default async function ProgressPage() {
 }
 
 function ProgressCard({ item }: { item: InProgressWithProject }) {
-  const config = statusConfig[item.status]
+  const config = statusConfig[item.status as keyof typeof statusConfig]
   const Icon = config.icon
 
   return (
@@ -149,7 +149,7 @@ function ProgressCard({ item }: { item: InProgressWithProject }) {
             />
             <div
               className="absolute inset-y-0 right-0 bg-muted"
-              style={{ width: `${Math.max(0, 100 - item.progress_rate)}%` }}
+              style={{ width: `${Math.max(0, 100 - (item.progress_rate ?? 0))}%` }}
             />
           </div>
         </div>

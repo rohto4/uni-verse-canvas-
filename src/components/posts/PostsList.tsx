@@ -50,8 +50,8 @@ export function PostsList({ posts }: PostsListProps) {
                 {post.title}
               </CardTitle>
               <CardDescription className="flex items-center gap-4 text-sm">
-                <span>{formatDate(post.published_at || post.created_at)}</span>
-                <span>{post.view_count.toLocaleString()} views</span>
+                <span>{formatDate(post.published_at ?? post.created_at ?? '')}</span>
+                <span>{(post.view_count ?? 0).toLocaleString()} views</span>
               </CardDescription>
             </CardHeader>
             <CardContent>
