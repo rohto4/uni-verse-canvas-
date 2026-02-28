@@ -1,20 +1,37 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Home } from 'lucide-react'
+import { Home, Compass } from 'lucide-react'
 
 export default function NotFound() {
+  const humors = [
+    '迷子さん、こんにちは👋',
+    'ページが宇宙のどこかへ消えてしまいました...',
+    '探してるページはここじゃないみたい 🚀',
+    'このURL、存在しないんです...',
+    'デジタル迷子の皆さんへ',
+  ]
+  const humor = humors[Math.floor(Math.random() * humors.length)]
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky via-universe to-cloud flex items-center justify-center p-4">
       <div className="text-center space-y-6 max-w-md">
-        {/* 404 Error Code */}
-        <div className="space-y-2">
-          <h1 className="text-8xl font-bold text-primary/20">404</h1>
+        {/* 404 Error Code with Animation */}
+        <div className="space-y-3">
+          <div className="text-8xl font-bold text-primary/20 animate-pulse">404</div>
           <h2 className="text-3xl font-bold text-foreground">ページが見つかりません</h2>
         </div>
 
-        {/* Description */}
-        <p className="text-muted-foreground text-lg">
-          申し訳ございません。お探しのページは存在しないか、移動された可能性があります。
+        {/* Humorous Message */}
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+          <p className="text-lg text-foreground italic font-medium">
+            「{humor}」
+          </p>
+        </div>
+
+        {/* Helpful Description */}
+        <p className="text-muted-foreground text-base leading-relaxed">
+          URLを間違えてしまったか、ページが移動した可能性があります。<br />
+          ホームから探し直してみてください。
         </p>
 
         {/* Decoration */}
@@ -26,13 +43,21 @@ export default function NotFound() {
           </div>
         </div>
 
-        {/* Action Button */}
-        <Link href="/">
-          <Button size="lg" className="gap-2 w-full">
-            <Home className="h-4 w-4" />
-            ホームに戻る
-          </Button>
-        </Link>
+        {/* Action Buttons */}
+        <div className="flex gap-3 flex-col sm:flex-row">
+          <Link href="/" className="flex-1">
+            <Button size="lg" className="gap-2 w-full">
+              <Home className="h-4 w-4" />
+              ホームに戻る
+            </Button>
+          </Link>
+          <Link href="/posts" className="flex-1">
+            <Button size="lg" variant="outline" className="gap-2 w-full">
+              <Compass className="h-4 w-4" />
+              記事を探す
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   )

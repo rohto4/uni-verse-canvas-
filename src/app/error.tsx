@@ -43,6 +43,13 @@ export default function Error({ error, reset }: ErrorProps) {
           </div>
         )}
 
+        {/* Error Report Notice */}
+        <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+          <p className="text-xs text-amber-800 dark:text-amber-200">
+            このエラーが繰り返し発生する場合は、お問い合わせフォームからご報告いただけます。
+          </p>
+        </div>
+
         {/* Decoration */}
         <div className="py-4">
           <div className="flex justify-center gap-2">
