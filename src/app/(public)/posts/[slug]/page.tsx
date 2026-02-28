@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Calendar, Eye, Clock } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -11,6 +11,7 @@ import { PostContent } from '@/components/posts/PostContent'
 import { TableOfContents } from '@/components/posts/TableOfContents'
 
 import { ShareButtons } from '@/components/posts/ShareButtons'
+import { PostViewCount } from '@/components/posts/PostViewCount'
 
 // Function to format date
 function formatDate(dateString: string | null): string {
@@ -20,6 +21,32 @@ function formatDate(dateString: string | null): string {
     month: 'long',
     day: 'numeric',
   })
+}
+
+type TiptapNode = {
+  text?: string
+  content?: TiptapNode[]
+}
+
+function extractTextFromContent(content: unknown): string {
+  if (!content) return ''
+
+  const walk = (node: TiptapNode | null | undefined): string => {
+    if (!node) return ''
+    const current = typeof node.text === 'string' ? node.text : ''
+    const children = Array.isArray(node.content) ? node.content.map(walk).join('') : ''
+    return current + children
+  }
+
+  if (Array.isArray(content)) {
+    return content.map((node) => walk(node as TiptapNode)).join('')
+  }
+
+  if (typeof content === 'object') {
+    return walk(content as TiptapNode)
+  }
+
+  return ''
 }
 
 // Generate dynamic metadata
@@ -73,7 +100,8 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
 
   const relatedPosts = await getRelatedPosts(post.id, 3)
 
-  const readingTime = Math.ceil((post.content?.toString() || "").length / 600) // Simple reading time calculation
+  const characterCount = extractTextFromContent(post.content).length
+  const readingTime = Math.max(1, Math.ceil(characterCount / 600))
 
   return (
     <div className="min-h-screen bg-universe py-8">
@@ -101,10 +129,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
                   <Calendar className="h-4 w-4" />
                   {formatDate(post.published_at)}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  {post.view_count.toLocaleString()} views
-                </span>
+                <PostViewCount postId={post.id} initialCount={post.view_count || 0} />
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   {readingTime}分で読めます

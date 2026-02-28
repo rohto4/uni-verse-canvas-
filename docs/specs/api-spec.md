@@ -84,7 +84,7 @@ const filtered = await getPosts({
 
 #### `getPostBySlug(slug: string): Promise<PostWithTags | null>`
 
-スラッグから記事を取得。閲覧数（view_count）を自動的にインクリメント。
+スラッグから記事を取得。
 
 **パラメータ**:
 - `slug`: URLスラッグ（例: `"my-first-post"`）
@@ -94,7 +94,7 @@ const filtered = await getPosts({
 - `null`: 記事が見つからない場合
 
 **副作用**:
-- 記事の`view_count`を+1する（バックグラウンド処理）
+- （計画）閲覧数は専用のトラッキングアクションで更新
 
 **使用例**:
 ```typescript
@@ -103,6 +103,21 @@ if (post) {
   console.log(post.title, post.tags)
 }
 ```
+
+---
+
+#### `trackPostView(postId: string): Promise<{ success: boolean }>`
+
+記事詳細の閲覧時に閲覧数を更新する。
+
+**目的**:
+- メタデータ生成や一覧取得での誤カウントを避ける
+- 同一ブラウザでの閲覧数上昇は1日1回まで（cookieで制御）
+
+**実装メモ**:
+- ルート: `POST /api/posts/track-view`
+- リクエスト: `{ postId: string }`
+- cookie `post_viewed_{postId}` がある場合は更新しない
 
 ---
 

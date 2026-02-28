@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Twitter, Facebook, Link as LinkIcon, Share2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -18,6 +18,11 @@ interface ShareButtonsProps {
 
 export function ShareButtons({ url, title }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+
+  useEffect(() => {
+    setHasNativeShare(typeof navigator !== 'undefined' && 'share' in navigator)
+  }, [])
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${url}` : url
   const encodedUrl = encodeURIComponent(shareUrl)
@@ -92,7 +97,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
             <TooltipContent>リンクをコピー</TooltipContent>
           </Tooltip>
 
-          {typeof navigator !== 'undefined' && 'share' in navigator && (
+          {hasNativeShare && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="icon" onClick={handleNativeShare} className="rounded-full md:hidden">

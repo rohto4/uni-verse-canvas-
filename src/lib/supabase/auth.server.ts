@@ -32,15 +32,14 @@ export async function isAdminByUid(uid: string): Promise<boolean> {
 
   const adminSupabase = createAdminClient()
   const { count, error: countError } = await adminSupabase
-    // @ts-expect-error - admins table not yet in schema
     .from('admins')
     .select('user_id', { count: 'exact', head: true })
 
   if (!countError && (count ?? 0) === 0) {
+    const adminRow: { user_id: string } = { user_id: uid }
     const { error: insertError } = await adminSupabase
-      // @ts-expect-error - admins table not yet in schema
       .from('admins')
-      .insert({ user_id: uid } as any)
+      .insert(adminRow)
 
     if (insertError) {
       console.error('Error bootstrapping admin user:', insertError)
@@ -50,7 +49,6 @@ export async function isAdminByUid(uid: string): Promise<boolean> {
     return true
   }
   const { data, error } = await adminSupabase
-    // @ts-expect-error - admins table not yet in schema
     .from('admins')
     .select('user_id')
     .eq('user_id', uid)

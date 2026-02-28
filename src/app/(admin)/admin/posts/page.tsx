@@ -12,8 +12,18 @@ export default function PostsPage() {
       ])
 
       const merged = [...draft.posts, ...scheduled.posts, ...published.posts]
-      merged.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-      return { posts: merged }
+      const uniqueById = new Map<string, (typeof merged)[number]>()
+
+      merged.forEach((post) => {
+        const existing = uniqueById.get(post.id)
+        if (!existing || new Date(post.updated_at).getTime() > new Date(existing.updated_at).getTime()) {
+          uniqueById.set(post.id, post)
+        }
+      })
+
+      const uniquePosts = Array.from(uniqueById.values())
+      uniquePosts.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      return { posts: uniquePosts }
     }
 
     return getPosts(params)

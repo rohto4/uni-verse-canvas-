@@ -327,16 +327,6 @@ export async function getPostBySlug(slug: string): Promise<PostWithTags | null> 
     }
   }
 
-  // Increment view count in background
-  try {
-    await supabase
-      .from('posts')
-      .update({ view_count: (postData.view_count || 0) + 1 })
-      .eq('id', postData.id)
-  } catch (error) {
-    console.error('Error incrementing view count:', error)
-  }
-
   return {
     ...postData,
     tags,
