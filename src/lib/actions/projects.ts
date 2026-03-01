@@ -1,4 +1,5 @@
 import { createAdminClient, createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/auth.server'
 import { revalidatePath } from 'next/cache'
 import type { Project, ProjectWithTags, Tag, Database } from '@/types/database'
 
@@ -189,6 +190,8 @@ export async function getProjectById(id: string): Promise<ProjectWithTags | null
 }
 
 export async function createProject(input: CreateProjectInput): Promise<ProjectWithTags | null> {
+  if (!(await requireAdmin())) return null
+
   const supabase = createAdminClient()
   const { tags = [], ...rawData } = input
   const projectData = normalizeProjectData(rawData)
@@ -263,6 +266,8 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectW
 }
 
 export async function updateProject(id: string, input: UpdateProjectInput): Promise<ProjectWithTags | null> {
+  if (!(await requireAdmin())) return null
+
   const supabase = createAdminClient()
   const { tags, ...rawData } = input
   const projectData = normalizeProjectData(rawData)
@@ -400,6 +405,8 @@ export async function updateProject(id: string, input: UpdateProjectInput): Prom
 }
 
 export async function deleteProject(id: string): Promise<{ success: boolean; error?: string }> {
+  if (!(await requireAdmin())) return { success: false, error: 'Unauthorized' }
+
   const supabase = createAdminClient()
 
   try {

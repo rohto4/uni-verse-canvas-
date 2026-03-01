@@ -1,6 +1,7 @@
 'use server'
 
 import { createAdminClient, createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/auth.server'
 
 const BUCKET_NAME = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'images'
 
@@ -26,6 +27,10 @@ async function ensureBucketExists() {
 }
 
 export async function uploadFile(formData: FormData): Promise<{ url: string | null; error?: string }> {
+  if (!(await requireAdmin())) {
+    return { url: null, error: 'Unauthorized' }
+  }
+
   const supabase = await createServerClient()
   const file = formData.get('file') as File
 

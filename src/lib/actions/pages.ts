@@ -1,6 +1,7 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient, createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/auth.server'
 import { revalidatePath } from 'next/cache'
 import type { Page } from '@/types/database'
 
@@ -49,7 +50,9 @@ export async function getAllPages(): Promise<Page[]> {
 }
 
 export async function upsertPage(input: UpsertPageInput): Promise<Page | null> {
-  const supabase = await createServerClient()
+  if (!(await requireAdmin())) return null
+
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('pages')

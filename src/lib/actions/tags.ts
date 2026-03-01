@@ -1,7 +1,8 @@
 'use server'
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient, createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/auth.server'
 import type { Tag, TagWithCount } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 
@@ -86,12 +87,16 @@ export async function getTagBySlug(slug: string): Promise<Tag | null> {
 }
 
 export async function createTag(input: z.infer<typeof CreateTagSchema>): Promise<ActionResponse<Tag>> {
+  if (!(await requireAdmin())) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
   const result = CreateTagSchema.safeParse(input)
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message }
   }
 
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('tags')
@@ -118,12 +123,16 @@ export async function createTag(input: z.infer<typeof CreateTagSchema>): Promise
 }
 
 export async function updateTag(id: string, input: z.infer<typeof UpdateTagSchema>): Promise<ActionResponse<Tag>> {
+  if (!(await requireAdmin())) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
   const result = UpdateTagSchema.safeParse(input)
   if (!result.success) {
     return { success: false, error: result.error.issues[0]?.message }
   }
 
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
 
   const updateData: Partial<Tag> = {}
   if (result.data.name !== undefined) updateData.name = result.data.name
@@ -153,7 +162,11 @@ export async function updateTag(id: string, input: z.infer<typeof UpdateTagSchem
 }
 
 export async function deleteTag(id: string): Promise<ActionResponse<void>> {
-  const supabase = await createServerClient()
+  if (!(await requireAdmin())) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  const supabase = createAdminClient()
 
   try {
     const { error: postTagError } = await supabase

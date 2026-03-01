@@ -64,3 +64,13 @@ export async function isAdminByUid(uid: string): Promise<boolean> {
 
   return !!data
 }
+
+/**
+ * Server-side: Returns true if the current user is an administrator.
+ * Use this to guard write Server Actions.
+ */
+export async function requireAdmin(): Promise<boolean> {
+  const user = await getUserServer()
+  if (!user) return false
+  return isAdminByUid(user.id)
+}

@@ -1,6 +1,7 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient, createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/auth.server'
 import type { InProgress, InProgressWithProject, Project } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 
@@ -74,7 +75,9 @@ export async function getInProgressById(id: string): Promise<InProgressWithProje
 }
 
 export async function createInProgress(input: CreateInProgressInput): Promise<InProgress | null> {
-  const supabase = await createServerClient()
+  if (!(await requireAdmin())) return null
+
+  const supabase = createAdminClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from('in_progress') as any)
@@ -96,7 +99,9 @@ export async function updateInProgress(
   id: string,
   input: UpdateInProgressInput
 ): Promise<InProgress | null> {
-  const supabase = await createServerClient()
+  if (!(await requireAdmin())) return null
+
+  const supabase = createAdminClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.from('in_progress') as any)
@@ -116,7 +121,9 @@ export async function updateInProgress(
 }
 
 export async function deleteInProgress(id: string): Promise<void> {
-  const supabase = await createServerClient()
+  if (!(await requireAdmin())) throw new Error('Unauthorized')
+
+  const supabase = createAdminClient()
 
   const { error } = await supabase.from('in_progress').delete().eq('id', id)
 

@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { createAdminClient, createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/supabase/auth.server'
 import type { Post, PostWithTags, Tag } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 
@@ -603,13 +604,17 @@ export interface ActionResponse<T = void> {
 // --- Actions ---
 
 export async function createPost(input: CreatePostInput): Promise<ActionResponse<PostWithTags>> {
+  if (!(await requireAdmin())) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
   const result = CreatePostSchema.safeParse(input)
   if (!result.success) {
     return { success: false, error: (result.error.issues[0]).message }
   }
 
   const { tags, related_post_ids, related_project_ids, ...postData } = result.data
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
 
   // 公開日時の自動設定
   let published_at = postData.published_at
@@ -687,12 +692,16 @@ export async function createPost(input: CreatePostInput): Promise<ActionResponse
 }
 
 export async function updatePost(id: string, input: UpdatePostInput): Promise<ActionResponse<PostWithTags>> {
+  if (!(await requireAdmin())) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
   const result = UpdatePostSchema.safeParse(input)
   if (!result.success) {
     return { success: false, error: (result.error.issues[0]).message }
   }
 
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
   const { tags, related_post_ids, related_project_ids, ...updateData } = result.data
 
   // 現在のデータを取得（ロールバック用）
@@ -837,6 +846,10 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
 }
 
 export async function deletePost(id: string): Promise<ActionResponse<void>> {
+  if (!(await requireAdmin())) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
   const supabase = createAdminClient()
   
   try {
