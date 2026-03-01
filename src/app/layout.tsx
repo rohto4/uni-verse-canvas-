@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     default: "UniVerse Canvas",
     template: "%s | UniVerse Canvas",
   },
-  description: "Your Universe, Your Canvas. 自分だけの宇宙を、自由に描く。",
+  description: "1% Logic, 99% Cosmic Dust. ポートフォリオ兼日記帳",
 }
 
 export default function RootLayout({

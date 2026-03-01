@@ -13,7 +13,7 @@ export function Footer() {
               <Sparkles className="h-6 w-6 text-primary" />
               <span>UniVerse Canvas</span>
             </Link>
-            <p className="text-muted-foreground text-sm leading-relaxed">Your Universe, Your Canvas.<br />自分だけの宇宙を、自由に描く。</p>
+            <p className="text-muted-foreground text-sm leading-relaxed">1% Logic, 99% Cosmic Dust.<br />ポートフォリオ兼日記帳</p>
           </div>
           <div>
             <h3 className="font-semibold mb-4">ナビゲーション</h3>
