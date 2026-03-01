@@ -2,7 +2,7 @@
 
 Supabase Auth + Google OAuthによる認証機能の実装状況です。
 
-**最終更新**: 2026-02-17
+**最終更新**: 2026-03-01
 **進捗率**: 100%
 
 ---
@@ -16,6 +16,7 @@ Supabase Auth + Google OAuthによる認証機能の実装状況です。
 | ログアウト機能 | ✅ 完了 | `src/components/layout/AdminSidebar.tsx` |
 | セッション管理 | ✅ 完了 | `src/proxy.ts`, `src/app/api/auth/callback/route.ts` |
 | RLSポリシー適用 | ✅ 完了 | `supabase/migrations/20260215_add_rls_policies.sql` |
+| Server Action 認証ガード | ✅ 完了 | `src/lib/supabase/auth.server.ts` (`requireAdmin`), 全 write actions |
 
 ---
 
@@ -62,11 +63,32 @@ Supabase Auth + Google OAuthによる認証機能の実装状況です。
 - ✅ 一般ユーザーは「公開済み」記事のみ閲覧可能。
 - ✅ 管理者は全テーブルのCRUDが可能。
 
+### 6. Server Action 認証ガード (2026-03-01追加)
+
+**ファイル**: `src/lib/supabase/auth.server.ts`
+
+- ✅ `requireAdmin()` ヘルパー関数を追加。`getUserServer()` + `isAdminByUid()` を組み合わせた再利用可能なガード。
+- ✅ 全書き込み Server Action の先頭に `if (!(await requireAdmin())) return ...` を追加。
+  - `posts.ts`: `createPost`, `updatePost`, `deletePost`
+  - `projects.ts`: `createProject`, `updateProject`, `deleteProject`
+  - `in-progress.ts`: `createInProgress`, `updateInProgress`, `deleteInProgress`
+  - `tags.ts`: `createTag`, `updateTag`, `deleteTag`
+  - `storage.ts`: `uploadFile`
+  - `pages.ts`: `upsertPage`
+- ✅ 書き込み操作はすべて `createAdminClient()`（サービスロールキー）を使用し RLS をバイパス。
+
+### 7. ブラウザクライアント遅延初期化 (2026-03-01追加)
+
+**ファイル**: `src/lib/supabase/client.ts`, `src/lib/supabase/auth.client.ts`
+
+- ✅ モジュールレベルの `createBrowserClient()` 呼び出しを遅延シングルトン `getSupabaseClient()` に変更。
+- ✅ Vercel ビルド時のプリレンダリングで env 変数未定義エラーが発生していた問題を修正。
+
 ---
 
 ## 🎯 次のステップ
 
-認証機能の基盤が完成しました。今後はテスト/SEO/運用準備を進めます。
+認証機能の基盤が完成し、本番デプロイ済み。今後はテスト/SEO/監視を進めます。
 
 ---
 

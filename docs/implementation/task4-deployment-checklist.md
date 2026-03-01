@@ -167,14 +167,13 @@ https://<本番ドメイン>/api/auth/callback
 
 ## 完了チェック
 
-すべての項目にチェックが入ったら、本番環境でのリリースが可能です。
-
-- [ ] 1. Vercel 環境変数設定
-- [ ] 2.1 Supabase Site URL
-- [ ] 2.2 Supabase Redirect URLs
-- [ ] 3.2 Google Cloud リダイレクト URI
-- [ ] 4.1 Google ログイン テスト
-- [ ] 4.2 認証ガード テスト
+- [x] 1. Vercel 環境変数設定（NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY）
+- [x] 2.1 Supabase Site URL → `https://uni-verse-canvas.vercel.app`
+- [x] 2.2 Supabase Redirect URLs → `https://uni-verse-canvas.vercel.app/**`
+- [ ] 3.2 Google Cloud リダイレクト URI（要確認）
+- [ ] 4.1 Google ログイン テスト（本番で要確認）
+- [ ] 4.2 認証ガード テスト（本番で要確認）
 - [ ] 4.3 エラーページ テスト
 
-**本番リリース可能: ☐**
+**本番リリース済み: ✅ 2026-03-01**
+**URL**: https://uni-verse-canvas.vercel.app
