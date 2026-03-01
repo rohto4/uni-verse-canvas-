@@ -1,11 +1,12 @@
 "use client"
 
-import { supabase } from './client'
+import { getSupabaseClient } from './client'
 
 /**
  * Client-side: Sign in with Google OAuth
  */
 export async function signInWithGoogle() {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -19,6 +20,7 @@ export async function signInWithGoogle() {
  * Client-side: Sign out
  */
 export async function signOut() {
+  const supabase = getSupabaseClient()
   const { error } = await supabase.auth.signOut()
   if (!error) {
     window.location.href = '/'
