@@ -9,8 +9,13 @@ export default async function NewProjectPage() {
 
   async function submitAction(data: ProjectFormValues) {
     'use server'
-    const result = await createProject(data)
-    return result ? { success: true } : { success: false, error: 'プロジェクトの作成に失敗しました' }
+    try {
+      const result = await createProject(data)
+      return result ? { success: true } : { success: false, error: 'プロジェクトの作成に失敗しました。スラッグが重複していないか確認してください。' }
+    } catch (err) {
+      console.error('submitAction error:', err)
+      return { success: false, error: 'サーバーエラーが発生しました' }
+    }
   }
 
   async function uploadAction(formData: FormData) {

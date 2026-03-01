@@ -16,7 +16,7 @@ import {
   Sparkles,
   Bot,
 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getPage } from "@/lib/actions/pages"
 import { ComponentType } from "react"
@@ -26,12 +26,15 @@ interface LinkItem {
     url: string;
     description: string;
     icon: string;
+    iconImageUrl?: string;
 }
 
 interface LinksMetadata {
     socialLinks: LinkItem[];
     otherLinks: LinkItem[];
-    contactEmail?: string;
+    contactUrl?: string;
+    contactIconImageUrl?: string;
+    contactMessage?: string;
 }
 
 const iconMap: Record<string, ComponentType<{ className?: string }>> = {
@@ -77,10 +80,12 @@ export default async function LinksPage() {
   const metadata = pageData.metadata as unknown as LinksMetadata
   const socialLinks = metadata.socialLinks || []
   const otherLinks = metadata.otherLinks || []
-  const contactEmail = metadata.contactEmail || "example@example.com"
+  const contactUrl = metadata.contactUrl || ""
+  const contactIconImageUrl = metadata.contactIconImageUrl || ""
+  const contactMessage = metadata.contactMessage || ""
   return (
     <div className="min-h-screen bg-universe py-8">
-      <div className="cloud-section max-w-2xl mx-auto py-8 px-4">
+      <div className="cloud-section max-w-3xl mx-auto py-8 px-4">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold mb-2">関連リンク</h1>
           <p className="text-muted-foreground">
@@ -94,7 +99,34 @@ export default async function LinksPage() {
             {socialLinks.map((link: LinkItem) => {
               const Icon = iconMap[link.icon] || Globe
               const color = colorMap[link.icon] || ""
-              return (
+              const hasUrl = Boolean(link.url)
+              const cardContent = (
+                <Card className={`transition-all duration-300 ${hasUrl ? color : "opacity-50"}`}>
+                  <CardContent className="flex items-center gap-4 p-6">
+                    {link.iconImageUrl ? (
+                      <div className="h-12 w-12 rounded-full bg-secondary flex-shrink-0 overflow-hidden">
+                        <img src={link.iconImageUrl} alt={link.name} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-full bg-secondary flex-shrink-0">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{link.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {link.description}
+                      </p>
+                    </div>
+                    {hasUrl ? (
+                      <ExternalLink className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground/60">準備中</span>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+              return hasUrl ? (
                 <a
                   key={link.name}
                   href={link.url}
@@ -102,21 +134,12 @@ export default async function LinksPage() {
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <Card className={`transition-all duration-300 ${color}`}>
-                    <CardContent className="flex items-center gap-4 p-6">
-                      <div className="p-3 rounded-full bg-secondary">
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{link.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {link.description}
-                        </p>
-                      </div>
-                      <ExternalLink className="h-5 w-5 text-muted-foreground" />
-                    </CardContent>
-                  </Card>
+                  {cardContent}
                 </a>
+              ) : (
+                <div key={link.name} className="block cursor-default">
+                  {cardContent}
+                </div>
               )
             })}
           </div>
@@ -127,8 +150,31 @@ export default async function LinksPage() {
           <div className="space-y-3">
             {otherLinks.map((link: LinkItem) => {
               const Icon = iconMap[link.icon] || Globe
-              const isExternal = link.url.startsWith("http")
-              return (
+              const hasUrl = Boolean(link.url)
+              const isExternal = hasUrl && link.url.startsWith("http")
+              const inner = (
+                <>
+                  <div className="flex-shrink-0">
+                    {link.iconImageUrl ? (
+                      <img src={link.iconImageUrl} alt={link.name} className="h-5 w-5 rounded-full object-cover" />
+                    ) : (
+                      <Icon className={`h-5 w-5 ${hasUrl ? "text-primary" : "text-muted-foreground/50"}`} />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium">{link.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {link.description}
+                    </p>
+                  </div>
+                  {hasUrl ? (
+                    isExternal && <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground/60">準備中</span>
+                  )}
+                </>
+              )
+              return hasUrl ? (
                 <a
                   key={link.name}
                   href={link.url}
@@ -136,38 +182,52 @@ export default async function LinksPage() {
                   rel={isExternal ? "noopener noreferrer" : undefined}
                   className="flex items-center gap-4 p-4 rounded-lg border hover:bg-secondary/50 transition-colors"
                 >
-                  <Icon className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <h3 className="font-medium">{link.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {link.description}
-                    </p>
-                  </div>
-                  {isExternal && (
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  {inner}
                 </a>
+              ) : (
+                <div
+                  key={link.name}
+                  className="flex items-center gap-4 p-4 rounded-lg border opacity-50 cursor-default"
+                >
+                  {inner}
+                </div>
               )
             })}
           </div>
         </div>
 
-        <Card className="mt-12 bg-gradient-to-br from-primary/10 to-accent/10">
-          <CardHeader className="text-center">
-            <CardTitle>お仕事のご相談</CardTitle>
-            <CardDescription>
-              Webアプリケーション開発のご依頼を承っています
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button asChild size="lg">
-              <a href={`mailto:${contactEmail}`}>
-                <Mail className="h-5 w-5 mr-2" />
-                お問い合わせ
+        <div className="mt-12 space-y-3">
+          {contactMessage && (
+            <p className="text-center text-sm text-muted-foreground">{contactMessage}</p>
+          )}
+          {contactUrl && contactIconImageUrl ? (
+            <div className="flex justify-center">
+              <a href={contactUrl} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border hover:opacity-80 transition-opacity max-w-[375px] w-full">
+                <img
+                  src={contactIconImageUrl}
+                  alt="お問い合わせ"
+                  className="w-full h-auto object-contain"
+                />
               </a>
-            </Button>
-          </CardContent>
-        </Card>
+            </div>
+          ) : contactUrl ? (
+            <div className="rounded-xl border bg-gradient-to-br from-primary/10 to-accent/10 p-8 text-center">
+              <Button asChild size="lg">
+                <a href={contactUrl} target="_blank" rel="noopener noreferrer">
+                  <Mail className="h-5 w-5 mr-2" />
+                  お問い合わせ
+                </a>
+              </Button>
+            </div>
+          ) : (
+            <div className="rounded-xl border bg-gradient-to-br from-primary/10 to-accent/10 p-8 text-center">
+              <Button size="lg" disabled>
+                <Mail className="h-5 w-5 mr-2" />
+                お問い合わせ（準備中）
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

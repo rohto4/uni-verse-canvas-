@@ -35,7 +35,9 @@ type LinkItem = {
 }
 
 interface LinksPageFormProps {
-  initialContactEmail: string
+  initialContactUrl: string
+  initialContactIconImageUrl: string
+  initialContactMessage: string
   initialSocialLinks: LinkItem[]
   initialOtherLinks: LinkItem[]
   uploadAction: (formData: FormData) => Promise<{ url: string | null; error?: string }>
@@ -100,7 +102,7 @@ function normalizeLinks(links: LinkItem[]) {
       icon: link.icon.trim() || "Globe",
       iconImageUrl: link.iconImageUrl?.trim() || "",
     }))
-    .filter((link) => link.name && link.url)
+    .filter((link) => link.name)
 }
 
 function buildEmptyContent() {
@@ -108,13 +110,17 @@ function buildEmptyContent() {
 }
 
 export default function LinksPageForm({
-  initialContactEmail,
+  initialContactUrl,
+  initialContactIconImageUrl,
+  initialContactMessage,
   initialSocialLinks,
   initialOtherLinks,
   uploadAction,
   saveAction,
 }: LinksPageFormProps) {
-  const [contactEmail, setContactEmail] = useState(initialContactEmail)
+  const [contactUrl, setContactUrl] = useState(initialContactUrl)
+  const [contactIconImageUrl, setContactIconImageUrl] = useState(initialContactIconImageUrl)
+  const [contactMessage, setContactMessage] = useState(initialContactMessage)
   const [socialLinks, setSocialLinks] = useState<LinkItem[]>(initialSocialLinks)
   const [otherLinks, setOtherLinks] = useState<LinkItem[]>(initialOtherLinks)
   const [isPending, startTransition] = useTransition()
@@ -154,9 +160,24 @@ export default function LinksPageForm({
     toast.success("画像をアップロードしました")
   }
 
+  const handleContactIconUpload = async (file?: File) => {
+    if (!file) return
+    const formData = new FormData()
+    formData.append("file", file)
+    const result = await uploadAction(formData)
+    if (!result?.url) {
+      toast.error(result?.error || "画像のアップロードに失敗しました")
+      return
+    }
+    setContactIconImageUrl(result.url)
+    toast.success("アイコン画像をアップロードしました")
+  }
+
   const handleSave = () => {
     const metadata = {
-      contactEmail: contactEmail.trim(),
+      contactUrl: contactUrl.trim(),
+      contactIconImageUrl: contactIconImageUrl.trim(),
+      contactMessage: contactMessage.trim(),
       socialLinks: normalizeLinks(socialLinks),
       otherLinks: normalizeLinks(otherLinks),
     }
@@ -182,14 +203,55 @@ export default function LinksPageForm({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>お問い合わせメール</CardTitle>
+          <CardTitle>お問い合わせリンク</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Input
-            value={contactEmail}
-            onChange={(e) => setContactEmail(e.target.value)}
-            placeholder="example@example.com"
-          />
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">URL</label>
+            <Input
+              value={contactUrl}
+              onChange={(e) => setContactUrl(e.target.value)}
+              placeholder="https://coconala.com/..."
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">画像上の一文</label>
+            <Input
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              placeholder="例: お仕事のご依頼はこちらから"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">バナー画像（推奨: 1500×500px）</label>
+            <div className="mt-2 space-y-2">
+              {contactIconImageUrl && (
+                <div className="rounded-lg overflow-hidden border bg-muted">
+                  <img src={contactIconImageUrl} alt="contact banner" className="w-full object-contain max-h-32" />
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-flex items-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleContactIconUpload(e.target.files?.[0])}
+                  />
+                  <span className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                    画像アップロード
+                  </span>
+                </label>
+                {contactIconImageUrl && (
+                  <Button variant="outline" onClick={() => setContactIconImageUrl("")}>
+                    画像を外す
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -216,17 +278,17 @@ export default function LinksPageForm({
                   )}
                 </div>
                 <Input
-                  value={link.name}
+                  value={link.name ?? ""}
                   onChange={(e) => updateLink("social", index, "name", e.target.value)}
                   placeholder="名前"
                 />
                 <Input
-                  value={link.url}
+                  value={link.url ?? ""}
                   onChange={(e) => updateLink("social", index, "url", e.target.value)}
                   placeholder="https://..."
                 />
                 <Input
-                  value={link.description}
+                  value={link.description ?? ""}
                   onChange={(e) => updateLink("social", index, "description", e.target.value)}
                   placeholder="説明"
                 />
@@ -303,17 +365,17 @@ export default function LinksPageForm({
                   )}
                 </div>
                 <Input
-                  value={link.name}
+                  value={link.name ?? ""}
                   onChange={(e) => updateLink("other", index, "name", e.target.value)}
                   placeholder="名前"
                 />
                 <Input
-                  value={link.url}
+                  value={link.url ?? ""}
                   onChange={(e) => updateLink("other", index, "url", e.target.value)}
                   placeholder="https://..."
                 />
                 <Input
-                  value={link.description}
+                  value={link.description ?? ""}
                   onChange={(e) => updateLink("other", index, "description", e.target.value)}
                   placeholder="説明"
                 />

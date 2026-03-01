@@ -357,7 +357,9 @@ export async function getPostById(id: string): Promise<PostWithTags | null> {
     .single()
 
   if (error) {
-    console.error('Error fetching post:', error)
+    if (error.code !== 'PGRST116') {
+      console.error('Error fetching post:', error)
+    }
     return null
   }
 
@@ -835,7 +837,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Ac
 }
 
 export async function deletePost(id: string): Promise<ActionResponse<void>> {
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
   
   try {
     const { error: linkError } = await supabase
@@ -868,6 +870,7 @@ export async function deletePost(id: string): Promise<ActionResponse<void>> {
     
     revalidatePath('/posts')
     revalidatePath('/works')
+    revalidatePath('/admin/posts')
     return { success: true }
   } catch (error) {
     const err = error as Error;

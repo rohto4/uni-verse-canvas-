@@ -10,7 +10,9 @@ type LinkItem = {
 }
 
 type LinksMetadata = {
-  contactEmail?: string
+  contactUrl?: string
+  contactIconImageUrl?: string
+  contactMessage?: string
   socialLinks?: LinkItem[]
   otherLinks?: LinkItem[]
 }
@@ -37,7 +39,9 @@ export default async function AdminLinksPage() {
         <p className="text-muted-foreground">SNSや外部リンクを編集します。</p>
       </div>
       <LinksPageForm
-        initialContactEmail={metadata.contactEmail || ""}
+        initialContactUrl={metadata.contactUrl || ""}
+        initialContactIconImageUrl={metadata.contactIconImageUrl || ""}
+        initialContactMessage={metadata.contactMessage || ""}
         initialSocialLinks={metadata.socialLinks || []}
         initialOtherLinks={metadata.otherLinks || []}
         uploadAction={uploadAction}

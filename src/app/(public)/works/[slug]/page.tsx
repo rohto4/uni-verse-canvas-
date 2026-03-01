@@ -18,6 +18,7 @@ interface ProjectPageProps {
 function formatDate(dateString: string | null): string {
   if (!dateString) return '進行中'
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '進行中'
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
@@ -50,10 +51,19 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound()
   }
 
-  // Cast Json fields to their actual runtime types
-  const usedAi = (project.used_ai ?? []) as string[]
-  const galleryImages = (project.gallery_images ?? []) as string[]
-  const techStack = (project.tech_stack ?? {}) as Record<string, number>
+  // Runtime type guards for Json fields
+  const usedAi: string[] = Array.isArray(project.used_ai)
+    ? (project.used_ai as unknown[]).filter((v): v is string => typeof v === 'string')
+    : []
+  const galleryImages: string[] = Array.isArray(project.gallery_images)
+    ? (project.gallery_images as unknown[]).filter((v): v is string => typeof v === 'string')
+    : []
+  const techStack: Record<string, number> =
+    project.tech_stack !== null &&
+    typeof project.tech_stack === 'object' &&
+    !Array.isArray(project.tech_stack)
+      ? (project.tech_stack as Record<string, number>)
+      : {}
 
   return (
     <div className="min-h-screen bg-universe py-8">

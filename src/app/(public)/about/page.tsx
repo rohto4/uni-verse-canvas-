@@ -187,7 +187,7 @@ export default async function AboutPage() {
                     <div>
                       <span className="text-sm text-muted-foreground">{item.year}</span>
                       <h3 className="font-semibold mt-1">{item.title}</h3>
-                      <p className="text-muted-foreground text-sm mt-1">
+                      <p className="text-muted-foreground text-sm mt-1 whitespace-pre-line">
                         {item.description}
                       </p>
                     </div>

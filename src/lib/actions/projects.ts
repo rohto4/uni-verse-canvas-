@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient, createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Project, ProjectWithTags, Tag, Database } from '@/types/database'
 
@@ -50,6 +50,18 @@ function stripPublicLinkFields<T extends Record<string, unknown>>(data: T) {
 function isMissingPublicLinkColumn(error: unknown) {
   const err = error as { code?: string; message?: string }
   return err?.code === 'PGRST204' && err?.message?.includes('public_link_')
+}
+
+/** 空文字列を null に変換してDB型エラーを防ぐ */
+function normalizeProjectData<T>(data: T): T {
+  const emptyToNull = ['start_date', 'end_date', 'demo_url', 'github_url', 'public_link_url']
+  const result = { ...(data as object) } as Record<string, unknown>
+  for (const key of emptyToNull) {
+    if (key in result && result[key] === '') {
+      result[key] = null
+    }
+  }
+  return result as T
 }
 
 export async function getProjects(params: GetProjectsParams): Promise<PaginatedProjects> {
@@ -163,7 +175,9 @@ export async function getProjectById(id: string): Promise<ProjectWithTags | null
     .single()
 
   if (error) {
-    console.error('Error fetching project by id:', error)
+    if (error.code !== 'PGRST116') {
+      console.error('Error fetching project by id:', error)
+    }
     return null
   }
 
@@ -175,8 +189,9 @@ export async function getProjectById(id: string): Promise<ProjectWithTags | null
 }
 
 export async function createProject(input: CreateProjectInput): Promise<ProjectWithTags | null> {
-  const supabase = await createServerClient()
-  const { tags = [], ...projectData } = input
+  const supabase = createAdminClient()
+  const { tags = [], ...rawData } = input
+  const projectData = normalizeProjectData(rawData)
 
   try {
     const { data, error } = await supabase
@@ -248,8 +263,9 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectW
 }
 
 export async function updateProject(id: string, input: UpdateProjectInput): Promise<ProjectWithTags | null> {
-  const supabase = await createServerClient()
-  const { tags, ...projectData } = input
+  const supabase = createAdminClient()
+  const { tags, ...rawData } = input
+  const projectData = normalizeProjectData(rawData)
 
   const { data: currentProject, error: fetchError } = await supabase
     .from('projects')
@@ -384,7 +400,7 @@ export async function updateProject(id: string, input: UpdateProjectInput): Prom
 }
 
 export async function deleteProject(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
 
   try {
     const { error: progressError } = await supabase

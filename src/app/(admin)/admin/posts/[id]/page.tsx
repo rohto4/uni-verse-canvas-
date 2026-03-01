@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getPostById, updatePost, deletePost, getPosts, getPostRelations } from '@/lib/actions/posts'
 import { getTags } from '@/lib/actions/tags'
 import { getProjects } from '@/lib/actions/projects'
@@ -13,7 +13,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   const resolvedParams = await params
   const post = await getPostById(resolvedParams.id)
   if (!post) {
-    notFound()
+    redirect('/admin/posts')
   }
 
   const [tags, draftPosts, scheduledPosts, publishedPosts, projects, relations] = await Promise.all([

@@ -15,6 +15,7 @@ interface ProjectCardProps {
 function formatDate(dateString: string | null): string {
   if (!dateString) return "進行中"
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return "進行中"
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
@@ -42,8 +43,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
       aria-label={`${project.title}の詳細を見る`}
     >
       <Card className="flex flex-col h-full hover:shadow-lg transition-shadow" id={project.slug}>
-        <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg flex items-center justify-center">
-          <span className="text-muted-foreground text-sm">プロジェクト画像</span>
+        <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg overflow-hidden flex items-center justify-center">
+          {project.cover_image ? (
+            <img
+              src={project.cover_image}
+              alt={project.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-muted-foreground text-sm">プロジェクト画像</span>
+          )}
         </div>
 
         <CardHeader className="flex-1">
@@ -79,7 +88,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 className="flex-1"
                 onClick={(e) => {
                   e.stopPropagation()
-                  window.open(project.public_link_url!, '_blank', 'noopener,noreferrer')
+                  window.open(project.public_link_url ?? '', '_blank', 'noopener,noreferrer')
                 }}
               >
                 {project.public_link_type === 'download' ? (
@@ -97,7 +106,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 className="flex-1"
                 onClick={(e) => {
                   e.stopPropagation()
-                  window.open(project.demo_url!, '_blank', 'noopener,noreferrer')
+                  window.open(project.demo_url ?? '', '_blank', 'noopener,noreferrer')
                 }}
               >
                 <ExternalLink className="h-4 w-4 mr-1" />
@@ -111,7 +120,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 className="flex-1"
                 onClick={(e) => {
                   e.stopPropagation()
-                  window.open(project.github_url!, '_blank', 'noopener,noreferrer')
+                  window.open(project.github_url ?? '', '_blank', 'noopener,noreferrer')
                 }}
               >
                 <Github className="h-4 w-4 mr-1" />

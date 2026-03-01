@@ -205,7 +205,7 @@ export function PostEditorClient({
       const result = await deleteAction(initialPost.id)
       if (result.success) {
         toast.success('記事を削除しました')
-        router.push('/admin/posts')
+        router.replace('/admin/posts')
       } else {
         toast.error(result.error || '削除に失敗しました')
       }

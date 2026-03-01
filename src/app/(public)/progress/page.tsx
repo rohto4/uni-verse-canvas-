@@ -24,7 +24,7 @@ export default async function ProgressPage() {
 
   return (
     <div className="min-h-screen bg-universe py-8">
-      <div className="cloud-section max-w-5xl mx-auto py-8 px-4">
+      <div className="cloud-section max-w-3xl mx-auto py-8 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
             <Clock className="h-8 w-8 text-primary" />
@@ -95,7 +95,7 @@ export default async function ProgressPage() {
                     完了
                   </Badge>
                 </div>
-                <CardDescription>{item.description}</CardDescription>
+                <CardDescription className="whitespace-pre-line line-clamp-3">{item.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ function ProgressCard({ item }: { item: InProgressWithProject }) {
 
         {item.notes && (
           <div className="p-3 bg-secondary/50 rounded-lg">
-            <p className="text-sm">{item.notes}</p>
+            <p className="text-sm whitespace-pre-line line-clamp-4">{item.notes}</p>
           </div>
         )}
       </CardContent>

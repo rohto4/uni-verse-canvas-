@@ -165,6 +165,7 @@ export default function InProgressList({ items, availableProjects, createAction,
   const activeCount = items.filter((i) => i.status === "in_progress").length
   const pausedCount = items.filter((i) => i.status === "paused").length
   const notStartedCount = items.filter((i) => i.status === "not_started").length
+  const completedCount = items.filter((i) => i.status === "completed").length
 
   return (
     <div>
@@ -248,6 +249,12 @@ export default function InProgressList({ items, availableProjects, createAction,
               {notStartedCount}
             </Badge>
           </TabsTrigger>
+          <TabsTrigger value="completed">
+            完了
+            <Badge variant="secondary" className="ml-2">
+              {completedCount}
+            </Badge>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -285,10 +292,21 @@ export default function InProgressList({ items, availableProjects, createAction,
         </TabsContent>
         <TabsContent value="not_started" className="space-y-4">
           {items.filter((i) => i.status === "not_started").map((item) => (
-            <ItemCard 
-              key={item.id} 
-              item={item} 
-              onEdit={() => handleEditClick(item)} 
+            <ItemCard
+              key={item.id}
+              item={item}
+              onEdit={() => handleEditClick(item)}
+              onDelete={() => handleDelete(item.id)}
+              onStatusUpdate={handleStatusUpdate}
+            />
+          ))}
+        </TabsContent>
+        <TabsContent value="completed" className="space-y-4">
+          {items.filter((i) => i.status === "completed").map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              onEdit={() => handleEditClick(item)}
               onDelete={() => handleDelete(item.id)}
               onStatusUpdate={handleStatusUpdate}
             />
@@ -447,7 +465,7 @@ function ItemCard({ item, onEdit, onDelete, onStatusUpdate }: {
                 {config.label}
               </Badge>
             </div>
-            <CardDescription>{item.description}</CardDescription>
+            <CardDescription className="whitespace-pre-line line-clamp-3">{item.description}</CardDescription>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -520,7 +538,7 @@ function ItemCard({ item, onEdit, onDelete, onStatusUpdate }: {
         {/* Notes */}
         {item.notes && (
           <div className="p-3 bg-secondary/50 rounded-lg">
-            <p className="text-sm">{item.notes}</p>
+            <p className="text-sm whitespace-pre-line line-clamp-4">{item.notes}</p>
           </div>
         )}
       </CardContent>

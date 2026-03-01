@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 type TrackViewPayload = {
   postId?: string
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Invalid postId' }, { status: 400 })
   }
 
-  const supabase = await createServerClient()
+  const supabase = createAdminClient()
 
   const { data: currentPost, error: fetchError } = await supabase
     .from('posts')

@@ -15,6 +15,7 @@ interface AdminProjectCardProps {
 function formatDate(dateString: string | null): string {
   if (!dateString) return "進行中"
   const date = new Date(dateString)
+  if (isNaN(date.getTime())) return "進行中"
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
@@ -22,6 +23,10 @@ const statusLabel: Record<string, { label: string; className: string }> = {
   completed: { label: "Completed", className: "bg-accent text-accent-foreground" },
   archived: { label: "Archived", className: "bg-muted text-muted-foreground" },
   registered: { label: "Registered", className: "bg-primary/20 text-primary" },
+}
+
+function getStatusLabel(status: string | null) {
+  return statusLabel[status ?? ''] ?? statusLabel['completed']
 }
 
 export function AdminProjectCard({ project }: AdminProjectCardProps) {
@@ -51,8 +56,8 @@ export function AdminProjectCard({ project }: AdminProjectCardProps) {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <CardTitle className="text-xl">{project.title}</CardTitle>
-            <Badge className={statusLabel[project.status ?? ''].className}>
-              {statusLabel[project.status ?? ''].label}
+            <Badge className={getStatusLabel(project.status).className}>
+              {getStatusLabel(project.status).label}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mb-3">{project.description}</p>
